@@ -1,0 +1,86 @@
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
+
+namespace demoDynamicDispatch
+{
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Human hu = new Employee();
+        
+            // acha agar main aysee likho tu deparmtnet access ho jata hai kwon 
+            // or hu ki propeties bi 
+
+            // line 1 and line 2 ko dekho sab samj aa jayi gi 
+
+            Employee employee = new Employee();
+            // is case main agar app employee key object ko deho tu is main sari values miley gi 
+            // Human ki or employee dono ki propeties and methods ... 
+            // why Employee inhert howa hai Human se or jab iska object bana tu 
+            //Employee Object
+            //│
+            //├── Name(Human)
+            //├── Age(Human)
+            //├── Sex(Human)
+            //└── Department(Employee)
+
+            //Employee ka object bana hota hai, aur kyun ke Employee, Human se inherit karta hai,
+            //is liye Human ki sari properties usi Employee object ke andar hoti hain
+            //Reference decide karta hai kya access hoga
+            //Object decide karta hai actually kya exist karta hai
+
+            Human h2 = new Employee()
+            {
+                Name = "a",
+                Age = 12,
+                Sex = "Male",
+                Department = "IT"
+
+            };
+
+            // why , obeject employee ko access kerne per dono values yani reference based bi or object based bi 
+
+            // Using 'is' operator
+            if (hu is Employee emp)
+            {
+                Console.WriteLine(emp.Department);   // IT
+            }
+
+            // Using 'as' operator
+            Employee emp2 = hu as Employee;
+
+            if (emp2 != null)
+            {
+                Console.WriteLine(emp2.Department);  // IT
+            }
+            else
+            {
+                Console.WriteLine("hu is not an Employee");
+            }
+
+            // yah wali casting or 
+
+            Employee emp3ExplictCast = (Employee)hu;
+            Console.WriteLine(emp2.Department);
+        }
+    }
+
+    public class Human
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string Sex { get; set; }
+    }
+
+    class Person : Human
+    {
+        public string FatherName { get; set; }
+    }
+
+    class Employee : Human
+    {
+        public string Department { get; set; }
+    }
+}
