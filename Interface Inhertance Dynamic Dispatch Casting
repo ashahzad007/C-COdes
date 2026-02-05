@@ -1,0 +1,60 @@
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
+
+namespace demoDynamicDispatch
+{
+
+    class Program
+    {
+
+
+        static void Main(string[] args)
+        {
+            IHuman human = new Employee
+            {
+                Age = 1,
+                Name = "Test",
+                Sex = "M",
+                Department = "SD"
+            };
+
+            // theeno examples main human variable same hai , isi lye wo same SD yani department ko point ker raha hai
+            //1 cast using is , if lazmi hai , is statmant hai
+            if (human is Employee emp)
+            {
+                Console.WriteLine(emp.Department);
+            }
+            //2 cast using as // return null if casting fails
+            Employee emp2 = human as Employee;
+            Console.WriteLine(emp2.Department);
+
+            //3 explict cast // code break exception when casting fail
+            Employee emp3 = (Employee)human;
+            Console.WriteLine(emp3.Department);
+     
+        }
+
+        interface IHuman
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+            public string Sex { get; set; }
+        }
+
+        class Person : IHuman
+        {
+            public string FatherName { get; set; }
+            public string Name { get ; set ; }
+            public int Age { get ; set ; }
+            public string Sex { get ; set ; }
+        }
+
+        class Employee : IHuman
+        {
+            public string Department { get; set; }
+            public string Name { get; set ; }
+            public int Age { get; set; }
+            public string Sex { get; set ; }
+        }
+    }
+}
