@@ -1,0 +1,149 @@
+
+=============success=============================================================================Admisiion=================================
+MSH|^~\&|Epic EHR|Franciscan Health Test Branch|VST Integration|Franciscan Health Test Branch|20251119074153-0000||ADT^A01|Francisecan001test23|P|2.3
+EVN||20251119074153-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^2141|||
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251119074153-0000|20251119141653-0000
+=============success=============================================================================dischrage=================================
+MSH|^~\&|Epic EHR|Franciscan Health Test Branch|VST Integration|Franciscan Health Test Branch|20251119074153-0000||ADT^A03|Francisecan001test23_dischrge|P|2.3
+EVN||20251119074153-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^2141|||
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251119074153-0000|20251119141653-0000
+===================================Transfer================================================================
+MSH|^~\&|Epic EHR|Franciscan Health Test Branch|VST Integration|Franciscan Health Test Branch|20251119074153-0000||ADT^A02|Francisecan001test23_transfer|P|2.3
+EVN||20251119074153-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^2141|||^2143
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251119074153-0000|20251119141653-0000
+========================================================================================
+
+
+  private async Task HandleClientAsync(TcpClient client)
+  {
+      var remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
+      string ipAddress = remoteEndPoint?.Address.ToString() ?? "Unknown IP";
+      int port = remoteEndPoint?.Port ?? 0;
+      string mllpFramedAck;
+      string defaultHl7Version = "2.3";
+      string ackCreationError = "Error: Could not create HL7 ACK";
+      string receivedData = string.Empty;
+      CustomDataReceivedEventArgs e = null;
+
+      try
+      {
+          using NetworkStream stream = client.GetStream();
+          byte[] buffer = new byte[_maxBufferLength];
+          StringBuilder messageBuffer = new();
+
+          // Continuously read messages from the stream
+          while (client.Connected)
+          {
+              int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+              if (bytesRead == 0)
+              {
+                  await Task.Delay(10); // Prevent tight loops
+                  break;  // Client disconnected or no more data
+              }
+
+              receivedData = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+              e = new CustomDataReceivedEventArgs(client, stream, ipAddress, port, new ArraySegment<byte>(buffer, 0, bytesRead));
+
+              if (await this.CustomHasFailedInitialChecks(e, ackCreationError, receivedData, messageBuffer))
+              {
+                  continue;  // Skip this message if it fails initial checks
+              }
+
+              // Asynchronous processing for each message
+              try
+              {
+                  await semaphorex.WaitAsync();
+                  try
+                  {
+                      // Insert received data into the database
+                      (facilityName, messageControlId) = HL7Utilities.ExtractInfo(receivedData);
+
+                      if (IsHIPAAComplianceEnable)
+                      {
+                          receivedData = Utilities.AesDecryptor.Encrypt(receivedData, encryptionKey);
+                      }
+
+                      // Only check for duplicates if we have valid facility and message control ID
+                      bool isValidMessage = facilityName != "N/A" && messageControlId != "N/A";
+                      bool isDuplicate = false;
+
+                      if (isValidMessage)
+                      {
+                          string compositeKey = $"{facilityName}|{messageControlId}";
+
+                          lock (_hashSetLock)
+                          {
+                              isDuplicate = _recentMessageControlKeys.Contains(compositeKey);
+                          }
+
+                          if (isDuplicate)
+                          {
+                              _logger.LogInformation($"Duplicate HL7 message skipped with MCI {{@MCI}}", messageControlId);
+                              mllpFramedAck = _hl7ParsingService.HandleAckCreation(
+                                  string.Empty,
+                                  messageControlId,
+                                  AcknowledgementCode.ApplicationReject,
+                                  "2.3", "SIU^S12",
+                                  _logger);
+
+                              this.CustomSendAck(e, mllpFramedAck, "Duplicate message detected");
+                              await _messageStatusUtils.SaveInboundFailureAsync(OperationConstants.DuplicateMsg, messageControlId, facilityName);
+                              return;
+                          }
+                      }
+
+                      // Save to batch (both valid and invalid messages)
+                      AddToBatch(new Hl7InsertModel
+                      {
+                          RawHL7Payload = receivedData,
+                          FacilityName = facilityName,
+                          MessageControlId = messageControlId,
+                          ReceivedTime = DateTime.UtcNow
+                      });
+
+                      await this.CustomHandleBufferingAsync(e, messageBuffer);
+
+
+                  }
+                  finally
+                  {
+                      semaphorex.Release();  // Release the semaphore after processing this message
+                  }
+              }
+              catch (Exception ex)
+              {
+                  this._logger.LogError(ex, "{@Exception} encountered on {@Socket} on inserting received {@Data} in DB",
+                      ex.Message, this._ip + ':' + this._port, receivedData);
+              }
+          }
+      }
+      catch (Exception ex)
+      {
+          this._logger.LogError(ex, "{@Exception} encountered on {@Socket} on receiving {@Data} on {@Source}",
+              ex.Message, _ip + ':' + _port, receivedData, "TcpServer");
+
+          mllpFramedAck = _hl7ParsingService.HandleAckCreation(string.Empty, string.Empty, AcknowledgementCode.ApplicationReject, defaultHl7Version, "SIU^S12", _logger);
+          this.CustomSendAck(e, mllpFramedAck, ackCreationError);
+      }
+      finally
+      {
+          // Ensure the client is properly closed and resources are cleaned up
+          if (client.Connected)
+          {
+              client.Close();
+          }
+      }
+  }
+
+
+
+

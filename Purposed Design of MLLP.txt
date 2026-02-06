@@ -1,0 +1,7 @@
+Tumhare context mein (HL7 / Integration Portal)
+
+Tumhara HL7 system bilkul microkernel candidate hai:
+
+Core → HL7 routing, validation, logging
+
+Plug-ins → ADT, SIU, ORU, Epic-specific logic

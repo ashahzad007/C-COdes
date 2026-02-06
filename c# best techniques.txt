@@ -1,0 +1,80 @@
+string obx = CreateObxSegmentCustom("1", "TX", "292",facilityProfile.ObservationText, facilityProfile.ResetReason.ValueType);
+=======
+if you want to hardcode , please dont hard code in function parameters , bad practice
+
+good is 
+
+hardcode values in class , make a class of that variables and in class make hem hardcode like below example like this
+=======================
+ public string ObservationText { get; set; } ="Repositioned Patient";
+============================
+
+	public class OutboundHl7Profile
+	{
+		public string? ProfileName { get; set; }
+
+		public ResetTime? ResetTime { get; set; }
+
+		public ResetReason? ResetReason { get; set; }
+
+        public string ObservationText { get; set; } ="Repositioned Patient";
+	    public SensorId? SensorId { get; set; }
+	}
+}
+=====================================================
+or if you dont want to change it make it const 
+or json configuration in appsettings.json file 
+=================
+technique 2 
+=================
+	public class OutboundHl7Profile
+	{
+		public string? ProfileName { get; set; }
+
+		public ResetTime? ResetTime { get; set; }
+
+		public ResetReason? ResetReason { get; set; }
+
+        public string ObservationText { get; set; } ="Repositioned Patient";
+	    public SensorId? SensorId { get; set; }
+	}
+==================================
+agar kisi class main ResetTime , ResetReason, SensorId khud classes hoon 
+tu apko pori hireacry use kerni ho gi new ki i mean instance create kerey ki 
+other wise null reference ka error aye ga , object bana nai ho ga or app property ko initilze ker rehe ho gey 
+very important example
+=====================================
+
+for example 
+OutboundHl7Profile facilityProfile = new OutboundHl7Profile
+{
+    ProfileName = "default",
+    ObservationText = "Repositioned Patient",
+
+    // ✅ ResetReason set
+    ResetReason = new ResetReason
+    {
+        ValueType = "Patient repositioned",
+        ObservationIdentifier = new ObservationIdentifier
+        {
+            Identifier = "292",
+            NameOfCodingSystem = "VST"
+        }
+    },
+
+    // ✅ ResetTime set (example)
+    ResetTime = new ResetTime
+    {
+        ValueType = "TS",
+        ObservationIdentifier = new ObservationIdentifier
+        {
+            Identifier = "291",
+            NameOfCodingSystem = "VST"
+        }
+    }
+};
+====================================
+
+
+
+

@@ -1,0 +1,1150 @@
+Samajh gaya 👍
+tumhara do problems hain:
+
+1️⃣ Itna bara + messy code ka review kaise samjha jaye
+2️⃣ Yeh code Git history se remove ho gaya hai — ab Dev branch mein kaise wapas laana hai
+
+Main dono ko step-by-step, practical Urdu mein sikhaata hoon.
+
+🧠 PART 1 — Is tarah ke code ko “theek tareeqe se” kaise read karein
+❌ Common masla (jo tum face kar rahe ho)
+
+Code incomplete lagta hai
+
+Repeated blocks
+
+Duplicate validation
+
+Try/catch ke andar try/catch
+
+Git diff mein sirf red/green lines, samajh nahi aata
+
+👉 Iska solution = layer by layer reading
+
+✅ GOLDEN RULE: Code ko kabhi line-by-line NAHI parhna
+
+Is tarah ke enterprise code ko 5 logical layers mein parho:
+
+🔹 Layer 1: File ka role samjho (2 minutes)
+
+File: EpicPlugin.cs
+
+👉 Is file ka kaam:
+
+Epic (external EHR) se aane wali request ko validate karna
+aur usko internal Alert System ke format mein convert karna
+
+📌 Yeh file:
+
+Controller nahi
+
+Business logic nahi
+
+Gateway / Adapter hai
+
+🔹 Layer 2: Entry point identify karo
+
+Is code ka main entry point yeh hai:
+
+GetData(string payload)
+
+
+Har cheez isi ke andar hoti hai.
+
+👉 Jab bhi review karo:
+
+“Yeh method input kya leta hai aur output kya deta hai?”
+
+Input: payload (raw JSON from Epic)
+
+Output: GeneralBaseResponse
+
+🔹 Layer 3: High-level flow likh lo (paper / mind)
+
+Is poore code ka high level flow yeh hai:
+
+Payload
+ ↓
+BaseRequest deserialize
+ ↓
+Action check
+ ↓
+Action-specific validation
+ ↓
+Error → 400
+ ↓
+Success → next service
+
+
+Jab yeh clear ho jaye → 60% code samajh aa jata hai
+
+🔹 Layer 4: Action-based reading (MOST IMPORTANT)
+
+❌ Galti: poora file ek sath parhna
+✅ Sahi tareeqa: Action ke hisaab se parhna
+
+Example:
+if (epicRequest.Action == "pressureInjuryTimerReset")
+
+
+👉 Matlab:
+
+Sirf Pressure Injury Timer Reset ka logic
+
+Is block ke andar:
+
+Data validation
+
+Required fields check
+
+Epoch time validation
+
+PIDInternal validation
+
+📌 Baqi code ignore karo jab tak is action ko samajh na lo
+
+🔹 Layer 5: Sirf 3 cheezain dekho
+
+Har validation block mein sirf yeh dekho:
+
+1️⃣ Required fields kaun se hain?
+2️⃣ Invalid ho to kya response ja raha hai?
+3️⃣ Valid ho to next step kya hai?
+
+Bas.
+Details baad mein.
+
+🧠 PART 2 — Yeh code ab repo mein NAHI hai, ab kya karein?
+
+Tumhara sawal bohat important hai 👇
+
+“Cherry-pick karoon ya manually copy?”
+
+🔥 Pehle clear decision rule
+❌ Manual copy tab karo jab:
+
+Code bohat zyada conflict kare
+
+Code already outdated ho
+
+Sirf 5–10 lines chahiyein
+
+✅ Cherry-pick tab karo jab (tumhara case):
+
+File poori remove hui ho
+
+Code pehle working tha
+
+Git history mein commit available ho
+
+👉 Tumhare case mein cherry-pick BEST solution hai
+
+✅ Correct Professional Approach (Recommended)
+🔹 Step 1: Commit find karo
+git log -- epicplugin.cs
+
+
+Ya GitHub/GitLab:
+
+File history kholo
+
+Wo commit dhoondo jahan yeh code last tha
+
+🔹 Step 2: Sirf us commit ko cherry-pick karo
+git checkout dev
+git cherry-pick <commit-hash>
+
+
+📌 Agar conflict aaye:
+
+Sirf EpicPlugin.cs resolve karo
+
+Baqi files ko untouched chhor do
+
+🔹 Step 3: Build + test
+
+Compile
+
+Epic action test karo:
+
+pressureInjuryTimerReset
+
+epicClientOnBoard
+
+❓ Agar cherry-pick possible na ho?
+Fallback (safe manual way):
+
+Old commit se EpicPlugin.cs copy karo
+
+Dev branch mein paste
+
+Sirf:
+
+Namespace
+
+DTO names
+
+Logger references
+adjust karo
+
+Validation logic same rakho
+
+📌 Logic kabhi rewrite mat karna jab tak zaroori na ho
+
+🧠 PART 3 — Future mein review ka masla khatam karne ke tips
+✅ Jab bhi aisi file mile:
+
+Pehlay yeh likho (mentally):
+
+“Yeh file kis action ko support karti hai?”
+
+Har action ko alag unit samjho
+
+Duplicate validation dikhe → smell samjho, ignore for now
+
+🟢 Senior-level advice (important)
+
+❝ Acha engineer woh hota hai jo pehlay flow samjhta hai, phir code ❞
+
+Tumhara masla skill ka nahi,
+approach ka hai — jo ab clear ho gaya hai 👍
+=====================
+public async Task<GeneralBaseResponse> GetData(PluginInformationBaseRequest request, ILogger logger)
+{
+    _logger = logger;
+	Stopwatch stopwatch = new();
+	stopwatch.Start();
+	GeneralBaseResponse response = new();
+
+	try
+	{
+
+
+        if (request.ConnectionString == null || request.ConnectionString.Count == 0)
+        {
+            _logger.LogError("ConnectionString list is missing...");
+            response.Message = "Bad Request: Missing connection strings";
+            response.ResponseCode = ResponseCode.BadRequest;
+            return response;
+        }
+
+        var connDict = ParseConnectionStrings(request.ConnectionString?.Select(kvp => $"[{kvp.Key}, {kvp.Value}]").ToList());
+
+        if (!connDict.TryGetValue("EpicDB", out var epicDb) ||
+            !connDict.TryGetValue("EpicDB_RO", out var epicDbRo) ||
+            !connDict.TryGetValue("IntegrationDB", out var integrationDb) ||
+            !connDict.TryGetValue("IntegrationDB_RO", out var integrationDbRo))
+        {
+            _logger.LogError("Required DB connection strings not found...");
+            response.Message = "Bad Request: Invalid DB Connections";
+            response.ResponseCode = ResponseCode.BadRequest;
+            return response;
+        }
+
+        ConnStringManager.EpicDbConnString = epicDb;
+        ConnStringManager.EpicDbConnString_RO = epicDbRo;
+        ConnStringManager.IntegrationDbConnString = integrationDb;
+        ConnStringManager.IntegrationDbConnString_RO = integrationDbRo;
+
+        if (request == null)
+		{
+            _logger.LogError("Null request received in {@Method}, {@Class}, {@Source}",
+				nameof(GetData),
+				nameof(EpicPlugin),
+				OperationConstants.Source);
+
+			response.Message = "Bad Request";
+			response.ResponseCode = ResponseCode.BadRequest;
+			return response;
+		}
+
+		string clientCode = request.Code;
+        _logger.LogInformation(
+			"Request for {@ClientCode} received at {@Plugin}",
+			clientCode,
+			OperationConstants.Source);
+
+		string payload = Convert.ToString(request.Payload);
+		if(string.IsNullOrWhiteSpace(payload)) 
+		{
+            _logger.LogError("Request body missing in {@Method}, {@Class}, {@Source}",
+				nameof(GetData),
+				nameof(EpicPlugin),
+				OperationConstants.Source);
+
+			response.Message = "Bad Request";
+			response.ResponseCode = ResponseCode.BadRequest;
+			return response;
+		}
+
+		BaseRequest epicRequest = JsonConvert.DeserializeObject<BaseRequest>(payload);
+		if(epicRequest == null) 
+		{
+            _logger.LogError("The received request body could not be cast to BaseRequest instance in {@Method}, {@Class}, {@Source}",
+			   nameof(GetData),
+			   nameof(EpicPlugin),
+			   OperationConstants.Source);
+
+			response.Message = "Bad Request";
+			response.ResponseCode = ResponseCode.BadRequest;
+			return response;
+		}
+
+		if(!EpicInit.ActionMapping.ContainsKey(epicRequest.Action))
+		{
+            _logger.LogError("Invalid action used by {@clientCode}, inside {@Method}, {@Class}, {@Source}",
+			   request.Code,
+			   nameof(GetData),
+			   nameof(EpicPlugin),
+			   OperationConstants.Source);
+
+			response.ResponseCode = ResponseCode.BadRequest;
+			response.Message = "Bad Request";
+			return response;
+		}
+
+		if(epicRequest.Data == null )
+		{
+            _logger.LogError("Null data field in received payload, inside {@Method}, {@Class}, {@Source}",
+				nameof(GetData),
+				nameof(EpicPlugin),
+				OperationConstants.Source);
+
+			response.ResponseCode = ResponseCode.BadRequest; 
+			response.Message = "Bad Request";
+			return response;
+		}
+		// pid internal Null check.
+        if (epicRequest.Action == "pressureInjuryTimerReset")
+        {
+            var json = JsonConvert.SerializeObject(epicRequest.Data);
+            var root = JToken.Parse(json);
+
+            var token = root.Type == JTokenType.Array
+                ? root.First?["resetEpochTime"]
+                : root["resetEpochTime"];
+
+            if (token == null ||
+                !long.TryParse(token.ToString(), out var resetEpochTimeLong) ||
+                resetEpochTimeLong <= 0)
+            {
+                response.ResponseCode = ResponseCode.BadRequest;
+                response.Message = "Bad Request: Invalid ResetEpochTime";
+                return response;
+            }
+
+            var resetRequest = JsonConvert.DeserializeObject<PressureInjuryTimerResetRequest>(
+                JsonConvert.SerializeObject(epicRequest.Data));
+
+            // Required fields
+            var missingFields = new List<string>();
+            if (string.IsNullOrWhiteSpace(resetRequest.MessageId))
+                missingFields.Add(nameof(resetRequest.MessageId));
+            if (string.IsNullOrWhiteSpace(resetRequest.SendingApplication))
+                missingFields.Add(nameof(resetRequest.SendingApplication));
+            if (string.IsNullOrWhiteSpace(resetRequest.ResetReason))
+                missingFields.Add(nameof(resetRequest.ResetReason));
+            if (string.IsNullOrWhiteSpace(resetRequest.FacilityCode))
+                missingFields.Add(nameof(resetRequest.FacilityCode));
+            if (string.IsNullOrWhiteSpace(resetRequest.RoomNo))
+                missingFields.Add(nameof(resetRequest.RoomNo));
+                                                               
+            if (!string.IsNullOrWhiteSpace(resetRequest.DateOfBirth) &&
+                !DateTime.TryParseExact(
+                    resetRequest.DateOfBirth,
+                    new[] { "yyyy-MM-dd", "MM/dd/yyyy", "yyyy-MM-ddTHH:mm:ss" }, // allowed formats
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out _))
+            {
+                missingFields.Add(nameof(resetRequest.DateOfBirth));
+            }
+
+
+            if (!ValidationHelper.ValidateStrictAlphanumeric(
+                 resetRequest.PIDInternal,
+                 out var pidInternal,
+                 allowHyphenUnderscore: true))
+            {
+                missingFields.Add(nameof(resetRequest.PIDInternal));
+            }
+            else
+            {
+                resetRequest.PIDInternal = pidInternal;
+            }
+
+
+            if (missingFields.Any())
+            {
+                _logger.LogError("Missing required fields ({@MissingFields}) in {@Method}, {@Class}, {@Source}",
+                    string.Join(", ", missingFields),
+                    nameof(GetData),
+                    nameof(EpicPlugin),
+                    OperationConstants.Source);
+
+                response.ResponseCode = ResponseCode.BadRequest;
+                response.Message = $"Bad Request: Missing required fields ({string.Join(", ", missingFields)})";
+                return response;
+            }
+
+        }
+    
+        // For Handling FacilityName & FacilityCode Null check.
+        if (epicRequest.Action == "epicClientOnBoard")
+        {
+
+            (bool flowControl, GeneralBaseResponse value) = ValidateEpicClientOnBoardRequest(response, epicRequest);
+            if (!flowControl)
+
+            {
+                return value;
+            }
+        }
+
+
+        //it is not safe to log the request here, in case it is too long and takes up too much space in the logs.
+        //the service methods log th request after doing their specific length checks. These length checks are not generic,
+        //because balance pdf export message requests are too long, so their max body length is different from the rest	
+        string serializedData = JsonConvert.SerializeObject(epicRequest.Data);
+		// place there MLLP and Alert System devide.
+        //Debugger.Break();
+        object responseData = await EpicInit.ActionMapping[epicRequest.Action](serializedData, logger);
+		bool isInternalServerError = string.IsNullOrWhiteSpace(responseData.ToString()) || responseData.Equals("internalServerError");
+		if (isInternalServerError)
+		{
+			response.Message = "Internal Server Error";
+			response.ResponseCode = ResponseCode.InternalServerError;
+			return response;
+		}
+
+		if (responseData.Equals("badRequest"))
+		{
+			response.Message = "Bad Request";
+			response.ResponseCode = ResponseCode.BadRequest;
+            _logger.LogError("Invalid request receieved in {@Method}, {@Class}, {@Source}",
+				nameof(GetData),
+				nameof(EpicPlugin),
+				OperationConstants.Source);
+			return response;
+		}
+        if (epicRequest.Action == "epicClientOnBoard" & responseData!=null)
+        {
+            EpicClientOnBoardResponse dbResponse = new EpicClientOnBoardResponse();
+            try
+            {
+                dbResponse = JsonConvert.DeserializeObject<EpicClientOnBoardResponse>((string)responseData);
+                if (dbResponse.Id is 0 or (-1))
+                {
+                    response.Message = "Bad Request";
+                    response.ResponseCode = ResponseCode.BadRequest;
+                }
+                else {
+                    response.Message = "Success";
+                    response.ResponseCode = ResponseCode.Success;
+                }
+                response.Data = responseData;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deserializing response data in {@Method}, {@Class}, {@Source}",
+                    nameof(GetData),
+                    nameof(EpicPlugin),
+                    OperationConstants.Source);
+                response.Message = "Internal Server Error";
+                response.ResponseCode = ResponseCode.InternalServerError;
+                return response;
+            }
+        }
+
+            response.Message = "Success";
+		response.ResponseCode = ResponseCode.Success;
+		response.Data = responseData;
+
+        return response;
+	}
+	catch (Exception jsonEx) when (jsonEx is JsonSerializationException || jsonEx is JsonReaderException)
+	{
+        _logger.LogError(jsonEx, "{@Exception} encountered in Epic plugin while reading json {@InnerException}, inside {@Method}, {@Class}, {@Source}",
+		 jsonEx.Message,
+		 jsonEx.InnerException?.Message,
+		 nameof(GetData),
+		 nameof(EpicPlugin),
+		 OperationConstants.Source);
+
+		response.Message = "Bad Request";
+		response.ResponseCode = ResponseCode.BadRequest;
+		return response;
+	}
+	catch (Exception ex)
+	{
+        _logger.LogError(ex,"{@Exception} encountered in Epic plugin, with {@InnerException}, inside {@Method}, {@Class}, {@Source}",
+		   ex.Message,
+		   ex.InnerException?.Message,
+		   nameof(GetData),
+		   nameof(EpicPlugin),
+		   OperationConstants.Source);
+
+		response.Message = "Internal Server Error";
+		response.ResponseCode = ResponseCode.InternalServerError;
+		return response;
+	}
+	finally
+	{
+		stopwatch.Stop();
+		logger.LogInformation("{@Method} in {@Plugin} took {@ElapsedTime}", nameof(GetData), OperationConstants.Source, stopwatch.Elapsed);
+	}
+}
+
+ya professional way main is code ko read kerna hai , main apna expericne sahre ker deta hoon , sab se pehele overall is class and method ko dekhan parta hai ke yeah overall kya ker raha hai , phir iskey code ko line by line read kerna hota hai , uske baad sochana hota hai ?? kya , mtlb ap ne is function ko kayse modify , refactor kerna hai , is function ki mistakes find kerni hoti hai , phir refactor ker ke apna path yani ke main is waqt yeah chahta hoon ki dob futuure main ho hl7 messsage ki tu wo string.empty ho jaye or respose main na jayse ...
+tume isko step by step , batyo , 
+using Plugin.Contracts.Request;
+using Plugin.Contracts.Response;
+using System;
+using System;
+using System.Collections.Generic;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
+using System.Globalization;
+using System.Linq;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Threading.Tasks;
+using Utilities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+//redeploy to resolve facility name parameter issue
+namespace EpicPlugin
+{
+	[Export(typeof(IIntegrationPluginsHandler))]
+	[ExportMetadata("pluginname", "epicplugin")]
+	public class EpicPlugin : IIntegrationPluginsHandler
+	{
+        private ILogger? _logger;
+        static EpicPlugin()
+        {
+            // Auto-initialize DI when plugin is loaded
+            DependencyInjectionConfig.ConfigureServices();
+        }
+1) class kya ker rehe hai summary wise , 
+2) method kya ker raha hai summary wise 
+3) line by line class ka and method ka code  read kerna batyo , kaysee read kerna hai , 
+4) function main misktakes , perfomance ki , code ki , clean code ki 
+5) refacotor kaysee ho ga 
+6) uskey baad patch dob ka kayse lagey ga ke future date pe string.empty le jaye,
+7) path ke saat hi code ko bi refacotr ker dya jayse , ta ke future proof ho jaye code 
+8) mtlb apna kaam kerney aye ho tu method ko bi performance wise , clean code wise , ya isk main koye mistake ho tu usko bi address ker dya jayse .... 
+================================================
+Answer
+=============================
+STEP 0 — MINDSET (sab se pehle)
+
+❌ “Line by line dekhna” se kaam shuru mat karo
+✅ Pehle BIRD-EYE VIEW, phir zoom-in
+
+Tum bilkul sahi keh rahe ho:
+
+“sab se pehle overall class aur method ka role samajhna hota hai”
+
+1️⃣ CLASS KYA KAR RAHI HAI? (High-level summary)
+EpicPlugin : IIntegrationPluginsHandler
+
+Professional summary:
+
+EpicPlugin ek integration boundary class hai
+jo:
+
+External system (Epic / HL7 / Integration Layer) se
+
+Generic plugin request leti hai
+
+Usko validate karti hai
+
+Action ke basis pe correct handler call karti hai
+
+Aur standardized response wapas karti hai
+
+Design pattern jo use ho raha hai:
+
+Plugin pattern (MEF)
+
+Command routing (Action → Handler)
+
+Boundary / Adapter layer
+
+📌 Important observation
+
+Yeh class business logic ka ghar nahi honi chahiye
+
+Yeh sirf validation + routing + orchestration ke liye honi chahiye
+
+2️⃣ METHOD KYA KAR RAHA HAI? (High-level summary)
+GetData(...)
+
+Senior-level summary:
+
+Yeh method:
+
+Request ko validate karta hai
+
+Connection strings setup karta hai
+
+Payload deserialize karta hai
+
+Action validate karta hai
+
+Action-specific validation karta hai
+
+Correct async handler call karta hai
+
+Handler response normalize karta hai
+
+Errors ko standardized response mein convert karta hai
+
+Execution time log karta hai
+
+📌 Smell already visible
+
+Yeh method bahut zyada kaam kar rahi hai
+
+Yeh SRP (Single Responsibility Principle) tod rahi hai
+
+3️⃣ PROFESSIONAL WAY: LINE-BY-LINE READ KAISE KARTE HAIN
+
+❌ Galat approach
+
+Line 1 kya hai?
+Line 2 kya hai?
+Line 3 kya hai?
+
+
+✅ Correct approach: LOGICAL BLOCKS
+
+Main tumhein blocks mein read karna sikha raha hoon:
+
+🔹 Block 1 — Instrumentation & Setup
+Stopwatch stopwatch = new();
+stopwatch.Start();
+GeneralBaseResponse response = new();
+
+
+🧠 Tum yahan socho:
+
+Performance tracking
+
+Shared response object
+
+✅ OK
+
+🔹 Block 2 — Guard Clauses (Request level)
+if (request.ConnectionString == null || request.ConnectionString.Count == 0)
+
+
+🧠 Question pocho:
+
+Fail fast?
+
+Proper error?
+
+Reusable?
+
+⚠️ Issue:
+
+Yeh validation har plugin mein repeat ho sakti hai
+➡️ Common validator hona chahiye
+
+🔹 Block 3 — Connection String Parsing
+var connDict = ParseConnectionStrings(...)
+
+
+🧠 Socho:
+
+Parsing + validation + assignment sab yahin ho raha hai
+
+Yeh infrastructure concern hai
+
+⚠️ Smell:
+
+Plugin ka kaam nahi
+
+Separate IConnectionResolver hona chahiye
+
+🔹 Block 4 — Payload Validation
+string payload = Convert.ToString(request.Payload);
+
+
+🧠 Socho:
+
+Payload string hai?
+
+JSON?
+
+Size limits?
+
+⚠️ Missing:
+
+Max size check
+
+Malformed payload protection
+
+🔹 Block 5 — Action Validation
+if(!EpicInit.ActionMapping.ContainsKey(epicRequest.Action))
+
+
+✅ Achha pattern
+
+Dictionary routing
+
+Open/Closed principle
+
+⚠️ Improvement:
+
+Enum or strongly-typed Action keys better
+
+🔹 Block 6 — Action-specific validation
+if (epicRequest.Action == "pressureInjuryTimerReset")
+
+
+🧠 Red flag 🚩:
+
+String comparison
+
+Business validation inside router
+
+➡️ Yeh logic handler ke andar honi chahiye
+
+🔹 Block 7 — Action execution
+object responseData = await EpicInit.ActionMapping[epicRequest.Action](...)
+
+
+🧠 Key async point:
+
+Debugger yahin jump karta hai
+
+Thread context change hota hai
+
+⚠️ Design issue:
+
+object return type = weak contract
+
+🔹 Block 8 — Response normalization
+if (responseData.Equals("badRequest"))
+
+
+🚨 Major smell
+
+Magic strings
+
+String-based error signaling
+
+4️⃣ MAJOR MISTAKES (Professional Review)
+❌ Design mistakes
+
+God method (too large)
+
+String-based actions
+
+String-based error responses
+
+Business validation in router
+
+Infrastructure logic mixed with business logic
+
+❌ Performance issues
+
+Multiple JSON serialize/deserialize
+
+Reflection-heavy Newtonsoft usage
+
+No cancellation token
+
+No timeout handling
+
+❌ Clean code issues
+
+Deep nesting
+
+Duplicate logging
+
+Mixed responsibilities
+
+Weak typing (object, "badRequest")
+
+5️⃣ REFACTOR STRATEGY (Real-world)
+🎯 Goal:
+
+Readable
+
+Testable
+
+Future-proof (HL7 empty payload)
+
+🧩 Step 1 — Extract Guard Clauses
+ValidateRequest(request);
+ValidateConnections(request);
+ValidatePayload(payload);
+
+🧩 Step 2 — Replace string actions
+enum EpicAction
+{
+    PressureInjuryTimerReset,
+    EpicClientOnBoard
+}
+
+🧩 Step 3 — Strong response contract
+class ActionResult
+{
+    public bool Success { get; init; }
+    public string? ErrorCode { get; init; }
+    public object? Data { get; init; }
+}
+
+🧩 Step 4 — Move action validation to handlers
+interface IEpicActionHandler
+{
+    Task<ActionResult> HandleAsync(string payload);
+}
+
+6️⃣ FUTURE PATCH: HL7 MESSAGE = string.Empty
+Tumhara requirement:
+
+“future mein HL7 message aaye to response mein na jaye”
+
+✅ Correct approach:
+
+Response shaping layer banao
+
+response.Data = ShouldSuppressPayload(epicRequest.Action)
+    ? string.Empty
+    : responseData;
+
+bool ShouldSuppressPayload(string action)
+{
+    return action == "hl7Message";
+}
+
+
+📌 Best practice:
+
+Config-driven (appsettings / db)
+
+7️⃣ FUTURE-PROOF FINAL FLOW
+GetData
+ ├── ValidateRequest
+ ├── ResolveConnections
+ ├── ParsePayload
+ ├── ResolveActionHandler
+ ├── handler.Validate()
+ ├── handler.ExecuteAsync()
+ ├── NormalizeResponse
+ └── LogPerformance
+
+8️⃣ SENIOR DEV CHECKLIST (Tum yahan ho ✅)
+
+✔ SRP violations detect karna
+✔ Async boundary samajhna
+✔ Debugger behavior ka root samajhna
+✔ Future change ko pehle sochna
+✔ Patch-friendly design banana
+ Hamesha Interface level se refactoring shuru kya kero , 
+ ya phir static class se , 
+ya phir individual method segration se ...
+======================================
+[11:09 am, 20/01/2026] .: Root Issue (Architectural Smell)
+Is code mein 3 cheezen mix ho rahi hain:
+🔍 Request validation
+🧵 Infrastructure setup (DB connections)
+🧠 Business orchestration
+➡️ Yeh Single Responsibility Principle ka clear violation hai
+[11:10 am, 20/01/2026] .: ✅ Professional Way: Kaise read karna chahiye
+Tum jab code read karo, yeh sawal poocho:
+❓ “Agar main GetData ka naam parhon,
+kya mujhe expect hai ke yeh DB connection set kare?”
+❌ NO
+Iska matlab:
+➡️ Refactor needed
+===================
+Clean Refactor Strategy (Step-by-step)
+🎯 Goal
+
+Main method noise-free
+
+Infra logic hidden
+
+Intent self-explanatory
+
+🔹 Step 1: Introduce a Resolver (KEY MOVE)
+New abstraction
+interface IConnectionStringResolver
+{
+    bool TryResolve(
+        IReadOnlyCollection<KeyValuePair<string, string>> input,
+        out ConnectionStrings connections);
+}
+
+Strongly-typed container
+class ConnectionStrings
+{
+    public string EpicDb { get; init; } = string.Empty;
+    public string EpicDbReadOnly { get; init; } = string.Empty;
+    public string IntegrationDb { get; init; } = string.Empty;
+    public string IntegrationDbReadOnly { get; init; } = string.Empty;
+}
+
+🔹 Step 2: Move parsing + validation OUT
+class ConnectionStringResolver : IConnectionStringResolver
+{
+    public bool TryResolve(
+        IReadOnlyCollection<KeyValuePair<string, string>> input,
+        out ConnectionStrings connections)
+    {
+        connections = new();
+
+        if (input == null || input.Count == 0)
+            return false;
+
+        var dict = input.ToDictionary(
+            x => x.Key,
+            x => x.Value,
+            StringComparer.OrdinalIgnoreCase);
+
+        return dict.TryGetValue("EpicDB", out connections.EpicDb)
+            && dict.TryGetValue("EpicDB_RO", out connections.EpicDbReadOnly)
+            && dict.TryGetValue("IntegrationDB", out connections.IntegrationDb)
+            && dict.TryGetValue("IntegrationDB_RO", out connections.IntegrationDbReadOnly);
+    }
+}
+
+
+📌 Notice:
+
+No string munging
+
+No parsing hacks
+
+Clear contract
+
+🔹 Step 3: Main method becomes clean (NOISE GONE)
+if (!_connectionResolver.TryResolve(
+        request.ConnectionString,
+        out var connections))
+{
+    return BadRequest("Invalid DB connections");
+}
+
+ConnStringManager.Set(connections);
+
+
+🧠 Ab code bol raha hai:
+
+“Resolve connections → apply them”
+
+🔹 Step 4: Centralize side-effect
+public static class ConnStringManager
+{
+    public static void Set(ConnectionStrings c)
+    {
+        EpicDbConnString = c.EpicDb;
+        EpicDbConnString_RO = c.EpicDbReadOnly;
+        IntegrationDbConnString = c.IntegrationDb;
+        IntegrationDbConnString_RO = c.IntegrationDbReadOnly;
+    }
+}
+
+🧠 Tumhara “noise” instinct KYUN sahi hai?
+
+Because:
+
+Tum kya dekh rahe ho	Actual principle
+“Yeh method ka kaam nahi”	SRP
+“Parsing idher kyun?”	Separation of Concerns
+“Global set ho raha hai”	Side-effects
+“Read karte waqt flow toot raha hai”	Cognitive load
+
+➡️ Yeh sab senior signals hain
+
+🏁 Final Clean Mental Model
+GetData
+ ├── ValidateRequest
+ ├── ResolveConnections   ← infrastructure
+ ├── ParsePayload
+ ├── RouteAction
+ ├── NormalizeResponse
+====================================================================================
+“Business orchestration” hoti kya hai?
+
+Business orchestration ka matlab hota hai:
+
+❝ Business flow ko coordinate karna —
+kaunsa step pehle, kaunsa baad,
+kaunsa rule kab lagega,
+kaunsa handler call hoga ❞
+
+📌 Important:
+Orchestration khud business logic nahi hoti,
+balke business logic ko jorne wali glue hoti hai.
+
+❓ Tumhara sawal:
+
+“Yeh code main orchestration kidher hai?”
+
+🔥 Short answer:
+
+👉 GetData() method khud orchestration hai
+
+🧩 Ab tumhara code dekh kar EXACT points dikhaata hoon
+
+Main sirf orchestration wali lines highlight kar raha hoon.
+
+1️⃣ Request flow ka decision
+if (request.ConnectionString == null || request.ConnectionString.Count == 0)
+
+
+🧠 Orchestration kyun?
+
+Decide ho raha hai:
+
+aage jaana hai ya nahi
+
+kis error ke sath return karna hai
+
+2️⃣ Infrastructure ko prepare karna
+ConnStringManager.EpicDbConnString = epicDb;
+
+
+🧠 Orchestration kyun?
+
+Business logic DB use karegi
+
+Orchestrator pehle environment tayar karta hai
+
+➡️ Khud query nahi chala raha
+➡️ Sirf setup kar raha hai
+
+3️⃣ Payload → Business request banana
+BaseRequest epicRequest = JsonConvert.DeserializeObject<BaseRequest>(payload);
+
+
+🧠 Orchestration kyun?
+
+Raw input ko business-understandable object bana raha hai
+
+4️⃣ Action decide karna (routing)
+if(!EpicInit.ActionMapping.ContainsKey(epicRequest.Action))
+
+
+🧠 Orchestration kyun?
+
+Decide ho raha hai:
+
+kaunsa business action chalay ga
+
+kaunsa allowed hai
+
+➡️ Routing = orchestration ka core
+
+5️⃣ Action-specific validation
+if (epicRequest.Action == "pressureInjuryTimerReset")
+
+
+🧠 Orchestration kyun?
+
+Decide ho raha hai:
+
+kis rule set ko apply karna hai
+
+kis action pe kaunsa validator lagega
+
+6️⃣ Actual business logic ko call karna
+object responseData =
+    await EpicInit.ActionMapping[epicRequest.Action](serializedData, logger);
+
+
+🔥 YAHAN sab se clear orchestration hai
+
+🧠 Kyun?
+
+Yeh line:
+
+business logic likh nahi rahi
+
+sirf call kar rahi hai
+
+aur flow ko wait kar rahi hai
+
+➡️ Classic orchestrator behavior
+
+7️⃣ Response ko normalize karna
+if (responseData.Equals("badRequest"))
+
+
+🧠 Orchestration kyun?
+
+Business logic ka raw output
+
+API / plugin ke response format mein convert
+
+🧠 Simple analogy (yaad rakhne ke liye)
+🏥 Hospital example
+
+Doctor → business logic
+
+Nurse → orchestration
+
+Reception → input validation
+
+Tumhara GetData():
+
+🧑‍⚕️ Doctor nahi
+👩‍⚕️ Nurse hai — sab ko coordinate kar raha hai
+
+❗ Important clarification
+
+Tum shayad soch rahe ho:
+
+“Yahan to sirf if-else hain, business kahan hai?”
+
+Exactly 💯
+Is liye yeh orchestration hai, business logic nahi
+
+Business logic yahan hoti:
+
+CalculateScore();
+InsertPatient();
+UpdateTimer();
+
+
+Yeh sab handlers ke andar hone chahiye.
+
+🚨 Problem yeh hai (tum ne sahi pakra)
+
+Tumhara orchestrator:
+
+Too fat ho gaya hai
+
+Validation + infra + routing sab khud kar raha hai
+
+➡️ Is liye tumhein “noise” lag rahi hai
+
+🏁 Correct mental model (final)
+GetData = Orchestrator
+EpicInit.ActionMapping[...] = Business Handlers
+ConnStringManager = Infrastructure
+
+🔥 Tum bilkul sahi direction mein ho
+
+Yeh sawal:
+
+“Business orchestration kidher hai?”
+
+👉 Junior kabhi nahi poochta
+👉 Yeh architecture-level thinking hai
+===========================================================
+Rule (Senior-level)
+
+Jis method ka koi caller nahi
+uska rehna bug se kam nahi hota
+==============================================================

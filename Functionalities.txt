@@ -1,0 +1,955 @@
+================================================================================================
+full funda domain vst alert system , fall deduction / pressure injury system
+=========================================================================================
+start from admsiion in our private  EHR 
+then admission in device ,  // device is motion sensor or kintect device to catch patient movnment.
+device start getting patient data , heart beat , BP , temp , fall risk deductions and pressure injury alert .
+we have background service vst alert which get data from device and sensor and save to our db and other operations.
+-------------integration part ---------------
+clinet said i cannot use your private EHR and i wan to use my own EHR or epic , to admission..
+so we can create mllpservice which get client data / patient information from epic system and send to alert system / alert system device.
+through mllp , puginapi , Plugin Articutre , then epic plugin then web hook , and then data hook , data hook sends that information to alert system / device or sensor.
+-------------------------------------------------------------------------------
+Integarion Flow
+================
+root1 ,EPIC SYSTEM MLLP to PluginAPI - Epic Plugin to Webhook API to Data hook Alert System (end point https://performance-v1-datahooks.vstalert.com/Account/ProcessRequest) 
+please note webhook api goes this Sp and CALL `uspGetEventSubscriptionsDetail`() and find url and secrte key and then send event to alert system
+
+table data
+Id	receivedUrl	subscriptionSecret	eventTypeId	publisher	consumerId
+9	https://performance-v1-datahooks.vstalert.com/Account/ProcessRequest	Nzg3M2M1ODMtNGJlZi00NjAyLThiNGEtNWEwYWY5YjM0Nzdl	30	epic	41fd004a-e95c-4190-b561-d01b911b063a
+
+webhook k diect call bi postman main mil jayi gi data hook ko send kerney ke lye otherwise tester se lein ...
+
+=================
+MLLP to alert system through API endpoint with directpublisher.cs class method PublishAsync to webhook API , (MLLP to Alert System data goes to through Webhook API) format is under below
+{
+  "MsgId": "e5dfdd8b-3d1e-4943-b963-9a8a742bb4e7",
+  "FacilityCode": "365489",
+  "VisitNumber": null,
+  "FallRiskScore": "",
+  "PatientIdentification": {
+    "FirstName": "BLOSSOM",
+    "LastName": "ZZTC",
+    "DateOfBirth": "19991223",
+    "MedicalRecordNumber": "E10087112"
+  },
+  "PatientLocation": {
+    "Room": "E_V01",
+    "Unit": "",
+    "Floor": null
+  },
+  "NurseAssignments": [
+    {
+      "RoleInstanceId": "65",
+      "ActionCode": "AD",
+      "Id": "14718888",
+      "FirstName": "",
+      "LastName": "",
+      "StartTime": "20250509062419-0000",
+      "EndTime": "20250509125919-0000"
+    }
+  ],
+  "EventId": "06a8ccdd-b115-4003-8c98-a740c425db12",
+  "EventName": "ADT_A01_Admission",
+  "MessageControlId": "e5dfdd8b-3d1e-4943-b963-9a8a742bb4e7",
+  "FacilityName": "TestBranch",
+  "PluginId": 0
+}
+
+================
+root 2 , Alert System to Epic Plugin to Epic FlowSheet, its ORU message.
+================
+send API data Alert System to Epic Plugin 
+Epic Plugin convert the data to HL7 ORU messgae Convert it to TCP Stream and send to epic flow sheet , networkclient.cs and method name is SendHl7MessageAsync
+
+{
+    "Action": "pressureInjuryTimerReset",
+    "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+    "Data": {
+        "messageId": "c00f2f89-32f3-4635-9131-85109467f421",
+        "visitNumber": "1234567",
+        "resetEpochTime": 1914280143, 
+        "resetReason": "lowRisedExit",
+        // "facility": "EpicBranch",   
+ 	    "sendingApplication": "VST Notify",
+        "bed": "bed1",
+ 	    "sensorId": "NEPSN1",
+        "Facilitycode": "690777",
+"MedicalRecordNumber": "E10087112"
+    }
+}
+=============================================== 
+point : Jab Nurse Alert Call kerti hai Reset injury ka , tu uska , bed no , room no , patient name , uska id sab khuch alert system le ker humin ek json format main send kerta hai
+or hum uska ORU^R01 bana ker epic flow sheet ko send kertey hain .... through Mirth.....
+======payload example==========
+{
+    "Action": "pressureInjuryTimerReset",
+    "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+    "Data": {
+        "messageId": "c00f2f89-32f3-4635-9131-85109467f900",
+        "visitNumber": "",
+        "resetEpochTime": 1914280143, 
+        "resetReason": "lowRisedExit",
+        // "facility": "EpicBranch",   
+        "sendingApplication": "VST Notify",
+        "bed": "bed1",
+        "sensorId": "NEPNS1",
+        "Facilitycode": "690816",
+         "FirstName": "Zaheer",
+    "LastName": "Khan",
+    "DateOfBirth": "20001130",
+    "PIDInternal": "5832952",
+    "RoomNo":"XYZ"
+   
+
+    }
+}
+==========================================================
+jo data/field hum MLLP ke through send kerein ge for example HL7 message PID , MedicalRecordNumber wohi data hum alert system se wapis le ker epic flow sheet ko send kerty hain ORU Messgae ki shakal main outgoinghl7 , is medical record ko PID segment main lete hai like example or ORU message main daltey hain
+PID|||E10087112^^^^EMPI||MARCHESKE^EVELYN^ANN||19470806
+or nurse ROL segement bi ,jo hum ne MLLP se NurseAssignments main send ki hai 
+ROL|5|AD|Registered Nurse|888131^HARDER^HANNAH^^^^^^^^^^EMP|20250512061354-0000
+hum agar root 1 se send kerein gey to root 2 per receive kerein gey.
+===========================================================
+important point
+this is the epic plugin/epicplugin.cs line no 102 code where devide MLLP message and ORU message with action code with help of dictonery
+
+// place there MLLP and Alert System devide.
+object responseData = await EpicInit.ActionMapping[epicRequest.Action](serializedData, logger);
+
+
+example dictonery 
+
+public static Dictionary<string, Func<string, ILogger, Task<string>>> ActionMapping = new()
+{
+    //for Epic-Alert integrations (both directions)
+    [EpicPluginAction.ForwardEpicAdt] = AdtService.Instance.ForwardEpicAdtAsync,
+    [EpicPluginAction.AdmitPatient] = EpicAdmissionService.Instance.AdmitPatientAsync,
+    [EpicPluginAction.ResetPressureInjuryTimer] = PatientMonitoringService.Instance.ResetPressureInjuryTimerAsync,
+
+
+if MLLP then goto ForwardEpicAdtAsync
+if Alert system goto ResetPressureInjuryTimerAsync , outgoing hl7 message ORU
+=========================================
+D:\Integration-Plugin
+/app/Plugins-Epic // containers main c and d nai hoti us main / slash type path hotey hain
+C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic
+SELECT * from outgoinghl7messages ORDER BY 1 DESC LIMIT 5
+==========================================
+preparation of ORU^R01 message internal successs
+after send successfuly to mirth , external success.
+please check , store procedure of epic plugin external success , Monday work ....
+==========================================
+webhook
+===========================================
+CALL uspGetEventSubscriptionsDetail();
+call vstalertintg_uspGetHl7NotificationSettingDetails(0);
+SELECT * FROM plugin
+https://performance-v1-datahooks.vstalert.com/Account/ProcessRequest
+===========================================
+source client ....table 
+====================================
+
+
+Common error 
+
+==========
+apsettings.json check kero  , apni logging behtar kero
+apsettings.jason main envirnmoment check ker dev , prod , demo etc , connector engine ke case main
+logging dekho 
+debugger lagyo or check kero hit howye hain ke nai , debugger dekho disabled tu nai hain , 
+or kam se kamn time 
+functions per timer lagyo agar wo container main hain , take pata cchaley ke ek method exactly kitna time le raha hai 
+or chains of mathods kitna time le rehe hain.
+============
+apki kamzoryian 
+=================
+code reading mazboot kero , 
+logging mazboot kero 
+debugging mazboot kero 
+planning before code , performance impact kya ho ga etc 
+ksis se poochna nai hai 
+
+or chal gya hai , kasyee chal gya , khuch na khuch tu howa hai , usko investigate kero , kaysee how , debugger and logging ke through 
+and code main bi looging improve kero apney method main.....
+======================
+null object reference ka error , 
+===================================
+ek tu object create nai howa hota , new se new instance bana lein 
+dosra waqai null data aa raha hota hai , 
+ya kisi ne == null kya hota hai 
+-------
+is case main 
+{
+  "Action": "pressureInjuryTimerReset",
+  "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+  "Data": {
+    "messageId": "a2c68681-4013-4019-a208-d2999aa98ddf",
+    "visitNumber": "",
+    "resetEpochTime": 1755775554,
+    "resetReason": "Patient_Position_Changing",
+    "facility": "EPICMllp2",
+    "sendingApplication": "VST Notify",
+    "bed": "5WSL2G",
+    "sensorId": "EpicMllp",
+    "Facilitycode": "300017",
+    "FirstName": null,
+    "LastName": null,
+    "DateOfBirth": null,
+    "MedicalRecordNumber": null,
+    "PIDInternal": null
+  }
+}
+
+khuch null kya howa hai , is lye string null ka error de ga or exception cause kere ga 
+================
+original case main empty string send kerein 
+==================
+{
+  "Action": "pressureInjuryTimerReset",
+  "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+  "Data": {
+    "messageId": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+    "visitNumber": "",
+    "resetEpochTime": 1755775554,
+    "resetReason": "Patient_Position_Changing",
+    "facility": "EPICMllp2",
+    "sendingApplication": "VST Notify",
+    "bed": "5WSL2G",
+    "sensorId": "EpicMllp",
+    "Facilitycode": "300017",
+    "FirstName": "Basit",
+    "LastName": "Ahmed",
+    "DateOfBirth": "null",
+    "MedicalRecordNumber": "",
+    "PIDInternal": ""
+  }
+}
+=========================================================
+or null or empty solution
+=====================================================
+// Extract Patient ID correctly
+//string[] idParts = receivedRequest.PIDInternal.Split('^');
+string[] idParts = Array.Empty<string>();
+
+if (!string.IsNullOrEmpty(receivedRequest.PIDInternal))
+{
+    idParts = receivedRequest.PIDInternal.Split('^');
+}
+
+// Example: Extract Patient ID safely
+string patientId = idParts.Length > 0 ? idParts[0] : string.Empty; // this one is use null or "" as empty string.
+======================================================================
+root no 1 
+===================
+step 1 testing , MLLP Admsiion , From MLLP , send HL7 Message only and admison saved in Alert System
+
+MSH|^~\&|Epic EHR|EPICMLLP2|VST Integration|EPICMLLP2|20250611100404-0000||ADT^A01|abdullah4|P|2.3
+EVN||20250611100404-0000
+PID|||5832952^^^^EMPI||debug^patient2||20001130
+PV1||I|^EPICMLLP2|||^EPICMLLP5
+OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||50||||||F
+ROL|123|LI|LPN|888132^^^^^^^^EPICMllp2^^^^RN|20250608092639-0000|
+======================================================================================this will admit admsion from hl7 message.
+
+for checking in Alert System
+====================
+https://test-notifyconsole.vstalert.com/home
+select unit 2 
+and room number for example EPICMllp2 , right click on it if alert reset alert and then deactivate.
+====================
+root number 2 =============
+================================
+send alert , and reset from alert system , when nurse generate an event for reset or alert to change position of the patient in sensor an ORU message generate in reset event
+and in case of alert bed side change alert send to alert system. through this Postman request.
+===note in hl7 case two timer action can work , alert , reset only when you sent and ORU message will saved into DB and display in epic flowsheet 
+=== note : senser epicmllp2 , ya room number , post man ki API ki header main hota hai , important
+=== api end  point https://test-notify.vstalert.com/event/positionchange
+
+for testing : https://test-notifyconsole.vstalert.com/home
+user EPICNotify2
+pass Vst@12345
+or 
+Epicmllp2
+Vst@12345
+==========================
+{
+  "epoch_time": {{epochTime}},
+  "event_status":"POS_CONFIRMED", // POS_EMPTY | POS_CHANGING | POS_CONFIRMED | POS_REVERT_TO_ORIGINAL
+  "position" : "on_left",
+  "reason":"patient_position_changing", 
+  "timer_action" : "reset", //start, reset, stop, alert
+  "ImageString":"/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCADIAdIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAFPxUt/DfxK+E+mfEi91LTHi8PeHPDHjuC9tp9QnLQ23nSaRJM822TJ+yRywzOfL+dVbD+z+If2dP2f8ASvj3qsmsfD65ng+HXwrj8S/E34ZeAtcn1GFNbguorWfS476T="
+}
+====================================================
+root ORU message work flow, outgoing hl7 message
+====================================================
+1) jab nurse patient ko reposition kerti hai or remote ka button press kerti hai tu ek reposition event call hota hai ek API jo info , jo abdullah postman se manual send kerta hai testing ke lye, automatic call hoti hai  , mtlb sensor id, position event , image etc wo alert system ko jati hai
+
+message 
+===note in hl7 case two timer action can work , alert , reset only when you sent and ORU message will saved into DB and display in epic flowsheet 
+=== note : senser epicmllp2 , ya room number , post man ki API ki header main hota hai , important
+=== api end  point https://test-notify.vstalert.com/event/positionchange
+======
+Post API Call Url :https://test-notify.vstalert.com/event/positionchange
+{
+  "epoch_time": {{epochTime}},
+  "event_status":"POS_CONFIRMED", // POS_EMPTY | POS_CHANGING | POS_CONFIRMED | POS_REVERT_TO_ORIGINAL
+  "position" : "on_left",
+  "reason":"patient_position_changing", 
+  "timer_action" : "reset", //start, reset, stop, alert
+  "ImageString":"/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCADIAdIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAFPxUt/DfxK+E+mfEi91LTHi8PeHPDHjuC9tp9QnLQ23nSaRJM822TJ+yRywzOfL+dVbD+z+If2dP2f8ASvj3qsmsfD65ng+HXwrj8S/E34ZeAtcn1GFNbguorWfS476T="
+}
+
+................
+
+2) alert system phir patient ka id, nurse ka naam , room number bed number sab le ke epic plugin ki API ko send kerta hai or yeah Api Payload banata hai 
+Post API Call Url : https://epicplugin.vstintegration.com/api/plugins/getData , epic ko send kerta hai 
+required connector engine token
+{
+  "Action": "pressureInjuryTimerReset",
+  "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+  "Data": {
+    "messageId": "a2c68681-4013-4019-a208-d2999aa98ddf",
+    "visitNumber": "",
+    "resetEpochTime": 1755775554,
+    "resetReason": "Patient_Position_Changing",
+    "facility": "EPICMllp2",
+    "sendingApplication": "VST Notify",
+    "bed": "5WSL2G",
+    "sensorId": "EpicMllp",
+    "Facilitycode": "300017",
+    "FirstName": null,
+    "LastName": null,
+    "DateOfBirth": null,
+    "MedicalRecordNumber": null,
+    "PIDInternal": null
+  }
+}
+
+......
+3) epic plugin isko process ker ke iska ORU message banta hai , or isko stream main convert ker ke mirth system ko send ker deta hai 
+
+.......
+4) mirth system phir isko epic flow sheet main send ker deta hai 
+.....
+epic flow sheet se hum patient ki re position ki all info le saktey hain
+=======================================================
+HL7 Message PV1 transfer 
+=================================
+MSH|^~\&|Epic EHR|EPICMLLP2|VST Integration|EPICMLLP2|20250611100404-0000||ADT^A02|abdullah4|P|2.3
+EVN||20250611100404-0000
+PID|||5832952^^^^EMPI||debug^patient2||20001130
+PV1||I|^EPICMLLP2|||^EPICMLLP5
+OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||50||||||F
+ROL|123|LI|LPN|888132^^^^^^^^EPICMllp2^^^^RN|20250608092639-0000|
+
+PV1-3.2 = EPICMLLP2  ✅ نیا کمرہ (جہاں مریض کو ٹرانسفر کیا جا رہا ہے) 
+PV1-6.2 = EPICMLLP5  ✅ پرانا کمرہ (جہاں مریض پہلے ایڈمٹ تھا)  
+==========================================================
+mllp demo server
+demo-mllprequestlistener.vstintegration.com /18.116.125.86
+mllp production
+52.43.60.147
+mllp dev
+54.225.208.208
+mllptest 
+54.227.208.238
+============================================
+mirth/remote desktop
+=====================
+demo : 18.118.94.121 --demo logs
+production : 44.230.192.113
+dev/test: 54.225.208.208
+====================================
+one to one configuring step to new client in our system
+====================================
+1) alert system can set business , facility name and room numbers and enable integration button 
+2) db has the facility id , and all the allowed confightion through automatic , on board client access , or manually 
+3) we have generly use theda care profile for our new client failcity (important point)
+4) find room number , facility information from alert portal and check first is there any room which is empty or not admisiion 
+5) create hl7 message Adsmsiion / discharge like before and set it to demo environment , demo has a server so coonect the server first to check logs , MLLP
+6) check mllp logs , epic plugin logs , webhook logs to check the data present.
+7) check from database to check is there any admission in the room , or check end to end portal
+
+8) sample message for new client Franciscan Health Test Branch which is under profile thedacare in database , hl7profifile.jason to restriction fall risk
+score or braden score
+=============success=============================================================================Admisiion=================================
+MSH|^~\&|Epic EHR|Franciscan Health Test Branch|VST Integration|Franciscan Health Test Branch|20251119074153-0000||ADT^A01|Francisecan001test23|P|2.3
+EVN||20251119074153-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^2141|||
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251119074153-0000|20251119141653-0000
+=============success=============================================================================dischrage=================================
+
+MSH|^~\&|Epic EHR|Franciscan Health Test Branch|VST Integration|Franciscan Health Test Branch|20251119074153-0000||ADT^A03|Francisecan001test23_dischrge|P|2.3
+EVN||20251119074153-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^2141|||
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251119074153-0000|20251119141653-0000
+===================================================================================================
+root 4 
+===================================
+go to db , sensors table and fina clint id, clinet scrte and with basic and make key
+
+this key gove to connecot engine key api , and find jwt token , with url , this jwt tkon inject in plugin api with header with ur acton method , in body , it will go to alert system and connect with sensor api , which u have client id and return back languages
+
+source api has facilities and other table u find in that documents
+
+alert system call our intgration actionpoint get langussge , our endpoint go aleet system sensor and get languages , we acting as middle where , alert system gets heavy load if they workike that , keep is on less or low load to do its work for patient semsors montoring , pressure enjry work 
+
+its idea of virusens that a device which check patient fall risk and pressure enjry check ets , and device is xbox 360 kinect device which capture patient .movement
+===================================================================================
+NUC Functionality like PCC(patient records) , VOCERA 
+=====================================================================
+ticket API endpoint creation NUC
+====================================
+@Basit Ahmed , @Sayida Rida Batool , @Madiha Shams  NUC changes flow as per requirement and its sample payload for alert side , integration side response will be shared by @Basit Ahmed which we need to response back to NUC 
+Request 
+
+POST /api/v1/alerts/trigger
+Content-Type: application/json
+Authorization: Bearer <your_api_key>
+
+{
+  "sensor_id": "TEMP_SENSOR_001"
+}
+
+
+Response 
+{
+  "sensor_id": "SENSOR_001",
+  "branch_id": "BRANCH_001",
+  "languages": [
+    {
+      "code": "en",
+      "description": "English"
+    },
+    {
+      "code": "es",
+      "description": "Spanish"
+    },
+    {
+      "code": "fr",
+      "description": "French"
+    }
+  ]
+}
+
+----------------How to think -------------------
+before writing code , we manually test this api 
+to test this api we have connector engine key for this sendor and then send 
+this body , entity   , entity id , apko bata hai apko kis plugin per jana hai 
+{
+    "Action": "ActivateSensorSettings",
+    "Entity": "f620c498-1f31-11ef-8cb6-12d819af0793",
+    "Data": {
+        "sensorId": "intel2"
+    }
+}
+
+first we have to create a postman call to check either this endpoints worked.
+so create api call to generate a connectonetor engine key to check its behavius 
+
+
+sourceclientapi table for plugins
+1) sourceclientdevices table for sensros , // is table se connector engine ki key baani hai , cleintid , client secrte le ke base 64 ki , kisi bi sensor ki 
+2) Basic919aba97-efdb-4ddd-8461-f33fca17d5c9:863cfbae-0f2b-4230-b130-8c46a8a914f9
+3) chatgpt ko do wo key generate kere ga , or plugin urdl de ga , note test dev , production sab ke sourceclientdevices ke client id , secrets ,  aaga lag hain
+4) output post man ki connector engine ki and url is for test is https://test-connectorapi.vstintegration.com/api/ConnectorEngine/initialize
+{
+    "responseCode": 200,
+    "message": "Success",
+    "token": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6IjkxOWFiYTk3LWVmZGItNGRkZC04NDYxLWYzM2ZjYTE3ZDVjOSIsImVudmlyb25tZW50IjoiVGVzdCIsInNjb3BlcyI6Ilt7XCJwbHVnaW5OYW1lXCI6XCJudWNwbHVnaW5cIixcInVybFwiOlwiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzOTMvYXBpL1BsdWdpbnMvZ2V0ZGF0YVwifV0iLCJleHAiOjE3NjU5NTg2NDEsImlzcyI6Imh0dHBzOi8vd3d3LnZpcnR1c2Vuc2UuYWkiLCJhdWQiOiJQbHVnaW5BcGkifQ.xFFA4gb428BnFdx5idDUxtt9F1idLCdHqy2wiVVo0RAF5gw6k_ia7ahcMbd8YEYPTwtY--dWtx_ogMg7GqqJog",
+    "pluginDetails": [
+        {
+            "pluginName": "nucplugin",
+            "pluginUrl": "https://test-vstnucapi.vstintegration.com/api/Plugins/getdata"
+        }
+    ]
+}
+
+=============
+5) ab folder local main bana lo isko dekh ker or plugin ke table main path check ker lo , yeah info is output se mili hai pluginurls details se or yeah path local main add kerna hai
+C:\inetpub\wwwroot\dev-vstnucapi.vstintegration.com\Plugins-NUC\dlls
+SELECT * FROM plugin
+is table main yeah path update ker dein 
+6. ab action method jo bi banan hai is table main add kerwa dein 
+@Aamir Liaqat Please Add Action named  "getSensorLanguages"  in  test environment SP name is uspGetClientAllowedActionDetails  , please verify at your end this is only for reference. Thanks in Advance ,  info to @Basit Ahmed
+for adding action method which you create in NUC plugin CALL `uspGetClientAllowedActionDetails`('237a44c5-7fdd-4877-bb74-2d6c480a686d') // yeah client id hai 
+db add for test Abdullah , add sensor give sourc client id 
+
+SELECT * from sourceclientdevices xlu WHERE xlu.DeviceSerialNumber IN ('Epicmllp4',
+'Epicmllp5')
+
+for check source client id is facility exactly 
+important
+
+SELECT * FROM sourceclient
+SELECT * from sourceclientdevices xlu WHERE xlu.DeviceSerialNumber IN ('Epicmllp4',
+'Epicmllp5')
+
+our case source client id is 13 which is VST-NUC
+
+ab yeah bi add kerwani hai 
+
+SELECT * from sourceapiallowedpluginsandoperation
+operationid is NUCEventService.
+SOURCE cinetid = 13 
+--db commands for all operations
+===============
+SELECT *
+FROM sourceapiallowedpluginsandoperation
+WHERE actionid = 'getSensorLanguages';
+CALL `uspGetClientAllowedActionDetails`('237a44c5-7fdd-4877-bb74-2d6c480a686d')
+
+
+SELECT *
+FROM sourceclientdevices AS SSL
+WHERE SSL.DeviceSerialNumber LIKE 'intel8%';
+
+SELECT * FROM plugin
+
+SELECT * FROM sourceclient
+SELECT * from sourceclientdevices xlu WHERE xlu.DeviceSerialNumber IN ('Epicmllp4',
+'Epicmllp5')
+
+SELECT * from sourceapiallowedpluginsandoperation
+operationid is NUCEventService.
+SOURCE cinetid = 13 
+================
+cheat code for high level
+===============
+SELECT * FROM sourceclient; , NUC , SoutrceClient id = 12 , VST-NUC = 13 
+SELECT * FROM sourceclientdevices WHERE sourceclientid = 13;
+CALL uspGetClientAllowedActionDetails('a870133f-31f1-4d13-b129-6c2df79f5f8d');
+
+inset script 
+===========
+CALL uspGetClientAllowedActionDetails('3ac03434-d68e-4f9f-886d-a3f84d1d0713');
+SET @ApiClientId='7dd243f8-a041-490d-a02a-6a9537c0f389';
+SET @actionId='getSensorLanguages';
+SET @operationId='NUCEventService.';
+SET @CreatedDate=UTC_TIMESTAMP();
+SET @CreatedBy=1;
+
+INSERT INTO sourceapiallowedpluginsandoperation ( SourceApiId, PluginId, ActionId, OperationId, CreatedBy, CreatedDate, SourceClientId)
+
+SELECT  DISTINCT 
+spo.SourceApiId, spo.PluginId, @actionId  ActionId, @operationId OperationId, @CreatedBy CreatedBy, @CreatedDate CreatedDate, spo.SourceClientId
+FROM sourceclientdevicesauth sca
+JOIN sourceapiallowedpluginsandoperation spo ON spo.SourceClientId=sca.SourceClientId  AND spo.isDeleted=0
+JOIN plugin p ON p.pluginId=spo.pluginId AND IFNULL(p.isDeleted,'')=0
+JOIN pluginbusinesses pb ON pb.pluginId= p.pluginID AND IFNULL(pb.isDeleted,'')=0
+JOIN business b ON b.businessId=pb.businessId   AND IFNULL(b.isDeleted,'')=0
+JOIN pluginbusinessfacilites pbf ON pb.pluginBusinessesId=pbf.pluginBusinessesId AND IFNULL(pbf.isDeleted,'')=0
+JOIN businessfacility bf ON bf.businessFacilityId=pbf.businessFacilityId AND IFNULL(bf.isDeleted,'')=0
+JOIN pluginbusinessfacilityurl pbfu ON pbfu.SourceClientId=sca.SourceClientId AND IFNULL(pbfu.isDeleted,'')=0
+AND pbfu.pluginId=pb.pluginId
+AND pbfu.pluginBusinessFacilityId=pbf.pluginBusinessFacilityId
+WHERE sca.ApiClientId=@ApiClientId
+LIMIT 1
+;
+===================================================
+------important--------------------
+7) ab code likhen NUC Plugin main , or update ker dein
+8) plugin api , connector engine local per chalyin , or is url per call send kerin
+https://localhost:7184/api/Plugins/getdata
+body 
+{
+    "Action": "getSensorLanguages",
+    "Entity": "f620c498-1f31-11ef-8cb6-12d819af0793",
+    "Data": {
+        "sensorId": "intel2"
+    }
+}
+----------
+
+
+db table to check action method
+CALL `uspGetClientAllowedActionDetails`('237a44c5-7fdd-4877-bb74-2d6c480a686d')
+
+1) kisi bi jaga jwt ka token issue kerne ke lye client id , client secrte chahye hota hai , wo sensros ke table se mil jata hai sourceclientdevices
+2) ClientID:clientsecret ko le ker ek key banti hai , jo ek jwt token banti hai or plugin ya sensor ka batata hai ke kis sensor ya NUC , Vocera , per jana hai 
+3) phir apko action mehod NUC plugin manin code main and database main define kerna hota hai , is sp main action method delwana parta hai is sp main 
+@Aamir Liaqat Please Add Action named  "getSensorLanguages"  in  test environment SP name is uspGetClientAllowedActionDetails  , please verify at your end this is only for reference. Thanks in Advance ,  info to @Basit Ahmed
+-------------
+4) code ke lye NUC plugin dekh li , getSensorLanguages ka method ho ga udher.
+5) Pehle connector engine ke thorgh token lein , jo key ap ne sensor ki id, or secrte base 64 column laga ker use ki hai , or jwt token + url lein NUC ka 
+6) endpoint main dein or test ker lein post man main nuc ki 
+
+API Docuemt ka link 
+
+https://docs.google.com/document/d/1WeJhZSoy2k8f2r7ZG5RJ7pCBq2mfPgm8zzC9zHac0bs/edit?tab=t.0#heading=h.z6ne0og04bp5
+Insert New epic End Point script---Final , in documents folder for Database
+
+email format:
+Hi @Performance Testing Team 
+Need your go ahead for the demo deployment. Requesting it early as we have to cherry pick the changes which will take extra time to be completed.
+
+@Technevity Database Team 
+Update the NUC script on demo and allow the action method for the following facilities
+Action Method : getSensorLanguages
+SourceClientID , Name
+ 2 NUC,
+13 VST-NUC
+14 NUCTest
+32 NUCAUTH
+@devops@technevity 
+Please deploy the NUC Plugin on the Demo environment.
+========
+Please CREATE NEW ACTION for NUC plugin IN dev ENV  
+actionid = getPressureTimer
+cleintid = 4145458b-b75a-4230-9994-6b1685d172c0 , 
+sensor : epicmllp4
+SP = uspGetClientAllowedActionDetails
+Thanks IN Advance
+=======================
+Regards
+Amir
+---------PRO TIP-----------------------------------------
+sp ke , database tables ke change 3no envirment dev, test , demo per move kerwya kero , ab code merge dety ho please IMP Point hai 
+-----------------end work -----------------------
+====================================
+NUC Functionality Business Domain
+=====================================
+Business flow , 
+bilkul new sensor, behair auth key ke nai chalye ga , wo Pehle call Auth API ko de ga , key generation ke lye , or yeah life time key ho gi
+sensor , alert sensors , and nuc sensors,
+flow , WANTS languages which support , getsensorlanguse call api endpoint
+sensor-authapi - key  - PluginAPI-NUC-ALERTSYSTEM-RSPNSONS-SENSOR 
+============================
+FULL FANDA ALL 
+============================
+NUC / VST Alert System – Business Domain Flow (Urdu)
+🔹 System ka core purpose
+
+Yeh system hospital ke admitted patient ko continuously monitor karta hai taake:
+
+🫀 Heartbeat
+
+🩸 Blood Pressure
+
+🌡 Temperature
+
+🚶 Fall Risk Detection
+
+🛏 Pressure Injury Detection
+
+jaise critical events ko real-time detect karke alert generate kiya ja sake.
+
+🔹 1. Patient Admission Flow (Normal Case – Private EHR)
+Step 1: Admission in Private EHR
+
+Patient hospital mein admit hota hai
+
+Patient ka data EHR mein register hota hai
+(MRN, Bed, Ward, etc.)
+
+Step 2: Admission in Device / Sensor System
+
+Wahi patient sensor/device system mein bhi admit hota hai
+
+Device ho sakta hai:
+
+Motion Sensor
+
+Kinect / Vision Sensor
+
+Wearable Sensor
+
+🔹 2. Sensor / Device Functionality
+
+Device patient ki movement aur vitals track karta hai
+
+Example data:
+
+Heartbeat
+
+BP
+
+Body movement
+
+Fall risk score
+
+Pressure injury risk
+
+📌 Yeh device continuously data produce karta rehta hai
+
+🔹 3. VST Alert Background Service
+
+Ek background service (VST Alert Service) hoti hai
+
+Yeh service:
+
+Device/sensor se data receive karti hai
+
+Data ko database mein save karti hai
+
+Business rules apply karti hai
+
+Example:
+
+Agar fall risk score high ho
+
+Ya patient gir jaye
+
+Ya pressure injury ka risk ho
+
+➡ Alert generate hota hai
+➡ Nurse / system ko notify hota hai
+
+🔹 4. NUC & Sensor Authentication Flow (Very Important)
+❗ New Sensor bina auth key ke kaam nahi karta
+Step 1: Sensor-Auth API Call
+
+Jab bilkul naya sensor system mein add hota hai
+
+Sab se pehle:
+
+Sensor → Auth API call karta hai
+
+Step 2: Key Generation
+
+Auth API:
+
+Sensor ko Authorization Key issue karti hai
+
+Yeh lifetime key hoti hai (expiry nahi)
+
+Step 3: Authorized Communication
+
+Ab sensor:
+
+NUC
+
+Plugin API
+
+Alert System
+se securely communicate kar sakta hai
+
+📌 Bina key → koi call allow nahi hoti
+
+🔹 5. Sensor Language / Capability Check
+
+Sensor ya client system yeh pooch sakta hai:
+
+“Kaunsi languages support hoti hain?”
+
+Is ke liye:
+
+GetSensorLanguages API call hoti hai
+
+Response mein supported languages milti hain
+
+🔹 6. Integration Scenario (Client ka apna EHR ho – Epic / Any EHR)
+
+Client kehta hai:
+
+“Main tumhara private EHR use nahi kar sakta
+Main apna EHR (Epic etc.) use karunga”
+
+Yahan integration flow aata hai 👇
+
+🔹 7. Integration Architecture (Epic / External EHR)
+Step 1: Admission in Client EHR (Epic)
+
+Patient Epic system mein admit hota hai
+
+Step 2: HL7 / MLLP Service
+
+Epic:
+
+HL7 ADT message bhejta hai
+
+MLLP service receive karti hai
+
+📌 Yeh service bridge ka kaam karti hai
+
+Step 3: Plugin API Architecture
+
+MLLP Service →
+
+Plugin API →
+
+Epic Plugin →
+
+Webhook →
+
+Data Hook
+
+Role:
+
+Patient data ko Alert System ke compatible format mein convert karna
+
+Step 4: Data Hook → Alert System / Device
+
+Data Hook:
+
+Admission info
+
+Patient mapping
+
+Bed / Ward info
+Alert System ko bhejta hai
+
+➡ Ab Alert System ko pata hota hai:
+
+Patient kaun hai
+
+Kaunsa sensor laga hai
+
+Kis bed par hai
+
+🔹 8. Resulting End-to-End Flow (Simple Words)
+Client EHR / Epic
+        ↓
+     MLLP Service
+        ↓
+     Plugin API
+        ↓
+   Webhook / Data Hook
+        ↓
+   Alert System
+        ↓
+  Sensor / Device
+        ↓
+  Monitoring + Alerts
+
+🧠 One-Line Business Summary
+
+Yeh system patient admission se le kar real-time monitoring tak ka complete ecosystem hai, jahan sensors securely authenticated hotay hain, patient data EHR se integrate hota hai, aur VST Alert System timely alerts generate karta hai.
+=====================================================
+KINETC SESOR HAI , HAMREY PASS , muje batyo ke kya snsor khucd hi call kerta hai alert system background service ko , yani sensor main apis ke endpoint hotey hai, 
+
+Samajh gaya 👍
+simple, seedhi Urdu mein batata hoon ke Kinect / motion sensor actual mein kaise kaam karta hai, aur kya sensor khud API call karta hai ya nahi.
+
+🔹 Short Answer (Seedha jawab)
+
+❌ Kinect sensor khud direct Alert System ko API call nahi karta
+✅ Sensor ke saath ek service / agent hota hai jo API calls karta hai
+
+🔹 Ab detail mein samjho (business + technical reality)
+🧠 Kinect sensor asal mein kya hota hai?
+
+Kinect sirf ek hardware device hai jo:
+
+Camera frames
+
+Depth data
+
+Motion / skeleton movement
+
+generate karta hai.
+
+👉 Sensor khud smart nahi hota
+👉 Uske andar REST API call karne ki logic nahi hoti
+
+🔹 To phir API calls kaun karta hai?
+✅ Sensor Service / Agent / Controller
+
+Tumhare system mein hamesha yeh hota hai:
+
+[Kinect Sensor]
+      ↓
+[Local Sensor Service / Agent]
+      ↓
+[Alert System / Background Service]
+
+🔹 Sensor Service kya karta hai?
+
+Yeh ek software layer hoti hai jo:
+
+PC / Edge device / NUC machine par chalti hai
+
+Kinect se data read karti hai
+
+Business logic apply karti hai
+
+API calls karti hai
+
+Example kaam:
+
+Fall detect hua?
+
+Patient bed se utra?
+
+Movement abnormal hai?
+
+➡ Is service ke paas APIs ke endpoints hotay hain
+
+🔹 Kya Sensor ke andar endpoints hotay hain?
+
+❌ Pure hardware sensor mein endpoints nahi hotay
+
+✅ Sensor Service ke andar hotay hain, jaise:
+
+/sensor/auth
+
+/sensor/data
+
+/sensor/heartbeat
+
+/sensor/fallrisk
+
+🔹 Real Flow (Tumhare system ke mutabiq)
+1️⃣ Sensor setup hota hai
+
+Kinect device install hota hai
+
+Sensor Service start hoti hai
+
+2️⃣ Authentication hoti hai
+
+Sensor Service → Auth API call
+
+Auth key generate hoti hai (lifetime key)
+
+📌 Yeh kaam sensor service karti hai, hardware nahi
+
+3️⃣ Data flow start hota hai
+
+Sensor Service:
+
+Kinect se movement read karti hai
+
+Fall / pressure injury detect karti hai
+
+Alert System ke APIs call karti hai
+
+4️⃣ Alert System background service
+
+Data receive karti hai
+
+DB mein save karti hai
+
+Alert rules apply karti hai
+
+Nurse / system ko alert karti hai
+
+🔹 Client ko simple words mein kaise samjhao?
+
+“Kinect sensor sirf movement data capture karta hai.
+Actual communication aur API calls ek local sensor service karti hai jo sensor aur alert system ke darmiyan bridge ka kaam karti hai.”
+
+🔹 Interview / Documentation one-liner
+
+The Kinect device does not directly call APIs. A local sensor service processes Kinect data and communicates securely with the alert system through authenticated APIs.
+
+🔹 Agar sensor direct API call karta to kya issues hotay?
+
+❌ Security weak hoti
+❌ Error handling mushkil hoti
+❌ Updates / config change mushkil hota
+❌ HL7 / EHR integration impossible hoti
+
+Isi liye industry mein hamesha service layer hoti hai
+
+🔹 Final Summary (1 line)
+
+Kinect sensor data deta hai, sensor service decision leti hai, aur wahi alert system ko API call karti hai.
+============================================================================

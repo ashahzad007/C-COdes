@@ -1,0 +1,288 @@
+Clinical Conventions (commonly used ranges)
+Morse Fall Risk Score
+Theoretical scoring range: 0–125 (since each question contributes points up to 125 max).
+Risk levels are usually interpreted as:
+0–24 = Low risk
+25–44 = Moderate risk
+45+ = High risk
+=============================
+Braden Scale Score
+Theoretical scoring range: 6–23 (six subscales rated 1–4, sum = 6–23).
+Risk levels are usually interpreted as:
+19–23 = No risk
+15–18 = Mild risk
+13–14 = Moderate risk
+10–12 = High risk
+≤9 = Very high risk
+===========================
+MSH|^~\&|Epic EHR|DevBranch|VST Integration|DevBranch|20251009131052-0000||ADT^A08|ca167645-0da1-4bda-a5c0-02a63bdb4ac8|P|2.3
+EVN||20251009131052-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^E_V01
+OBX|1|NM|30400114538^Braden Scale Score^TCVIRTUSENSE||13||||||F
+OBX|2|NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||15||||||F
+ROL|1|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251009131052-0000|20251009194552-0000
+ROL|2|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251009131052-0000|20251009194552-0000
+
+
+
+=
+"AllowedNurseROL": "Registered Nurse,Certified Nursing Assistant,Licensed Practical Nurse,RN,CNA,LPN,Nurse Assist,Charge Nurse",
+=======
+==============
+{
+  "MsgId": "189ab0e7-668c-4672-89ca-e769d05a1cf3",
+  "FacilityCode": "365489",
+  "VisitNumber": "",
+  "FallRiskScore": "",
+  "PatientIdentification": {
+    "FirstName": "Hermione",
+    "LastName": "Granger",
+    "DateOfBirth": "20001130",
+    "MedicalRecordNumber": "",
+    "PIDInternal": ""
+  },
+  "PatientLocation": {
+    "Room": "E_V01",
+    "Unit": "",
+    "Floor": ""
+  },
+  "NurseAssignments": [
+    {
+      "RoleInstanceId": "65",
+      "ActionCode": "AD",
+      "Id": "14718888",
+      "FirstName": "",
+      "LastName": "",
+      "StartTime": "20251009174714-0000",
+      "EndTime": "20251010002214-0000",
+      "RolName": "AD"
+    }
+  ],
+  "EventId": "ee87947e-934d-4f08-b9c9-95af1b1d6dbd",
+  "EventName": "ADT_A01_Admission",
+  "MessageControlId": "189ab0e7-668c-4672-89ca-e769d05a1cf3",
+  "FacilityName": "TestBranch",
+  "PluginId": 0
+}
+======================================================
+parser 23
+CreateJsonFromHl7Msg
+ConvertADT_A08
+
+=============final payload===================
+{
+  "MsgId": "611d561b--4a4c-8550db9",
+  "FacilityCode": "690771",
+  "VisitNumber": "",
+  "FallRiskScore": "low risk",
+  "BradenScore": "13",
+  "PatientIdentification": {
+    "FirstName": "Hermione",
+    "LastName": "Granger",
+    "DateOfBirth": "20001130",
+    "MedicalRecordNumber": "5832952",
+    "PIDInternal": "5832952"
+  },
+  "PatientLocation": {
+    "Room": "intel1",
+    "Unit": "",
+    "Floor": ""
+  },
+  "NurseAssignments": [
+    {
+      "RoleInstanceId": "65",
+      "ActionCode": "AD",
+      "Id": "8929",
+      "FirstName": "",
+      "LastName": "",
+      "StartTime": "20251010054442-0000",
+      "EndTime": "20251010121942-0000",
+      "RolName": "AD"
+    }
+  ],
+  "EventId": "82f7dd68-7882-4dc3-a907-7f60d8dd6fd9",
+  "EventName": "ADT_A08_Update",
+  "MessageControlId": "611d561b--4a4c-8550db9",
+  "FacilityName": "Intel_fall_Vital_Br",
+  "PluginId": 0
+}
+====================
+{
+  "hl7Profiles": [
+    {
+      "ProfileName": "default profile",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "3040010320",
+        "Text": "Morse Fall Risk Score",
+        "NameOfCodingSystem": "TCVIRTUSENSE"
+      },
+      "ObservationValue": {
+        "LowerBound": 0,
+        "UpperBound": 125
+      },
+      "ValueType": "NM",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "EMPI"
+        }
+      }
+    },
+    {
+      "ProfileName": "thedaCare",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "3040010320",
+        "Text": "Morse Fall Risk Score",
+        "NameOfCodingSystem": "TCVIRTUSENSE"
+      },
+      "ObservationValue": {
+        "LowerBound": 0,
+        "UpperBound": 125
+      },
+      "ValueType": "NM",
+      "AllowedNurseROL": "Registered Nurse,Certified Nursing Assistant,Licensed Practical Nurse,RN,CNA,LPN,Nurse Assist,Charge Nurse",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "EMPI"
+        }
+      }
+    },
+    {
+      "ProfileName": "thedaCare Braden",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "30400114538",
+        "Text": "Braden Scale Score",
+        "NameOfCodingSystem": "TCVIRTUSENSE"
+      },
+      "ObservationValue": {
+        "LowerBound": 0,
+        "UpperBound": 23
+      },
+      "ValueType": "NM"
+    },
+    {
+      "ProfileName": "virtusense profile",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "59461-4",
+        "Text": "Fall Risk Level",
+        "NameOfCodingSystem": "LN"
+      },
+      "ObservationValue": {
+        "StringValues": [ "low risk", "moderate risk", "high risk" ]
+      },
+      "ValueType": "ST",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "MR"
+        }
+      }
+    },
+    {
+      "ProfileName": "testing profile",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "3040010320",
+        "Text": "Morse Fall Risk Score",
+        "NameOfCodingSystem": "TCVIRTUSENSE"
+      },
+      "ObservationValue": {
+        "LowerBound": 0,
+        "UpperBound": 125
+      },
+      "ValueType": "NM",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "MR"
+        }
+      }
+    }
+  ]
+}
+========================old===============
+{
+  "hl7Profiles": [
+    {
+      "ProfileName": "default profile",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "3040010320",
+        "Text": "Morse Fall Risk Score",
+        "NameOfCodingSystem": "TCVIRTUSENSE"
+      },
+      "ObservationValue": {
+        "LowerBound": 0,
+        "UpperBound": 125
+      },
+      "ValueType": "NM",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "EMPI"
+        }
+      }
+    },
+    {
+      "ProfileName": "thedaCare",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "3040010320",
+        "Text": "Morse Fall Risk Score",
+        "NameOfCodingSystem": "TCVIRTUSENSE"
+      },
+      "ObservationValue": {
+        "LowerBound": 0,
+        "UpperBound": 125
+      },
+      "ValueType": "NM",
+      "AllowedNurseROL": "Registered Nurse,Certified Nursing Assistant,Licensed Practical Nurse,RN,CNA,LPN,Nurse Assist,Charge Nurse",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "EMPI"
+        }
+      }
+    },
+    {
+      "ProfileName": "virtusense profile",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "59461-4",
+        "Text": "Fall Risk Level",
+        "NameOfCodingSystem": "LN"
+      },
+      "ObservationValue": {
+        "StringValues": [ "low risk", "moderate risk", "high risk" ]
+      },
+      "ValueType": "ST",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "MR"
+        }
+      }
+    },
+    {
+      "ProfileName": "testing profile",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "3040010320",
+        "Text": "Morse Fall Risk Score",
+        "NameOfCodingSystem": "TCVIRTUSENSE"
+      },
+      "ObservationValue": {
+        "LowerBound": 0,
+        "UpperBound": 125
+      },
+      "ValueType": "NM",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "MR"
+        }
+      }
+    }
+  ]
+}
+================================
+new
+===============

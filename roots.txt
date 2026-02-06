@@ -1,0 +1,393 @@
+root1 ,EPIC SYSTEM MLLP to PluginAPI - Epic Plugin to Webhook API to Data hook Alert System (end point https://performance-v1-datahooks.vstalert.com/Account/ProcessRequest) 
+please note webhook api goes this Sp and CALL `uspGetEventSubscriptionsDetail`() and find url and secrte key and then send event to alert system
+
+table data
+Id	receivedUrl	subscriptionSecret	eventTypeId	publisher	consumerId
+9	https://performance-v1-datahooks.vstalert.com/Account/ProcessRequest	Nzg3M2M1ODMtNGJlZi00NjAyLThiNGEtNWEwYWY5YjM0Nzdl	30	epic	41fd004a-e95c-4190-b561-d01b911b063a
+
+webhook k diect call bi postman main mil jayi gi data hook ko send kerney ke lye otherwise tester se lein ...
+
+=================
+MLLP to alert system through API endpoint with directpublisher.cs class method PublishAsync to webhook API , (MLLP to Alert System data goes to through Webhook API) format is under below
+{
+  "MsgId": "e5dfdd8b-3d1e-4943-b963-9a8a742bb4e7",
+  "FacilityCode": "365489",
+  "VisitNumber": null,
+  "FallRiskScore": "",
+  "PatientIdentification": {
+    "FirstName": "BLOSSOM",
+    "LastName": "ZZTC",
+    "DateOfBirth": "19991223",
+    "MedicalRecordNumber": "E10087112"
+  },
+  "PatientLocation": {
+    "Room": "E_V01",
+    "Unit": "",
+    "Floor": null
+  },
+  "NurseAssignments": [
+    {
+      "RoleInstanceId": "65",
+      "ActionCode": "AD",
+      "Id": "14718888",
+      "FirstName": "",
+      "LastName": "",
+      "StartTime": "20250509062419-0000",
+      "EndTime": "20250509125919-0000"
+    }
+  ],
+  "EventId": "06a8ccdd-b115-4003-8c98-a740c425db12",
+  "EventName": "ADT_A01_Admission",
+  "MessageControlId": "e5dfdd8b-3d1e-4943-b963-9a8a742bb4e7",
+  "FacilityName": "TestBranch",
+  "PluginId": 0
+}
+
+================
+root 2, Sensor(NUC old ya new) / Alert System / PluginAPi / Epic Plugin to Epic FlowSheet direct client machine ke ip per jis per epic software install hai, 
+its ORU message.
+hum ne mirth sirf , mllp2, ya test branch apney lye lagya howa hai ke hum ACK dekhin saky , ke msg recive ho rah hai ke nai
+example
+ThedaCare Regional Center Appleton	2.3	206.209.122.7	13001 // epic machine ka IP
+EPICMllp2	2.3	18.118.79.17	81 // humara confiuged MIRTH
+================================
+send API data Alert System to Epic Plugin 
+Epic Plugin convert the data to HL7 ORU messgae Convert it to TCP Stream and send to epic flow sheet , networkclient.cs and method name is SendHl7MessageAsync
+
+{
+    "Action": "pressureInjuryTimerReset",
+    "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+    "Data": {
+        "messageId": "c00f2f89-32f3-4635-9131-85109467f421",
+        "visitNumber": "1234567",
+        "resetEpochTime": 1914280143, 
+        "resetReason": "lowRisedExit",
+        // "facility": "EpicBranch",   
+ 	    "sendingApplication": "VST Notify",
+        "bed": "bed1",
+ 	    "sensorId": "NEPSN1",
+        "Facilitycode": "690777",
+"MedicalRecordNumber": "E10087112"
+    }
+}
+=============================================== 
+point : Jab Nurse Alert Call kerti hai Reset injury ka , tu uska , bed no , room no , patient name , uska id sab khuch alert system le ker humin ek json format main send kerta hai
+or hum uska ORU^R01 bana ker epic flow sheet ko send kertey hain .... through Mirth.....
+======payload example==========
+{
+    "Action": "pressureInjuryTimerReset",
+    "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+    "Data": {
+        "messageId": "c00f2f89-32f3-4635-9131-85109467f900",
+        "visitNumber": "",
+        "resetEpochTime": 1914280143, 
+        "resetReason": "lowRisedExit",
+        // "facility": "EpicBranch",   
+        "sendingApplication": "VST Notify",
+        "bed": "bed1",
+        "sensorId": "NEPNS1",
+        "Facilitycode": "690816",
+         "FirstName": "Zaheer",
+    "LastName": "Khan",
+    "DateOfBirth": "20001130",
+    "PIDInternal": "5832952",
+    "RoomNo":"XYZ"
+   
+
+    }
+}
+==========================================================
+jo data/field hum MLLP ke through send kerein ge for example HL7 message PID , MedicalRecordNumber wohi data hum alert system se wapis le ker epic flow sheet ko send kerty hain ORU Messgae ki shakal main outgoinghl7 , is medical record ko PID segment main lete hai like example or ORU message main daltey hain
+PID|||E10087112^^^^EMPI||MARCHESKE^EVELYN^ANN||19470806
+or nurse ROL segement bi ,jo hum ne MLLP se NurseAssignments main send ki hai 
+ROL|5|AD|Registered Nurse|888131^HARDER^HANNAH^^^^^^^^^^EMP|20250512061354-0000
+hum agar root 1 se send kerein gey to root 2 per receive kerein gey.
+===========================================================
+important point
+this is the epic plugin/epicplugin.cs line no 102 code where devide MLLP message and ORU message with action code with help of dictonery
+
+// place there MLLP and Alert System devide.
+object responseData = await EpicInit.ActionMapping[epicRequest.Action](serializedData, logger);
+
+
+example dictonery 
+
+public static Dictionary<string, Func<string, ILogger, Task<string>>> ActionMapping = new()
+{
+    //for Epic-Alert integrations (both directions)
+    [EpicPluginAction.ForwardEpicAdt] = AdtService.Instance.ForwardEpicAdtAsync,
+    [EpicPluginAction.AdmitPatient] = EpicAdmissionService.Instance.AdmitPatientAsync,
+    [EpicPluginAction.ResetPressureInjuryTimer] = PatientMonitoringService.Instance.ResetPressureInjuryTimerAsync,
+
+
+if MLLP then goto ForwardEpicAdtAsync
+if Alert system goto ResetPressureInjuryTimerAsync , outgoing hl7 message ORU
+=========================================
+D:\Integration-Plugin
+/app/Plugins-Epic // containers main c and d nai hoti us main / slash type path hotey hain
+C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic
+SELECT * from outgoinghl7messages ORDER BY 1 DESC LIMIT 5
+==========================================
+preparation of ORU^R01 message internal successs
+after send successfuly to mirth , external success.
+please check , store procedure of epic plugin external success , Monday work ....
+==========================================
+webhook
+===========================================
+CALL uspGetEventSubscriptionsDetail();
+call vstalertintg_uspGetHl7NotificationSettingDetails(0);
+SELECT * FROM plugin
+https://performance-v1-datahooks.vstalert.com/Account/ProcessRequest
+===========================================
+source client ....table 
+====================================
+Common error 
+==========
+apsettings.json check kero  , apni logging behtar kero
+apsettings.jason main envirnmoment check ker dev , prod , demo etc , connector engine ke case main
+logging dekho 
+debugger lagyo or check kero hit howye hain ke nai , debugger dekho disabled tu nai hain , 
+or kam se kamn time 
+functions per timer lagyo agar wo container main hain , take pata cchaley ke ek method exactly kitna time le raha hai 
+or chains of mathods kitna time le rehe hain.
+============
+apki kamzoryian 
+=================
+code reading mazboot kero , 
+logging mazboot kero 
+debugging mazboot kero 
+planning before code , performance impact kya ho ga etc 
+ksis se poochna nai hai 
+
+or chal gya hai , kasyee chal gya , khuch na khuch tu howa hai , usko investigate kero , kaysee how , debugger and logging ke through 
+and code main bi looging improve kero apney method main.....
+======================
+null object reference ka error , 
+===================================
+ek tu object create nai howa hota , new se new instance bana lein 
+dosra waqai null data aa raha hota hai , 
+ya kisi ne == null kya hota hai 
+-------
+is case main 
+{
+  "Action": "pressureInjuryTimerReset",
+  "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+  "Data": {
+    "messageId": "a2c68681-4013-4019-a208-d2999aa98ddf",
+    "visitNumber": "",
+    "resetEpochTime": 1755775554,
+    "resetReason": "Patient_Position_Changing",
+    "facility": "EPICMllp2",
+    "sendingApplication": "VST Notify",
+    "bed": "5WSL2G",
+    "sensorId": "EpicMllp",
+    "Facilitycode": "300017",
+    "FirstName": null,
+    "LastName": null,
+    "DateOfBirth": null,
+    "MedicalRecordNumber": null,
+    "PIDInternal": null
+  }
+}
+
+khuch null kya howa hai , is lye string null ka error de ga or exception cause kere ga 
+================
+original case main empty string send kerein 
+==================
+{
+  "Action": "pressureInjuryTimerReset",
+  "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+  "Data": {
+    "messageId": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+    "visitNumber": "",
+    "resetEpochTime": 1755775554,
+    "resetReason": "Patient_Position_Changing",
+    "facility": "EPICMllp2",
+    "sendingApplication": "VST Notify",
+    "bed": "5WSL2G",
+    "sensorId": "EpicMllp",
+    "Facilitycode": "300017",
+    "FirstName": "Basit",
+    "LastName": "Ahmed",
+    "DateOfBirth": "null",
+    "MedicalRecordNumber": "",
+    "PIDInternal": ""
+  }
+}
+=========================================================
+or null or empty solution
+=====================================================
+// Extract Patient ID correctly
+//string[] idParts = receivedRequest.PIDInternal.Split('^');
+string[] idParts = Array.Empty<string>();
+
+if (!string.IsNullOrEmpty(receivedRequest.PIDInternal))
+{
+    idParts = receivedRequest.PIDInternal.Split('^');
+}
+
+// Example: Extract Patient ID safely
+string patientId = idParts.Length > 0 ? idParts[0] : string.Empty; // this one is use null or "" as empty string.
+======================================================================
+root no 1 
+===================
+step 1 testing , MLLP Admsiion , From MLLP , send HL7 Message only and admison saved in Alert System
+
+MSH|^~\&|Epic EHR|EPICMLLP2|VST Integration|EPICMLLP2|20250611100404-0000||ADT^A01|abdullah4|P|2.3
+EVN||20250611100404-0000
+PID|||5832952^^^^EMPI||debug^patient2||20001130
+PV1||I|^EPICMLLP2|||^EPICMLLP5
+OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||50||||||F
+ROL|123|LI|LPN|888132^^^^^^^^EPICMllp2^^^^RN|20250608092639-0000|
+======================================================================================this will admit admsion from hl7 message.
+for checking in Alert System
+====================
+https://test-notifyconsole.vstalert.com/home
+select unit 2 
+and room number for example EPICMllp2 , right click on it if alert reset alert and then deactivate.
+====================
+root number 2 =============
+================================
+send alert , and reset from alert system , when nurse generate an event for reset or alert to change position of the patient in sensor an ORU message generate in reset event
+and in case of alert bed side change alert send to alert system. through this Postman request.
+===note in hl7 case two timer action can work , alert , reset only when you sent and ORU message will saved into DB and display in epic flowsheet 
+=== note : senser epicmllp2 , ya room number , post man ki API ki header main hota hai , important
+=== api end  point https://test-notify.vstalert.com/event/positionchange
+
+for testing : https://test-notifyconsole.vstalert.com/home
+user EPICNotify2
+pass Vst@12345
+or 
+Epicmllp2
+Vst@12345
+==========================
+{
+  "epoch_time": {{epochTime}},
+  "event_status":"POS_CONFIRMED", // POS_EMPTY | POS_CHANGING | POS_CONFIRMED | POS_REVERT_TO_ORIGINAL
+  "position" : "on_left",
+  "reason":"patient_position_changing", 
+  "timer_action" : "reset", //start, reset, stop, alert
+  "ImageString":"/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCADIAdIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAFPxUt/DfxK+E+mfEi91LTHi8PeHPDHjuC9tp9QnLQ23nSaRJM822TJ+yRywzOfL+dVbD+z+If2dP2f8ASvj3qsmsfD65ng+HXwrj8S/E34ZeAtcn1GFNbguorWfS476T="
+}
+====================================================
+root ORU message work flow, outgoing hl7 message
+====================================================
+1) jab nurse patient ko reposition kerti hai or remote ka button press kerti hai tu ek reposition event call hota hai ek API jo info , jo abdullah postman se manual send kerta hai testing ke lye, automatic call hoti hai  , mtlb sensor id, position event , image etc wo alert system ko jati hai
+
+message 
+===note in hl7 case two timer action can work , alert , reset only when you sent and ORU message will saved into DB and display in epic flowsheet 
+=== note : senser epicmllp2 , ya room number , post man ki API ki header main hota hai , important
+=== api end  point https://test-notify.vstalert.com/event/positionchange
+======
+Post API Call Url :https://test-notify.vstalert.com/event/positionchange
+{
+  "epoch_time": {{epochTime}},
+  "event_status":"POS_CONFIRMED", // POS_EMPTY | POS_CHANGING | POS_CONFIRMED | POS_REVERT_TO_ORIGINAL
+  "position" : "on_left",
+  "reason":"patient_position_changing", 
+  "timer_action" : "reset", //start, reset, stop, alert
+  "ImageString":"/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCADIAdIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAFPxUt/DfxK+E+mfEi91LTHi8PeHPDHjuC9tp9QnLQ23nSaRJM822TJ+yRywzOfL+dVbD+z+If2dP2f8ASvj3qsmsfD65ng+HXwrj8S/E34ZeAtcn1GFNbguorWfS476T="
+}
+
+................
+
+2) alert system phir patient ka id, nurse ka naam , room number bed number sab le ke epic plugin ki API ko send kerta hai or yeah Api Payload banata hai 
+Post API Call Url : https://epicplugin.vstintegration.com/api/plugins/getData , epic ko send kerta hai 
+required connector engine token
+{
+  "Action": "pressureInjuryTimerReset",
+  "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+  "Data": {
+    "messageId": "a2c68681-4013-4019-a208-d2999aa98ddf",
+    "visitNumber": "",
+    "resetEpochTime": 1755775554,
+    "resetReason": "Patient_Position_Changing",
+    "facility": "EPICMllp2",
+    "sendingApplication": "VST Notify",
+    "bed": "5WSL2G",
+    "sensorId": "EpicMllp",
+    "Facilitycode": "300017",
+    "FirstName": null,
+    "LastName": null,
+    "DateOfBirth": null,
+    "MedicalRecordNumber": null,
+    "PIDInternal": null
+  }
+}
+
+......
+3) epic plugin isko process ker ke iska ORU message banta hai , or isko stream main convert ker ke mirth system ko send ker deta hai 
+
+.......
+4) mirth system phir isko epic flow sheet main send ker deta hai 
+.....
+epic flow sheet se hum patient ki re position ki all info le saktey hain
+=======================================================
+HL7 Message PV1 transfer 
+=================================
+MSH|^~\&|Epic EHR|EPICMLLP2|VST Integration|EPICMLLP2|20250611100404-0000||ADT^A02|abdullah4|P|2.3
+EVN||20250611100404-0000
+PID|||5832952^^^^EMPI||debug^patient2||20001130
+PV1||I|^EPICMLLP2|||^EPICMLLP5
+OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||50||||||F
+ROL|123|LI|LPN|888132^^^^^^^^EPICMllp2^^^^RN|20250608092639-0000|
+
+PV1-3.2 = EPICMLLP2  ✅ نیا کمرہ (جہاں مریض کو ٹرانسفر کیا جا رہا ہے) 
+PV1-6.2 = EPICMLLP5  ✅ پرانا کمرہ (جہاں مریض پہلے ایڈمٹ تھا)  
+==========================================================
+mllp demo server
+demo-mllprequestlistener.vstintegration.com /18.116.125.86
+mllp production
+52.43.60.147
+mllp dev
+54.225.208.208
+mllptest 
+54.227.208.238
+============================================
+mirth/remote desktop
+=====================
+demo : 18.118.94.121 --demo logs
+production : 44.230.192.113
+dev/test: 54.225.208.208
+====================================
+one to one configuring step to new client in our system
+====================================
+1) alert system can set business , facility name and room numbers and enable integration button 
+2) db has the facility id , and all the allowed confightion through automatic , on board client access , or manually 
+3) we have generly use theda care profile for our new client failcity (important point)
+4) find room number , facility information from alert portal and check first is there any room which is empty or not admisiion 
+5) create hl7 message Adsmsiion / discharge like before and set it to demo environment , demo has a server so coonect the server first to check logs , MLLP
+6) check mllp logs , epic plugin logs , webhook logs to check the data present.
+7) check from database to check is there any admission in the room , or check end to end portal
+
+8) sample message for new client Franciscan Health Test Branch which is under profile thedacare in database , hl7profifile.jason to restriction fall risk
+score or braden score
+=============success=============================================================================Admisiion=================================
+MSH|^~\&|Epic EHR|Franciscan Health Test Branch|VST Integration|Franciscan Health Test Branch|20251119074153-0000||ADT^A01|Francisecan001test23|P|2.3
+EVN||20251119074153-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^2141|||
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251119074153-0000|20251119141653-0000
+=============success=============================================================================dischrage=================================
+
+MSH|^~\&|Epic EHR|Franciscan Health Test Branch|VST Integration|Franciscan Health Test Branch|20251119074153-0000||ADT^A03|Francisecan001test23_dischrge|P|2.3
+EVN||20251119074153-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^2141|||
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20251119074153-0000|20251119141653-0000
+==========================================================================================
+root 4 NUC Plugin for languge request English EN-US
+Sensor/AuthAPI/AlertSystem/Connetor Engine/PluginAPI/NUC-PLGIN/AlertSystem/Response / Return Languages.
+===================================
+go to db , sensors table and fina clint id, clinet scrte and with basic and make key
+
+this key gove to connecot engine key api , and find jwt token , with url , this jwt tkon inject in plugin api with header with ur acton method , in body , it will go to alert system and connect with sensor api , which u have client id and return back languages
+
+source api has facilities and other table u find in that documents
+
+alert system call our intgration actionpoint get langussge , our endpoint go aleet system sensor and get languages , we acting as middle where , alert system gets heavy load if they workike that , keep is on less or low load to do its work for patient semsors montoring , pressure enjry work 
+
+its idea of virusens that a device which check patient fall risk and pressure enjry check ets , and device is xbox 360 kinect device which capture patient .movement
+===================================================================================

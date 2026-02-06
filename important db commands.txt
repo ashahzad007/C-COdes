@@ -1,0 +1,132 @@
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0);
+
+
+SELECT * FROM vstalert_externalbranchmapping;
+SELECT * FROM vstalert_businessbranches bb WHERE bb.Id=335;
+SELECT * FROM vstalert_externalbranchbedsmapping m WHERE m.ExternalBranchMappingId=4;
+
+SELECT * FROM vstalert_externalclients;
+
+
+SELECT * FROM hl7profilelookup;
+SELECT * FROM vstalertintg_hl7messagetype;
+SELECT * FROM sourceclient;
+SELECT * FROM vstalertintg_hl7notificationsettings;
+
+
+SELECT * FROM receivedhl7 a  ORDER BY 1 DESC LIMIT 10;
+
+======================
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 10;
+SELECT * FROM  receivedhl7 ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 40
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 10
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC 
+LIMIT 20;
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 100
+
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM outgoinghl7messages
+
+EXPLAIN inboundmessagestatus
+SELECT * FROM PLUGIN
+
+CALL uspInsertUpdateExternalMessageStatus(
+    'inbound', 
+    '21fda808-dbd0-458a-a339-c1a3aa67c89a118',
+    '0',             -- pIsJunk
+    'TestBranch',    -- pFacilityName
+    '1',             -- pIsSuccessfulExternally
+    'failhogyahai'   -- pExternalFailureReason
+);
+================================================
+SELECT * from receivedhl7 ORDER BY 1 DESC LIMIT 500
+
+SELECT * FROM plugin
+
+
+SELECT * 
+FROM receivedhl7 
+ORDER BY CreatedDate DESC 
+LIMIT 10;
+
+
+
+SELECT * FROM receivedhl7 WHERE messagecontrolid='K3'
+
+SELECT DISTINCT Id, MessageControlId, FacilityName, CreatedDate
+FROM receivedhl7
+WHERE DATE(CreatedDate) >= '2025-08-01';
+
+SELECT * FROM receivedhl7
+CALL uspGetMessageControlIdsFromDate('2025-08-01');
+
+CALL uspGetMessageControlIdsFromDate('2024-01-01');
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM  receivedhl7 ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 40
+SELECT * FROM outgoinghl7messages
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC 
+LIMIT 20;
+SELECT * FROM outboundmessagestatus
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 ORDER BY 1 limit 10 
+ORDER BY createddate DESC receivedhl7
+LIMIT 5;
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 10
+
+
+call uspGetClientAllowedActionDetails ('25c574d0-1025-4819-901b-8baf010855f2')
+==============================
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM  receivedhl7 ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 40
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 10
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC 
+LIMIT 20;
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 100
+
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM outgoinghl7messages
+
+
+
+EXPLAIN inboundmessagestatus
+========================
+professional way of doing database
+===================================
+DROP TEMPORARY TABLE if exists tblreceivedhl7 ;
+CREATE TEMPORARY TABLE tblreceivedhl7 ENGINE = MYISAM 
+SELECT * FROM receivedhl7 h 
+WHERE h.FacilityName='ThedaCare Waupaca'
+AND DATE(h.CreatedDate)='2025-12-01'
+
+
+
+WHERE RawHL7Payload LIKE '%^113%OBX%'
+ORDER BY 1 DESC
+=================================================

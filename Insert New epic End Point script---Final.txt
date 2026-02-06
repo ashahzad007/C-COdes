@@ -1,0 +1,34 @@
+
+SELECT * FROM sourceapiallowedpluginsandoperation
+ORDER BY 1 DESC LIMIT 5
+
+CALL uspGetClientAllowedActionDetails('3ac03434-d68e-4f9f-886d-a3f84d1d0713');
+
+SELECT * FROM sourceclientdevicesauth st 
+WHERE st.SourceClientId=13
+
+
+
+SET @ApiClientId='7dd243f8-a041-490d-a02a-6a9537c0f389';
+SET @actionId='getSensorLanguages';
+SET @operationId='NUCEventService.';
+SET @CreatedDate=UTC_TIMESTAMP();
+SET @CreatedBy=1;
+
+INSERT INTO sourceapiallowedpluginsandoperation ( `SourceApiId`, `PluginId`, `ActionId`, `OperationId`, `CreatedBy`, `CreatedDate`, `SourceClientId`)
+
+SELECT  DISTINCT 
+spo.`SourceApiId`, spo.`PluginId`, @actionId  `ActionId`, @operationId `OperationId`, @CreatedBy `CreatedBy`, @CreatedDate `CreatedDate`, spo.`SourceClientId`
+FROM sourceclientdevicesauth sca
+JOIN sourceapiallowedpluginsandoperation spo ON spo.SourceClientId=sca.SourceClientId  AND spo.isDeleted=0
+JOIN `plugin` p ON p.pluginId=spo.pluginId AND IFNULL(p.isDeleted,'')=0
+JOIN pluginbusinesses pb ON pb.pluginId= p.pluginID AND IFNULL(pb.isDeleted,'')=0
+JOIN business b ON b.businessId=pb.businessId   AND IFNULL(b.isDeleted,'')=0
+JOIN pluginbusinessfacilites pbf ON pb.pluginBusinessesId=pbf.pluginBusinessesId AND IFNULL(pbf.isDeleted,'')=0
+JOIN businessfacility bf ON bf.businessFacilityId=pbf.businessFacilityId AND IFNULL(bf.isDeleted,'')=0
+JOIN pluginbusinessfacilityurl pbfu ON pbfu.SourceClientId=sca.SourceClientId AND IFNULL(pbfu.isDeleted,'')=0
+AND pbfu.pluginId=pb.pluginId
+AND pbfu.pluginBusinessFacilityId=pbf.pluginBusinessFacilityId
+WHERE sca.ApiClientId=@ApiClientId
+LIMIT 1
+;

@@ -1,0 +1,555 @@
+shahzad.amir@technevity.net
+Ka%b^e&e*r@@@1980
+
+lM%b9^^e&e*r@^@78
+
+basit@technevity.net
+MJ-#r<39g^/4pH7*
+
+my email ahahzad007 pass
+BlessingXtra@1978!NameIs@
+
+Microsoft:
+S$a#m%i^r1950
+
+logs dashboard
+username basit 
+password: devint@!$9481
+
+
+basit bhai laptop pass
+basitas84
+=========
+Basit Ahmed, Fri 4:57 PM
+https://test-console.vstalert.com/Home
+EPICVSTOne
+
+Vst@12345
+
+Basit Ahmed, 36 min
+Hl7Processor/Hl7Processor/Hl7ToJson/Validators/Hl7Validator.cs
+
+Basit Ahmed, 32 min
+Pull request 14626: Improve TCP Server Performance by Switching to TCP Listener Socket - Repos
+
+Basit Ahmed, 18 min
+https://sonarqube.vstlearning.com/
+basit@technevity.net
+MJ-#r<39g^/4pH7*
+=================================DB Passwords for DEMO , and Performance=========================
+Writer: 
+vst-performance-db.cluster-c523s2j5grmn.us-east-1.rds.amazonaws.com
+Reader:
+vst-performance-db.cluster-ro-c523s2j5grmn.us-east-1.rds.amazonaws.com
+userName:
+integuser
+G@l@xy!@#
+=================================
+demo
+server=vst-demo-db.cluster-c32xfwo7xuzq.us-east-2.rds.amazonaws.com;uid=integuser;pwd=G@l@xy!!@##;database=IntegrationDB_Demo
+G@l@xy!!@##
+================
+GitHub co-piolt
+BasitASiddiqui
+*Basit*12*
+=================
+demo server
+=============
+demo external
+18.118.94.121 Bash Server , mean login this server and then it has access to other servers in Aws , 
+ShahZeb
+S2^7a4l6a#m99511
+
+demo internal
+18.118.79.17 //  this is the actual server 
+Shahzeb
+
+
+=======================
+
+{
+    "MsgId": "db9d28d7-4539-4873-90d7-d22c9be6e8e4",
+    "Facilitycode": "365489",
+    "FallRiskScore": "50",     
+    "PatientIdentification": {
+        "FirstName": "TestEpic1",   
+        "LastName": "TestEpic2",    
+        "DateOfBirth": "20001130",   
+        "MedicalRecordNumber": "494949"    
+    },
+    "PatientLocation": {
+        "Room": "E_V05",
+        "Unit": "Emergency",    
+        "Floor": "3"   
+    },
+       "PriorPatientLocation": {
+         "Room": "E_V05",
+        "Unit": "ICU",  
+        "Floor": "1676"  
+    },
+    "EventId": "12280b35-5bee-484c-995c-452f862976af",   
+// "EventName": "ADT_A01_Admission",
+  "EventName": "ADT_A03_Discharge",
+    "PluginId": 0,   
+    "CreationDate": "2024-02-23T12:00:46.4735495Z",   
+    "OrgUuid": null,  
+    "FacilityId": 0,  
+    "PatientId": null,  
+    "ResourceId": null,  
+    "MedicationStatus": null  
+}
+---------------
+post request address 
+https://test-datahooks.vstalert.com/Account/ProcessRequest
+=======
+Authorization
+Basic Nzg3M2M1ODMtNGJlZi00NjAyLThiNGEtNWEwYWY5YjM0Nzdl
+============================
+
+\\TIPC99-NAUMANIS\AmirShared
+nauman ishaq
+Technevity@123
+
+
+=================web sites for hl7 messages===================
+https://hl7messageparser.azurewebsites.net/Parse/ParseView
+https://freeonlineformatter.com/hl7-validator/run
+=================================================================
+
+important 
+first epic plugin , run and debug the application 
+got to EpicPlugin\EpicPlugin\bin\Debug\net8.0 
+
+add folder D:\EpicPlugin create folder dll and paste the dll files there
+integration dev db 
+and go to plugin table and change the dll path in your local machine which is D:\EpicPlugin\ (please dont add inner path like dll here)
+
+============
+"No connection could be made because the target machine actively refused it. (localhost:44362)"
+=======
+  "DirectWebhookPublishing": {
+    "connRetries": 5,
+    "clientUrl": "https://localhost:44362/api/Initialize/directPublish",
+    "credentials": "71dd1ee2-50b9-48d0-9904-ed1e826bbeaf"
+  },
+
+======================HL7 MESSAGE--------------------
+PVI import segment for Room Nuber 
+MSH , Branch ya facility code change kerna hota hai or admsiion type , dischare/admison , etc ADT^A03 discharge , ADT^A01 admisiion
+
+our message 
+MSH|^~\&|Epic EHR|TestBranch|VST Integration|TestBranch|20240304094455-0000||ADT^A01|hello0101|^c|2.3
+EVN||20240304094455+1500
+PID|1||123232389^^M10^^MR||john89^hello98^t||19890101|||123 Main St.^^Anytown^ZZ^12345^US||(555)555-5555||S|123456789|123-45-6789
+PV1||SNFI|NICU^E_V08^^^^^1|||^E_V03
+OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||90||||||F
+--------------------------------------------------
+changed message 
+-------------------------------------------------modifed message--------
+MSH|^~\&|EPIC EHR|TestBranch|VST Integration|TestBranch|20250206191414|106062|ADT^A03|177301404|P|2.3
+EVN|A08|20250206191414||REG_VIS_CHANGE|106062^STROMAN^CUPID^WYNETTE^^^^^EH^^^^^EUHM
+PID|1||418272^^^EPI^MR||GUYNN^GEORGE^C^^^^D||19421210|M||White|229 PEACHTREE HILLS AVE NE UNIT 143^^ATLANTA^GA^30305-4414^US^P^^FULTON|FULTON|(404)277-6565^P^H^^^404^2776565~^NET^Internet^jackguynn42@gmail.com~(404)625-6340^P^M^^^404^6256340||ENG|MARRIED|BAPTIST|191784823|223-56-3520|||NOT HISPANIC|||||No|||N
+ZPD||Email~MYCH||ACTIVATED|||N||N|||||||||N||M|Straight|M|N|M
+ROL|1|UP|GENERAL|1790784080^SMALL^SCOTT^JEFFREY^^^^^NPI^^^^NPI6380^SMALL^SCOTT^JEFFREY^^^^^PROVID^^^^PROVID|20220428||||GENERAL||5670 PEACHTREE DUNWOODY RD^STE 1200^ATLANTA^GA^30342^US|(404)255-9100^^W^^^404^2559100(404)257-7171^^FAX^^^404^2577171
+NK1|1|GUYNN^JOEY|Spouse|UNIT 143, 229 PEACHTREE HILLS AVE NE^^ATLANTA^GA^30305^US|(404)277-6565^NM^M^^^404^2776565||||||||||F
+PV1|1|IP|10005004^E_V01^3129-01^10005^R^^^^EUHM 31^^DEPID|UR|||2313^GARY^MATTHEW^F^^^^^PROVID^^^^PROVID|||Neurosurgery||||2|||2313^GARY^MATTHEW^F^^^^^PROVID^^^^PROVID||191784823|MC REPLACE|||||||||||||||||||||Adm*Conf|||20250203140000|||49334.68
+PV2||Priv||||||20250203140000|20250210|7|||||||||||n|N||||||||||N||||||||Acute
+ZPV|||||||||||20250203140000||||||||||None|None||||||||||||
+---------------------------------------------------- orignal message-------------------------------
+MSH|^~\&|EPIC EHR|Emory University Midtown|VST Integration|Emory University Midtown|20250206191414|106062|ADT^A08|177301404|P|2.3
+EVN|A08|20250206191414||REG_VIS_CHANGE|106062^STROMAN^CUPID^WYNETTE^^^^^EH^^^^^EUHM
+PID|1||418272^^^EPI^MR||GUYNN^GEORGE^C^^^^D||19421210|M||White|229 PEACHTREE HILLS AVE NE UNIT 143^^ATLANTA^GA^30305-4414^US^P^^FULTON|FULTON|(404)277-6565^P^H^^^404^2776565~^NET^Internet^jackguynn42@gmail.com~(404)625-6340^P^M^^^404^6256340||ENG|MARRIED|BAPTIST|191784823|223-56-3520|||NOT HISPANIC|||||No|||N
+ZPD||Email~MYCH||ACTIVATED|||N||N|||||||||N||M|Straight|M|N|M
+ROL|1|UP|GENERAL|1790784080^SMALL^SCOTT^JEFFREY^^^^^NPI^^^^NPI~6380^SMALL^SCOTT^JEFFREY^^^^^PROVID^^^^PROVID|20220428||||GENERAL||5670 PEACHTREE DUNWOODY RD^STE 1200^ATLANTA^GA^30342^US|(404)255-9100^^W^^^404^2559100~(404)257-7171^^FAX^^^404^2577171
+NK1|1|GUYNN^JOEY|Spouse|UNIT 143, 229 PEACHTREE HILLS AVE NE^^ATLANTA^GA^30305^US|(404)277-6565^NM^M^^^404^2776565||||||||||F
+PV1|1|IP|10005004^3129-01^3129-01^10005^R^^^^EUHM 31^^DEPID|UR|||2313^GARY^MATTHEW^F^^^^^PROVID^^^^PROVID|||Neurosurgery||||2|||2313^GARY^MATTHEW^F^^^^^PROVID^^^^PROVID||191784823|MC REPLACE|||||||||||||||||||||Adm*Conf|||20250203140000|||49334.68
+PV2||Priv||||||20250203140000|20250210|7|||||||||||n|N||||||||||N||||||||Acute
+ZPV|||||||||||20250203140000||||||||||None|None||||||||||||
+--------------------------------------------------
+for checking in demo environment
+address for client console app 
+demo-mllprequestlistener.vstintegration.com for client 
+for alert testing 
+https://demo-console.vstalert.com/
+================================
+nuget packages 
+Technevity-Feed
+https://virtusense.pkgs.visualstudio.com/_packaging/Technevity-Feed/nuget/v3/index.json
+====================================
+hl7 messages important for sending testing to client
+======================================
+-------------transfer/update ke case main admission direct ker deta hai-----------
+  string hl7Message = "MSH|^~\\&|Epic EHR|TestBranch|VST Integration|TestBranch|20240304094455-0000||ADT^A02|hello0101|^c|2.3\r"
+              + "EVN||20240304094455+1500\r"
+              + "PID|1||123232389^^M10^^MR||john89^hello98^t||19890101|||123 Main St.^^Anytown^ZZ^12345^US||(555)555-5555||S|123456789|123-45-6789\r"
+              + "PV1||SNFI|NICU^58^^^^^1|||^59\r"
+              + "OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||40||||||F\r";
+----------------------------------------------------------orignery admission message---------------
+ string hl7Message = "MSH|^~\\&|Epic EHR|TestBranch|VST Integration|TestBranch|20240304094455-0000||ADT^A03|hello0101|^c|2.3\r"
+             + "EVN||20240304094455+1500\r"
+             + "PID|1||123232389^^M10^^MR||john89^hello98^t||19890101|||123 Main St.^^Anytown^ZZ^12345^US||(555)555-5555||S|123456789|123-45-6789\r"
+             + "PV1||SNFI|NICU^E_V01^^^^^1|||^E_V03\r"
+             + "OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||90||||||F\r";
+
+----------------------please use beyond compare to check changes between these two---------------------
+
+nabeel ayaz quries ========Alert System Db--vslaert_test
+SELECT * FROM vstalert_externalclients;
+SELECT * FROM vstalert_externalbranchmapping;
+SELECT * FROM vstalert_businessbranches bb WHERE bb.Id = 378;
+SELECT * FROM vstalert_branchbeds bb WHERE bb.BranchId = 378;
+SELECT * FROM vstalert_externalbranchbedsmapping m ;
+SELECT * FROM vstalert_externalusersmapping;
+==================================================
+test db,
+source ,sourceclient // clint list 
+hl7 ,cALL vstalertintg_uspGetHl7NotificationSettingDetails(0) // important SP
+vstalertintg_hl7messagetype , // messGES ADMINSSION , DISCHARGE
+vstalertintg_hl7notificationsettings / MAPING facility id , from source client table , and messgaetypeid = hl7message type table
+=====================
+facility code means that hum ne ek facilty code ke field jari kerwayi hai jis ko facilityname ke saata attach kya hai 
+ta ke client agar facility name change ker de tu hum idientify ker sakey ke kis clinet ke againt yeah hl7 message aya hai
+testbranch = 12209,
+if test branch ename chamge to emory tu hum ko pata chal jaye ga ke yeah test branch ke against aya hai , yani ke naam to code ke saat attah ker dya hai
+naam change bi ho jaye tu hum hl7 message ko idientify ker sakein
+=======================================================
+steps of git flow
+======================
+step 1 , go to dev branch
+create a branch with dev-v1
+update your changes \
+push dev-v1 branch
+step 2 
+create PR for dev-v1 merge to Test from TFs
+when merged and running 
+delete your dev-v1 branch.
+=========================
+then test merge into demo 
+then demo mege into production
+and production merge into dev for latest changes which developer use.
+you cannot change test , demo and production directly.
+========================================================
+for git understanding
+=========================================================
+Step 1: Development Process
+Go to the dev branch (which is the main development branch).
+Create a new feature branch from dev (e.g., dev-v1).
+Make changes in dev-v1, commit them, and push the branch to the remote repository.
+Create a pull request (PR) to merge dev-v1 into Test.
+Once the PR is approved and merged, delete dev-v1.
+
+Step 2: Promotion Flow (Assumption)
+After merging to Test, if everything works fine:
+Merge Test → Demo
+Merge Demo → Production
+Merge Production → Dev (to ensure developers get the latest changes from production)
+Key Git Flow Rules (Based on Your Investigation)
+✅ Developers work only on dev branches (e.g., dev-v1, dev-v2, etc.).
+✅ Test, Demo, and Production branches cannot be modified directly.
+✅ Changes flow in one direction:
+
+dev → Test → Demo → Production → dev (sync back latest changes).
+==================================================================
+Potential Refinements
+Does your company have hotfix branches?
+If urgent fixes are needed, they might use hotfix branches, which merge into Production first, then back to Dev.
+================================================
+
+Performance DB credentials
+==============================
+   "ConnectionStrings": {
+      "IntegrationDB": "ipupumZDNnUUCalHZln9UScWrAnpscBH7rsJhNHayYm6/eEsv0LHCbq6dL2yVJskZwnI21f4wOtDGr/MN7JZxlMDzJ55xma2G+DO6L6pNRlAZSh+VRH6sWtp4wG53VaU4zsakTjKZb1B4I8sP8vCPpJhYMqU8XLg3wRDo6bhUY/sBWuHL+nNiCXfsUgTv9L3hBby6asdP9pHLB2DwJAM9G7owcKrFOg4lK2Wcha88Jk=",
+      "IntegrationDB_RO": "ipupumZDNnUUCalHZln9UScWrAnpscBH7rsJhNHayYm6/eEsv0LHCbq6dL2yVJskZwnI21f4wOtDGr/MN7JZxlMDzJ55xma2G+DO6L6pNRlAZSh+VRH6sWtp4wG53VaU4zsakTjKZb1B4I8sP8vCPpJhYMqU8XLg3wRDo6bhUY/sBWuHL+nNiCXfsUgTv9L3hBby6asdP9pHLB2DwJAM9G7owcKrFOg4lK2Wcha88Jk="
+  },
+=====================================================
+Important API Information
+===============================
+if (statusCode != 200 && statusCode != 204 && statusCode != 401)
+🔹 Checks if the status code is not one of the expected ones:
+
+200 (OK) → Successful
+204 (No Content) → Successful but empty response
+401 (Unauthorized) → Requires re-authentication
+================================================================
+HL7 Message for Nurse Shift
+========================================
+MSH|^~\&|Epic EHR|TestBranch|VST Integration|TestBranch|20250304063557-0000||ADT^A03|41804a56-c69e-4086-8e73-d6ef68bedfa0|P|2.3
+EVN||20250304063557-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^E_V11
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20250320092639-0000|20250320160139-0000
+============================================================
+db check data insert
+=================================
+SELECT * 
+FROM receivedhl7
+ORDER BY createddate DESC
+LIMIT 10;
+=============
+sp name 
+uspInsertReceivedHl7Payload  // for insertion
+vstalertintg_uspGetHl7NotificationSettingDetails // for mapping
+uspGetPorts // for port mapping
+====================
+Mesage OBX for patient flow sheet data  , mtlb blood pressure , temp , heart rate etc
+=============================
+MSH|^~\&|Epic EHR|TestBranch|VST Integration|TestBranch|20250305110124-0000||ADT^A01|ad0a879f-57b3-4ffd-9188-255b9f8fd9ac|P|2.3
+EVN||20250305110124-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^E_V01
+OBX||ST|59461-4^Fall Risk Level^LN||Low risk||||||F
+OBX|2|NM|8480-6^Systolic Blood Pressure^LN||120|mmHg|||||F
+OBX|3|NM|8462-4^Diastolic Blood Pressure^LN||80|mmHg|||||F
+ROL|65|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20250305110124-0000|20250305173624-0000
+===============================
+
+Observation Name	LOINC Code	Standard or Custom?
+Systolic Blood Pressure	8480-6	✅ Standard
+Diastolic Blood Pressure	8462-4	✅ Standard
+Heart Rate	8867-4	✅ Standard
+Body Temperature	8310-5	✅ Standard
+Glucose Level	15074-8	✅ Standard
+Oxygen Saturation (SpO2)	2708-6	✅ Standard
+==================================================
+
+
+hitheshvst
+wg*Fkdt3WXSeTkT
+Documentation - Epic on FHIR
+https://fhir.epic.com/Documentation?docId=oauth2tutorial
+
+=====================
+Bastion Host Demo: 18.118.94.121
+Demo MLLP server: 18.118.79.17
+
+ShahZeb
+S2^7a4l6a#m99511
+==============================
+TWILO CODE
+MUFRBZW4RPLCW7B2M4B21FTX
+
+twilo SIS
+SKdc57b6ea0377352aff905108ef35a200
+TWILO SEC
+2THhixkfjjsu9xNclCTKBQMcg9inu2Lr
+
+twilophne number
++19188183237
+==============================
+https://hapi.fhir.org/baseR4/Patient
+with patient Id
+https://hapi.fhir.org/baseR4/Patient/596767
+https://confluence.hl7.org/spaces/FHIR/pages/35718859/Public+Test+Servers
+============================
+tool smart hl7 viewer
+hl7 soup
+http://gb2.clinfhir.com/
+===========very important about FHIR==================
+📌 FHIR Cardinality Types
+
+FHIR defines how many times a field can appear using cardinality, which is represented as min..max. Here are the main types:
+
+1️⃣ 0..1 → The field is optional and can appear at most once.
+2️⃣ 1..1 → The field is mandatory and must appear exactly once.
+3️⃣ 0..* → The field is optional but can appear multiple times (array).
+4️⃣ 1..* → The field is mandatory and must appear at least once, but can repeat.
+
+===================
+
+📌 TL;DR (Summary)
+✅ 0..1 → Use Object {} or Key-Value 
+✅ 0..* → Use Array [] // Repeating (multiple values possible)
+✅ If it's a simple field with 0..1 → Write it as direct "key": "value"
+✅ If it's a complex field with 0..1 → Wrap it in an Object {}
+✅ If it's repeatable (0..*) → Always use an Array []
+
+======================================
+
+✅ If a field is repeatable (0..*), it must be placed inside [].
+✅ If [] contains a complex type, it must be wrapped in {}.
+✅ Simple fields should be written as key-value pairs inside {}.
+✅ Arrays ([]) must always contain objects ({}) if they store complex data.
+Array["1","24","32"] beghair object ke mtlb {} likh sakty hain otherwise nai 
+=====================================Example==========================
+"identifier": [   // 0..* → Array []
+  { // identifier has multiple objects so we use or wrap with {}
+    "use": "official",   // 0..1 → Key-Value
+    "system": "xyz.com", // 0..1 → Key-Value
+    "value": "unknown",  // 0..1 → Key-Value
+    "type": {            // 0..1 → Object {} // but not 0..* i mean not repeating so we use {} not [] 
+      "coding": [        // 0..* → Array [] // repeating so we use []
+        { // every key value pair must be wrapped in {} 
+          "system": "xyz.com",  // 0..1 → Key-Value
+          "version": "2.3"      // 0..1 → Key-Value
+        }
+      ]
+    }
+  }
+]
+========================================================
+Bottom Line
+✅ If the cardinality is 0..* or 1..*, use an array [].
+✅ If the structure contains objects, wrap them inside {} within the array [{...}].
+✅ If the nested structure has further complex repeating types, use another array [].
+✅ If a complex type is non-repeating 0..1, use an object {}.
+==========================================================
+https://localhost:7184/api/Plugins/getdata
+--------------------logs-------
+ SELECT * 
+FROM exceptionlog 
+ORDER BY Id DESC LIMIT 500;
+--------------------------
+#call vstalertintg_uspGetHl7NotificationSettingDetails(0)
+#SELECT * from vstalertintg_hl7notificationsettings
+#SELECT * from sourceclient
+#SELECT * from vstalertintg_hl7messagetype
+#testbranch 5 
+#dummy27 2.3
+================================
+ThedaCare Production VPN Outgoing Messages
+===============
+Adding inital facility branch configurations.
+sourceclient 
+vstalertintg_hl7notificationsettings 
+vstalertintg_hl7messagetype
+hl7profilelookup 
+====================
+ORU Message Allow SP
+====================
+uspGetClientAllowedActionDetails
+=============================================
+epic plugn test depoloyemtn manual hai 
+==============================================
+
+
+/app/Plugins-Epic
+D:\Integration-Plugin
+C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic
+
+==============mllp route data check======= to alert system
+
+database vstalert_test
+
+SELECT * FROM epic_nurse_attendance ORDER  by 1 DESC LIMIT 100; 
+SELECT * FROM epic_nurse_attendancelog ORDER  by 1 DESC LIMIT 100;
+
+=================================================
+call vstalertintg_uspGetHl7NotificationSettingDetails(0)
+#SELECT * from vstalertintg_hl7notificationsettings
+#SELECT * from sourceclient
+#SELECT * from vstalertintg_hl7messagetype
+======================
+select * from plugin
+================================================
+
+dev mirth system pASSWORD
+=====================
+dev
+54.225.208.208
+shahzeb
+S2^7a4l6a*m99511
+====mirth admin pass
+admin
+hobbitoN&46
+
+=====================
+testing ORU message thorugh local to merth
+
+step 1 : go to outgoinghl7configs table 
+step 2 : go to sourceclient table and find facility Id
+==============
+=================
+demo server
+=============
+demo external
+18.118.94.121 Bash Server , mean login this server and then it has access to other servers in Aws , 
+ShahZeb
+S2^7a4l6a#m99511
+
+demo internal
+18.118.79.17 //  this is the actual server 
+Shahzeb
+===========
+production Mirth Server
+=============
+44.230.192.113
+Shahzeb
+Z*M8U1m#e1e6e$T2
+================
+====================
+how to check profile and its facilities and allowed pressure entries
+====================
+hl7profilelookup
+check the profile name and its Id.
+for facilities goto Source Client Table
+============
+now check which facilities are allowed and what are the facility codes
+run this store procedure
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0) and then this command
+SELECT  * FROM vstalertintg_hl7notificationsettings a WHERE a.HL7ProfileId = 2;
+for sensors Ids,and check pressure injury is allowed in which facility against these branches you have to go to Alert Db
+
+important Store Procedures
+=======================
+
+vstalertintg_uspGetHl7NotificationSettingDetails //incomming
+uspGetAllOutgoingHl7Configs //outgoing
+
+=================================
+
+
+important tables 
+
+vstalertintg_hl7notificationsettings // join table facilityid and profile id and 2.3 etc
+sourceclient // for facility Id , like test branch , dev branch etc 
+vstalertintg_hl7messagetype
+hl7profilelookup // profile theda care ,  5 , 2 
+===========================
+outgoinghl7configs
+outgoinghl7messages
+outgoinghl7profileslookup
+receivedhl7
+you can only write hl7 and these tables appears
+==========================
+production Ip 
+52.43.60.147
+================
+
+
+ if (fields.Length > 6) // PV1-7 exists
+ {
+     string[] pv1_7_components = fields[6].Split('^');
+     value2 = pv1_7_components.ElementAtOrDefault(0) ?? string.Empty;
+ }
+
+
+=======================================================================================
+update A08 ki call main agar OBX segment na dya ho tu patient update nai hota , admsioon nai hota , or fall risk score 
+is main nai hota tu update nai hota ....
+======================================================
+OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||77||||||F
+neccessay for A08 , alert system rejects it 
+
+for Nurse Signin and Sign out 
+ROL Segment is necessary 
+ROL|1|AD|Registered Nurse|AZL1219^LUNDE^AMY^^^^^^^^^^EMP|20250603135200-0000||||||TCNL
+
+=== for test container=============
+MSH|^~\&|Epic EHR|EPICMLLP2|VST Integration|EPICMLLP2|20250611100404-0000||ADT^A01|2743gb63-7052-4342-9d2b-294393e65738|P|2.3
+EVN||20250611100404-0000
+PID|||5832952^^^^EMPI||debug^patient2||20001130
+PV1||I|^EPICMLLP2|||^EPICMLLP5
+OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||50||||||F
+ROL|1|AD|Registered Nurse|AZL1219^LUNDE^AMY^^^^^^^^^^EMP|20250603135200-0000||||||TCNL
+=============
+=======================================================
+Admission agar how ho tu OBX na bejho  , or fall risk score >55 
+========================================================================================
+incoming SP vstalertintg_uspGetHl7NotificationSettingDetails
+outgoing SP uspGetAllOutgoingHl7Configs
+=========================================================================
+e0f2a854-ca03-4b1d-a599-7047b94ce98a
+e0f2a854-ca03-4b1d-a599-7047b94ce98a9
+=================================
+

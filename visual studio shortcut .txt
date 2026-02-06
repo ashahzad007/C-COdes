@@ -1,0 +1,170 @@
+Visual Studio Shortcuts
+You’re viewing user-generated content that may be unverified or unsafe.
+Report
+ChatGPT
+Edit with ChatGPT
+Visual Studio Shortcuts Cheat Sheet
+
+Basic Editing
+Ctrl + X → Cut
+
+Ctrl + C → Copy
+
+Ctrl + V → Paste
+
+Ctrl + Z → Undo
+
+Ctrl + Y → Redo
+
+Ctrl + A → Select all
+
+Ctrl + S → Save
+
+Ctrl + Shift + S → Save All
+
+Ctrl + O → Open File
+
+Ctrl + P → Print
+
+Ctrl + N → New File
+
+Navigation & Search
+Ctrl + T → Go to All
+
+Ctrl + , → Quick search
+
+Ctrl + ; → Search in Solution Explorer
+
+Ctrl + G → Go to line
+
+Ctrl + Tab → Switch between open files
+
+Ctrl + Shift + T → Reopen closed file
+
+F12 → Go to definition
+
+Ctrl + F12 → Go to implementation
+
+Shift + F12 → Find references
+
+Ctrl + - → Navigate back
+
+Ctrl + Shift + - → Navigate forward
+
+Ctrl + Shift + F → Find in Files
+
+Ctrl + Shift + H → Replace in Files
+
+Formatting & Refactoring
+Ctrl + K, Ctrl + D → Format Document (auto-indent)
+
+Ctrl + K, Ctrl + F → Format Selection
+
+Ctrl + R, Ctrl + R → Rename variable/method/class
+
+Ctrl + . → Quick Actions & Refactoring
+
+Ctrl + Shift + R → Refactor (Code Cleanup)
+
+Ctrl + E, Ctrl + C → Convert to Constant
+
+Ctrl + E, Ctrl + M → Extract Method
+
+Ctrl + E, Ctrl + L → Extract Local Variable
+
+Code Editing & Manipulation
+Ctrl + Space → IntelliSense suggestions
+
+Ctrl + K, Ctrl + C → Comment selected code
+
+Ctrl + K, Ctrl + U → Uncomment selected code
+
+Ctrl + Shift + V → Cycle through clipboard history
+
+Ctrl + D → Duplicate line
+
+Ctrl + Shift + K → Delete current line
+
+Ctrl + Shift + L → Select all occurrences of word
+
+Ctrl + Shift + Enter → Insert new line above
+
+Ctrl + Enter → Insert new line below
+
+Debugging
+F5 → Start debugging
+
+Ctrl + F5 → Run without debugging
+
+Shift + F5 → Stop debugging
+
+F9 → Toggle breakpoint
+
+F10 → Step over
+
+F11 → Step into
+
+Shift + F11 → Step out
+
+Ctrl + Shift + F5 → Restart debugging
+
+Ctrl + Alt + P → Attach to process
+
+Solution Explorer & Windows
+Ctrl + Alt + L → Open Solution Explorer
+
+Ctrl + Shift + F → Find in entire solution
+
+Ctrl + Shift + H → Replace in entire solution
+
+Ctrl + \ , E → Toggle Error List
+
+Ctrl + Alt + O → Show Output window
+
+Ctrl + \ , C → Open Class View
+
+Ctrl + Alt + S → Open Server Explorer
+
+Ctrl + Alt + X → Open Toolbox
+
+Multiple Cursors & Selection
+Ctrl + Alt + Click → Add multiple cursors
+
+Ctrl + Shift + Arrow → Expand selection by word
+
+Alt + Shift + Arrow → Column selection (block mode)
+
+Ctrl + Shift + L → Select all occurrences of word
+
+Ctrl + Shift + Alt + Arrow → Duplicate selection
+
+Code Folding & Regions
+Ctrl + M, O → Collapse all definitions
+
+Ctrl + M, L → Expand all definitions
+
+Ctrl + M, M → Toggle folding for current block
+
+Ctrl + M, P → Expand all outlining
+
+Ctrl + M, A → Collapse to definitions
+
+Version Control (Git)
+Ctrl + Alt + F7 → Show Git Changes
+
+Ctrl + Alt + F8 → Show Git Repository
+
+Ctrl + G → Go to commit ID
+
+Ctrl + K, Ctrl + P → Push changes
+
+Ctrl + K, Ctrl + U → Undo last commit
+
+Ctrl + K, Ctrl + D → Compare file with previous version
+
+Ctrl + K, Ctrl + M → Merge branch
+
+💾 Save this file for future reference! 🚀
+
+
+

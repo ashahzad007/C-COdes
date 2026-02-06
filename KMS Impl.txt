@@ -1,0 +1,296 @@
+step by step guide to KMS implemntion
+
+step 1 , appsettings.json file configuration 
+
+  "ConnectionStrings": {
+    "Integrations": "Integrations_Test_ConnStr_WR",
+    "Integrations_RO": "Integrations_Test_ConnStr_RO"
+  },
+  "DatabaseExtraConfigs": "ConnectionTimeout=30;Pooling=true;Max Pool Size=100;",
+  
+  "AppConfig": {
+    "RateLimit": "1",
+    "UseKmsEncryption": true,
+    "IsOnAwsCloud": true,
+    "REGION": "us-east-2"
+  },
+  
+    "ConnectionStringEncryptionSettings": {
+    "KmsKeyId": "alias/kms-envelop-connectstring-key"
+  },
+  "AsymmetricEncryptionSettings": {
+    "KmsKeyId": "alias/kms-connectstring-key"
+  },
+  
+  "AwsAssumedRoleConfig": {
+    "Arn": "",
+    "Region": ""
+  },
+    "CredManagerApiSettings": {
+    "BaseUrl": "https://dev-credmanager.vstlearning.com",
+    "ApiKey": "KMS_WNWOT50C6JB1",
+    "SessionDurationInSeconds": 3600
+  }
+  =====================
+  create three classes as defined with proper folders , entities/common
+    public class GenerateTemporaryCredentialsRequestModel
+  {
+      [Required]
+      public List<AwsServiceResourcesModel> ServiceRequests { get; set; } = new();
+
+      public int SessionDurationInSeconds { get; set; } = 3600;
+  }
+  =====================
+      public class AwsServiceResourcesModel
+    {
+        [Required]
+        public string ServiceName { get; set; } = string.Empty;
+
+        [Required]
+        public List<string> ResourceNames { get; set; } = new();
+
+        public bool ReadOnly { get; set; } = true;
+    }
+================================
+    public class AwsTemporaryCredentialsModel
+    {
+        public string AccessKey { get; set; } = string.Empty;
+        public string SecretKey { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
+        public int ExpiresIn { get; set; }
+    }
+=======================================
+using Microsoft.Extensions.Logging;
+using Polly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Polly.Retry;
+
+namespace Services
+{
+    public class ApiClientService
+    {
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<ApiClientService> _logger;
+        private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
+        private readonly JsonSerializerOptions _jsonOptions;
+
+        public ApiClientService(
+            HttpClient httpClient,
+            ILogger<ApiClientService> logger)
+        {
+            _httpClient = httpClient;
+            _logger = logger;
+
+            // Configure JSON serialization
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            // Configure retry policy
+            _retryPolicy = Policy<HttpResponseMessage>
+                .Handle<HttpRequestException>()
+                .Or<TaskCanceledException>()
+                .Or<TimeoutException>()
+                .WaitAndRetryAsync(
+                    3, // number of retries
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), // exponential backoff
+                    onRetry: (httpResponse, timeSpan, retryCount, context) =>
+                    {
+                        _logger.LogWarning(
+                            httpResponse.Exception,
+                            "Retry {RetryCount} after {Delay}ms due to {Message}",
+                            retryCount,
+                            timeSpan.TotalMilliseconds,
+                            httpResponse.Exception.Message);
+                    }
+                );
+        }
+
+        public async Task<TResponse?> SendAsync<TRequest, TResponse>(
+            HttpMethod method,
+            string endpoint,
+            TRequest? request = default,
+            Dictionary<string, string>? headers = null,
+            CancellationToken cancellationToken = default)
+            where TRequest : class
+            where TResponse : class
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "Sending {Method} request to {Endpoint}",
+                    method.Method,
+                    endpoint);
+
+                using var httpRequest = new HttpRequestMessage(method, endpoint);
+
+                // Add request body for non-GET requests
+                if (request != null && method != HttpMethod.Get)
+                {
+                    var json = JsonSerializer.Serialize(request, _jsonOptions);
+                    httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                }
+
+                // Add custom headers
+                if (headers != null)
+                {
+                    foreach (var header in headers)
+                    {
+                        httpRequest.Headers.Add(header.Key, header.Value);
+                    }
+                }
+
+                // Execute request with retry policy
+                var response = await _retryPolicy.ExecuteAsync(async () =>
+                    await _httpClient.SendAsync(httpRequest, cancellationToken));
+
+                // Log response status
+                _logger.LogInformation(
+                    "Received response with status code {StatusCode} from {Endpoint}",
+                    response.StatusCode,
+                    endpoint);
+
+                // Handle successful response
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync(cancellationToken);
+                    // If TResponse is string, return content directly
+                    if (typeof(TResponse) == typeof(string))
+                    {
+                        return content as TResponse;
+                    }
+                    return JsonSerializer.Deserialize<TResponse>(content, _jsonOptions);
+                }
+
+                // Log error response
+                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogError(
+                    "API request failed with status code {StatusCode}. Response: {Response}",
+                    response.StatusCode,
+                    errorContent);
+
+                return default;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error sending {Method} request to {Endpoint}",
+                    method.Method,
+                    endpoint);
+                return default;
+            }
+        }
+    }
+}
+=======================
+using Amazon.Runtime;
+using Entities.Configs;
+using Entities.Models.Common;
+using Entities.Request.CredManagerApiClient;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Services
+{
+    public class CredManagerApiClientService : ApiClientService
+    {
+
+        private readonly ILogger<ApiClientService> _logger;
+        private readonly AppSettingsModel _appSettings;
+        private SessionAWSCredentials? sessionAWSCredentials;
+        private DateTime sessionExpiryTime;
+        public CredManagerApiClientService(HttpClient httpClient, ILogger<ApiClientService> logger, AppSettingsModel appSettings)
+            : base(httpClient, logger)
+        {
+
+            _logger = logger;
+            _appSettings = appSettings;
+        }
+
+
+        public async Task<SessionAWSCredentials> GetTemporaryCredentials()
+        {
+            if (sessionAWSCredentials != null && DateTime.UtcNow < sessionExpiryTime)
+            {
+                _logger.LogInformation("Using cached temporary credentials");
+                return sessionAWSCredentials;
+            }
+
+            _logger.LogInformation("Creating temporary credentials from cred manager api");
+
+
+            GenerateTemporaryCredentialsRequestModel requestModel = new GenerateTemporaryCredentialsRequestModel
+            {
+                ServiceRequests = _appSettings.CredManagerApiSettings.Services,
+                SessionDurationInSeconds = _appSettings.CredManagerApiSettings.SessionDurationInSeconds,
+            };
+            var credentials = await SendAsync<GenerateTemporaryCredentialsRequestModel, AwsTemporaryCredentialsModel>(
+             HttpMethod.Post,
+              $"{_appSettings.CredManagerApiSettings.BaseUrl}/security/generatesession",
+             request: requestModel,
+             headers: new Dictionary<string, string>() { { "X-Client-Id", _appSettings.CredManagerApiSettings.ApiKey } },
+             cancellationToken: new CancellationToken());
+            if (credentials == null)
+            {
+                throw new InvalidOperationException("Failed to obtain AWS credentials from Client API");
+            }
+            else
+            {
+
+                sessionAWSCredentials = new SessionAWSCredentials(
+                    credentials.AccessKey,
+                    credentials.SecretKey,
+                    credentials.Token);
+
+                sessionExpiryTime = DateTime.UtcNow.AddSeconds(credentials.ExpiresIn - 300); // 5 minutes early to avoid expiry during use
+            }
+
+            return sessionAWSCredentials;
+
+        }
+    }
+}
+
+
+===================================
+
+step 3 , generate Client Id
+https://dev-credmanager.vstlearning.com/client/register
+{
+    "email":"shahzad.amir@technevity.net"
+}
+{
+    "clientId": "KMS_ECNLWB7WXDPB",
+    "message": "Please check your email for verification code"
+}
+==================
+verify with code 
+=================
+https://dev-credmanager.vstlearning.com/client/verify
+body 
+{
+    "clientId": "KMS_ECNLWB7WXDPB",
+    "verificationCode": "123456"
+}
+{
+    "message": "Client ID verified successfully"
+}
+==========================================
+step 5 
+=============
+now install library 
+=================
+after resolving all the errors now use these services in every where , where you use db credentials
+=================

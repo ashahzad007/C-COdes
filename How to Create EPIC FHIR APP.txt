@@ -1,0 +1,101 @@
+Step 1 : Create App in Vendor Services Sand box or FHIR website
+Step 2 : Create App and add necessary Information / check already created app and copy and paste as per app
+Step 3 : Now Configure this into Database.
+
+Step1 : Goto Database vstalert_test
+Step 2 : go to Table : epic_virtualnursingconfigs
+
+Add Entries as per business ID is 192
+environment 1 is production , 2 is test 
+domain , vendorservices.epic.com, or fhir.epic.com
+ClientID , non production , copy and paste from your App 
+
+==========
+goto Simulator in FHIR OR Services Vendor Area , 
+Create New Simulator
+CIPHER KEY FOR ENCRYPT CLIENT SECRET
+k$m7&^4gNVQ::9h%f7$7DG^h-*-po54O
+
+
+=============
+now goto your epic vendor service sand box and go to simulator create new simulator and add these entries
+Launch URL : https://test-console.vstalert.com/home/onelink?b=E_V01&t=c&app=NoTIFY
+
+
+important URL for test 
+https://vendorservices.epic.com/interconnect-amcurprd-oauth/api/FHIR/R4/Patient/e63wRTbPfr1p8UW81d8Seiw3
+TEST Type : Generate URL only 
+
+
+==========================
+FHIR Server APP Creation
+
+Create an APP in FHIR
+obtain these information 
+"EpicAuth": {
+    "ClientId": "518dc7e3-89da-486f-927e-bbdcfdd58aa1",
+    "ClientSecret": "e2UIfNtcydle7WX97CAe0yEVOSeUoFSzbttptoi5ruUgQWGMCACLQcrj0cV0Y09t1RPO1/KRnqf+A5OzGVg+Kw==",
+    "RedirectUri": "https://dev-bulkauthapi.vstintegration.com/api/auth/callback",
+    "TokenUri": "https://fhir.epic.com/interconnect-fhir-oauth/oauth2/token",
+    "AuthorizationUri": "https://fhir.epic.com/interconnect-fhir-oauth/oauth2/authorize"
+},
+
+Launch your App in FHIR 
+Generate URL 
+
+https://fhir.epic.com/Test/Smart?iss=https%3A%2F%2Ffhir.epic.com%2Finterconnect-fhir-oauth%2Fapi%2FFHIR%2FR4&launch=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1cm46b2lkOjEuMi44NDAuMTE0MzUwLjEuMTMuMC4xLjcuMy42ODg4ODQuMTAwIiwiY2xpZW50X2lkIjoiNTE4ZGM3ZTMtODlkYS00ODZmLTkyN2UtYmJkY2ZkZDU4YWExIiwiZXBpYy5lY2kiOiJ1cm46ZXBpYzpPcGVuLkVwaWMtY3VycmVudCIsImVwaWMubWV0YWRhdGEiOiJDN3I1Q0hmMWM3YjdHbC0yb1BzMFdsMVN0dFVSSC1pdjI0VFhEMFF1RGdzMmdVUUFZM0pyMUtPSnZaNWdYcng1djdnUzNLMDh2MDg2M3YzcTZjby0xRHl4TEFNcmd2QnQ1Tm1Nelp3VjJoZEpvQlNFV2VEN2hUTmVzVW9JVHY4ZSIsImVwaWMudG9rZW50eXBlIjoibGF1bmNoIiwiZXhwIjoxNzQzODAwOTIyLCJpYXQiOjE3NDM4MDA2MjIsImlzcyI6InVybjpvaWQ6MS4yLjg0MC4xMTQzNTAuMS4xMy4wLjEuNy4zLjY4ODg4NC4xMDAiLCJqdGkiOiI5YmI3YTg5Ny03NmU2LTRmMjktYWY0Yi0yMTFjYWE3MmQ3NzMiLCJuYmYiOjE3NDM4MDA2MjIsInN1YiI6ImV2TnAtS2hZd09PcUFabjFwWjJlbnVBMyJ9.i0SOe8B5AGvWIlVLzV-zagLM7F8BQAKRtUyGxjiKtAtxUloM160catbLdg7C7c7F4TgCL-vkGU2Thfccg9OyarOQwvyukz6IUSrxNnrqO23iaUpmCSxHJFneeB-yQ-GVVpQIVnyeBFUJ_wzc4eCqaKHNK77hAgAwlLnsQlpOGp10KU-q_tKI57Zutifjpw7e--lbbbLVbw-i6DZMS27IZYhwI0QVsKqGEsLYzOKze6lM7ZQf3lstDg7S_Rz3jNJq-GQacJVDp5TmE4RitmnLJ98HJC9xbr8ppL2UOwwIHy3WfAR9SibKesusjv-bUCZJMXg9SkrhAPjTTRCdi2Pj6w
+
+iis = https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4
+Launch= eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1cm46b2lkOjEuMi44NDAuMTE0MzUwLjEuMTMuMC4xLjcuMy42ODg4ODQuMTAwIiwiY2xpZW50X2lkIjoiNTE4ZGM3ZTMtODlkYS00ODZmLTkyN2UtYmJkY2ZkZDU4YWExIiwiZXBpYy5lY2kiOiJ1cm46ZXBpYzpPcGVuLkVwaWMtY3VycmVudCIsImVwaWMubWV0YWRhdGEiOiJDN3I1Q0hmMWM3YjdHbC0yb1BzMFdsMVN0dFVSSC1pdjI0VFhEMFF1RGdzMmdVUUFZM0pyMUtPSnZaNWdYcng1djdnUzNLMDh2MDg2M3YzcTZjby0xRHl4TEFNcmd2QnQ1Tm1Nelp3VjJoZEpvQlNFV2VEN2hUTmVzVW9JVHY4ZSIsImVwaWMudG9rZW50eXBlIjoibGF1bmNoIiwiZXhwIjoxNzQzODAwOTIyLCJpYXQiOjE3NDM4MDA2MjIsImlzcyI6InVybjpvaWQ6MS4yLjg0MC4xMTQzNTAuMS4xMy4wLjEuNy4zLjY4ODg4NC4xMDAiLCJqdGkiOiI5YmI3YTg5Ny03NmU2LTRmMjktYWY0Yi0yMTFjYWE3MmQ3NzMiLCJuYmYiOjE3NDM4MDA2MjIsInN1YiI6ImV2TnAtS2hZd09PcUFabjFwWjJlbnVBMyJ9.i0SOe8B5AGvWIlVLzV-zagLM7F8BQAKRtUyGxjiKtAtxUloM160catbLdg7C7c7F4TgCL-vkGU2Thfccg9OyarOQwvyukz6IUSrxNnrqO23iaUpmCSxHJFneeB-yQ-GVVpQIVnyeBFUJ_wzc4eCqaKHNK77hAgAwlLnsQlpOGp10KU-q_tKI57Zutifjpw7e--lbbbLVbw-i6DZMS27IZYhwI0QVsKqGEsLYzOKze6lM7ZQf3lstDg7S_Rz3jNJq-GQacJVDp5TmE4RitmnLJ98HJC9xbr8ppL2UOwwIHy3WfAR9SibKesusjv-bUCZJMXg9SkrhAPjTTRCdi2Pj6w
+state = A900XT (Random Number for CSRF Avoid)
+
+you have to generate url with these information 
+
+string authorizeUrl = $"{_epicAuthSettings.AuthorizationUri}" +
+                      $"?response_type=code" +
+                      $"&client_id={_epicAuthSettings.ClientId}" +
+                      $"&redirect_uri={Uri.EscapeDataString(_epicAuthSettings.RedirectUri!)}" +
+                      $"&scope={Uri.EscapeDataString("launch openid fhirUser")}" +
+                      $"&state={state}" +
+                      $"&aud={Uri.EscapeDataString(iss)}" +
+                      $"&launch={launch}";
+
+in response you have got this 
+
+https://fhir.epic.com/interconnect-fhir-oauth/oauth2/authorize?response_type=code&client_id=518dc7e3-89da-486f-927e-bbdcfdd58aa1&redirect_uri=https%3A%2F%2Fdev-bulkauthapi.vstintegration.com%2Fapi%2Fauth%2Fcallback&scope=launch%20openid%20fhirUser&state=A900XT&aud=https%3A%2F%2Ffhir.epic.com%2Finterconnect-fhir-oauth%2Fapi%2FFHIR%2FR4&launch=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1cm46b2lkOjEuMi44NDAuMTE0MzUwLjEuMTMuMC4xLjcuMy42ODg4ODQuMTAwIiwiY2xpZW50X2lkIjoiNTE4ZGM3ZTMtODlkYS00ODZmLTkyN2UtYmJkY2ZkZDU4YWExIiwiZXBpYy5lY2kiOiJ1cm46ZXBpYzpPcGVuLkVwaWMtY3VycmVudCIsImVwaWMubWV0YWRhdGEiOiJDN3I1Q0hmMWM3YjdHbC0yb1BzMFdsMVN0dFVSSC1pdjI0VFhEMFF1RGdzMmdVUUFZM0pyMUtPSnZaNWdYcng1djdnUzNLMDh2MDg2M3YzcTZjby0xRHl4TEFNcmd2QnQ1Tm1Nelp3VjJoZEpvQlNFV2VEN2hUTmVzVW9JVHY4ZSIsImVwaWMudG9rZW50eXBlIjoibGF1bmNoIiwiZXhwIjoxNzQzODAwOTIyLCJpYXQiOjE3NDM4MDA2MjIsImlzcyI6InVybjpvaWQ6MS4yLjg0MC4xMTQzNTAuMS4xMy4wLjEuNy4zLjY4ODg4NC4xMDAiLCJqdGkiOiI5YmI3YTg5Ny03NmU2LTRmMjktYWY0Yi0yMTFjYWE3MmQ3NzMiLCJuYmYiOjE3NDM4MDA2MjIsInN1YiI6ImV2TnAtS2hZd09PcUFabjFwWjJlbnVBMyJ9.i0SOe8B5AGvWIlVLzV-zagLM7F8BQAKRtUyGxjiKtAtxUloM160catbLdg7C7c7F4TgCL-vkGU2Thfccg9OyarOQwvyukz6IUSrxNnrqO23iaUpmCSxHJFneeB-yQ-GVVpQIVnyeBFUJ_wzc4eCqaKHNK77hAgAwlLnsQlpOGp10KU-q_tKI57Zutifjpw7e--lbbbLVbw-i6DZMS27IZYhwI0QVsKqGEsLYzOKze6lM7ZQf3lstDg7S_Rz3jNJq-GQacJVDp5TmE4RitmnLJ98HJC9xbr8ppL2UOwwIHy3WfAR9SibKesusjv-bUCZJMXg9SkrhAPjTTRCdi2Pj6w
+
+copy and paste into the browser and it will hit the call back method with code and state 
+dev-bulkauthapi.vstintegration.com/api/auth/callback
+
+this method will written jwt token which you can use in post man to retrieve Patient data
+ 
+summary 
+epic main app create kero , epic apko ClientID,clientscrete,call backuri usko batana parey ga app main , de ga 
+ "ClientId": "518dc7e3-89da-486f-927e-bbdcfdd58aa1",
+    "ClientSecret": "e2UIfNtcydle7WX97CAe0yEVOSeUoFSzbttptoi5ruUgQWGMCACLQcrj0cV0Y09t1RPO1/KRnqf+A5OzGVg+Kw==",
+    "RedirectUri": "https://dev-bulkauthapi.vstintegration.com/api/auth/callback",
+    "TokenUri": "https://fhir.epic.com/interconnect-fhir-oauth/oauth2/token",
+    "AuthorizationUri": "https://fhir.epic.com/interconnect-fhir-oauth/oauth2/authorize"
+
+
+epic ke launcher se , iss , launch token , state koye bi random number le ker usko 
+iss: iis = https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4
+Launch= eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJh
+state: koye bi random number , AXBNC1240
+
+API ke Launch method main de , launch method ClientID,Url ko different cheezain mila ker ek url generate kere ga 
+jo browser per jaga ker epic.fhir ko call ker ke us se code le ga 
+ab code and state app call back method ko do ge or wo uska token generate kere ga code ke against
+us token ko app post man main use ker ke patient ka data le saktey hain.
+===============================================
+🧠 Pro Tip:
+
+iss → FHIR Base URL
+
+launch → use in /authorize request to Epic
+
+Then Epic redirects you to your redirect_uri with code
+
+You exchange code + client_id + client_secret and launch token to get access_token to get patient information.
+
+===============================================

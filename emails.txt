@@ -1,0 +1,21 @@
+Hi @devops@technevity 
+
+Kindly start the deployment for  the below mentioned projects on Production after approval from @Performance Testing Team 
+All code has been merged into the respective main branches.
+Please refer to Environment Variables Integration  for production pipeline configurations.
+@Aamir Liaqat Move your changes accordingly.
+Projects Included:
+Connector API
+EpicAuthAPI
+PluginAPI
+EpicPlugin
+MLLP
+NUC
+Vocera 
+PCC
+Once the projects 1-5 are done and verified, then deploy NUC, Vocera and PCC one by one .
+
+Best Regards
+Eman Atif
+Software Engineer I
+=================================================

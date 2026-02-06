@@ -1,0 +1,254 @@
+using static System.Net.Mime.MediaTypeNames;
+using System.Collections.Generic;
+
+ROL rol = new ROL();
+string hl7RolSegment = "ROL|65^TestNamespace^123456^ISO|AD|AD|14718888^^^^^^^^TestBranch^^^^RN|20250309035640-0000|20250309103140-0000|20250309035640-0000|20250309103140-0000";
+string[] fields = hl7RolSegment.Split('|');
+//Console.WriteLine(string.Join("\n",fields));
+string rolInstanceFields = fields.Length > 1 ? fields[1] : null;
+string[] eiComp = rolInstanceFields.Split('^');
+rol.roleInstanceId = new EI
+{
+    EntityIdentifier = eiComp.Length > 0 ? eiComp[0] : null,
+    NamespaceId = eiComp.Length > 1 ? eiComp[1] : null,
+    UniversalId = eiComp.Length > 2 ? eiComp[2] : null,
+    UniversalIdType = eiComp.Length > 3 ? eiComp[3] : null,
+};
+
+string rolActionCode = fields.Length > 2 ? fields[2] : null;
+rol.ActionCode = rolActionCode;
+string rolInstanceFieldsRol = fields.Length > 3 ? fields[3] : null;
+rol.Role.Identifier = rolInstanceFieldsRol;
+string rolInstanceFieldsRolPerson = fields.Length > 4 ? fields[4] : null;
+Console.WriteLine(rol.roleInstanceId.EntityIdentifier);
+// tricky part  
+//Why is RolePersons a List?
+//XCN allows multiple role persons (e.g., multiple nurses, doctors, or technicians assigned to the role).
+//In HL7, if multiple XCN entries exist, they are separated by ~, like:
+//text
+//Copy
+//Edit
+//14718888^^^^^^^^TestBranch^^^^RN~258963^^^^Hospital^^^MD
+//Here, two role persons exist, so we store them in a list (IList<XCN>).Why is RolePersons a List?
+//XCN allows multiple role persons (e.g., multiple nurses, doctors, or technicians assigned to the role).
+//In HL7, if multiple XCN entries exist, they are separated by ~, like:
+//text
+//Copy
+//Edit
+//14718888^^^^^^^^TestBranch^^^^RN~258963^^^^Hospital^^^MD
+//Here, two role persons exist, so we store them in a list (IList<XCN>).
+
+if (!string.IsNullOrEmpty(rolInstanceFieldsRolPerson))
+{
+    string[] rollPersonEntries = rolInstanceFieldsRolPerson.Split('~');
+    foreach (var item in rollPersonEntries)
+    {
+        string[] xcnComponents = item.Split('^');
+      //  Console.WriteLine(string.Join("\n",fields));
+        rol.RolePersons.Add(new XCN
+        {
+            IdNumber = xcnComponents.Length > 0 ? xcnComponents[0] : null,  // "14718888"
+            FamilyName = xcnComponents.Length > 1 ? xcnComponents[1] : null,  // ""
+            GivenName = xcnComponents.Length > 2 ? xcnComponents[2] : null,  // ""
+            MiddleNameOrInitials = xcnComponents.Length > 3 ? xcnComponents[3] : null,  // ""
+            Suffix = xcnComponents.Length > 4 ? xcnComponents[4] : null,  // ""
+            Prefix = xcnComponents.Length > 5 ? xcnComponents[5] : null,  // ""
+            Degree = xcnComponents.Length > 6 ? xcnComponents[6] : null,  // ""
+            SourceTable = xcnComponents.Length > 7 ? xcnComponents[7] : null,  // "TestBranch"
+            AssigningAuthority = xcnComponents.Length > 8 ? new HD { NamespaceId = xcnComponents[8] } : null, // Assigning Authority
+            NameTypeCode = xcnComponents.Length > 9 ? xcnComponents[9] : null,  // Should be HL7 Table 0200 value (e.g., "L", "A")
+            IdentifierCheckDigit = xcnComponents.Length > 10 ? xcnComponents[10] : null,  // Check digit (if applicable)
+            CheckDigitIdentifyingCode = xcnComponents.Length > 11 ? xcnComponents[11] : null,  // Check digit scheme
+            IdentifierTypeCode = xcnComponents.Length > 12 ? xcnComponents[12] : "RN"  // "RN" should be here (XCN.13)
+        });
+
+    }
+
+    foreach (var item in rol.RolePersons)
+    {
+        Console.WriteLine($"IdNumber: {item.IdNumber ?? "N/A"}");
+        Console.WriteLine($"FamilyName: {item.FamilyName ?? "N/A"}");
+        Console.WriteLine($"GivenName: {item.GivenName ?? "N/A"}");
+        Console.WriteLine($"MiddleNameOrInitials: {item.MiddleNameOrInitials ?? "N/A"}");
+        Console.WriteLine($"Suffix: {item.Suffix ?? "N/A"}");
+        Console.WriteLine($"Prefix: {item.Prefix ?? "N/A"}");
+        Console.WriteLine($"Degree: {item.Degree ?? "N/A"}");
+        Console.WriteLine($"SourceTable: {item.SourceTable ?? "N/A"}");
+        Console.WriteLine($"AssigningAuthority: {item.AssigningAuthority?.NamespaceId ?? "N/A"}");
+        Console.WriteLine($"NameTypeCode: {item.NameTypeCode ?? "N/A"}");
+        Console.WriteLine($"IdentifierCheckDigit: {item.IdentifierCheckDigit ?? "N/A"}");
+        Console.WriteLine($"CheckDigitIdentifyingCode: {item.CheckDigitIdentifyingCode ?? "N/A"}");
+        Console.WriteLine($"IdentifierTypeCode: {item.IdentifierTypeCode ?? "N/A"}");
+        Console.WriteLine("------------");
+    }
+}
+
+string rolInstanceFieldNurseSchTimeIn = fields.Length > 5 ? fields[5] : null;
+rol.RoleBeginDateTime = rolInstanceFieldNurseSchTimeIn;
+string rolInstanceFieldNurseSchTimeOut = fields.Length > 6 ? fields[6] : null;
+rol.RoleEndDateTime = rolInstanceFieldNurseSchTimeOut;
+string rolInstanceFieldNurseSignIn = fields.Length > 7 ? fields[7] : null;
+rol.RolSignInTime = rolInstanceFieldNurseSignIn;
+string rolInstanceFieldNurseSignOut = fields.Length > 8 ? fields[8] : null;
+rol.RolSignOutTime = rolInstanceFieldNurseSignOut;
+
+
+Console.WriteLine();
+public class ROL
+{
+    public ROL()
+    {
+        
+        RolePersons = new List<XCN>();
+        Role = new CE();
+    }
+    public EI? roleInstanceId { get; set; }
+    public string? ActionCode { get; set; }
+
+    /// <summary>
+    /// ROL.3
+    /// Required in HL7 v2.4
+    /// </summary>
+    public CE? Role { get; set; }
+
+    /// <summary>
+    /// Required in HL7 v2.4
+    /// </summary>
+    public IList<XCN>? RolePersons { get; set; }
+    public string? RoleBeginDateTime { get; set; }
+    public string? RoleEndDateTime { get; set; }
+    public string? RolSignInTime { get; set; }
+    public string? RolSignOutTime { get; set; }
+
+}
+public class EI
+{
+    public string? EntityIdentifier { get; set; }
+    public string? NamespaceId { get; set; }      // EI.2
+    public string? UniversalId { get; set; }      // EI.3
+    public string? UniversalIdType { get; set; }  // EI.4
+}
+
+public class CE
+{
+    /// <summary>
+    /// CE.1
+    /// </summary>
+    public string? Identifier { get; set; }
+
+    /// <summary>
+    /// CE.2
+    /// </summary>
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// CE.3
+    /// </summary>
+    public string? NameOfCodingSystem { get; set; }
+
+    /// <summary>
+    /// CE.4
+    /// </summary>
+    public string? AlternateIdentifier { get; set; }
+
+    /// <summary>
+    /// CE.5
+    /// </summary>
+    public string? AlternateText { get; set; }
+
+    /// <summary>
+    /// CE.6
+    /// </summary>
+    public string? NameOfAlternateCodingSystem { get; set; }
+}
+
+public class XCN
+{
+    /// <summary>
+    /// XCN.1
+    /// </summary>
+    public string? IdNumber { get; set; }
+
+    /// <summary>
+    /// XCN.2
+    /// </summary>
+    public string? FamilyName { get; set; }
+
+    /// <summary>
+    /// XCN.3
+    /// </summary>
+    public string? GivenName { get; set; }
+
+    /// <summary>
+    /// XCN.4
+    /// </summary>
+    public string? MiddleNameOrInitials { get; set; }
+
+    /// <summary>
+    /// XCN.5
+    /// </summary>
+    public string? Suffix { get; set; }
+
+    /// <summary>
+    /// XCN.6
+    /// </summary>
+    public string? Prefix { get; set; }
+
+    /// <summary>
+    /// XCN.7
+    /// Used to specify an educational degree (e.g., MD)
+    /// </summary>
+    public string? Degree { get; set; }
+
+    /// <summary>
+    /// XCN.8
+    /// Conditional in HL7v2.3, 
+    /// if XCN.1 (IdNumber) is present, 
+    /// then either this this or XCN.9 (AssigningAuthority) must be valued
+    /// </summary>
+    public string? SourceTable { get; set; }
+
+    /// <summary>
+    /// XCN.9
+    /// Conditional in HL7v2.3, 
+    /// if XCN.1 (IdNumber) is present, 
+    /// then either this this or XCN.8 (SourceTable) must be valued
+    /// </summary>
+    public HD? AssigningAuthority { get; set; }
+
+    /// <summary>
+    /// XCN.10
+    /// Has values from the HL7 Table 0200 - Name type
+    /// </summary>
+    public string? NameTypeCode { get; set; }
+
+    /// <summary>
+    /// XCN.11
+    /// </summary>
+    public string? IdentifierCheckDigit { get; set; }
+
+    /// <summary>
+    /// XCN.12
+    /// Has values from the HL7 Table 0061 - Check digit scheme
+    /// </summary>
+    public string? CheckDigitIdentifyingCode { get; set; }
+
+    /// <summary>
+    /// XCN.13
+    /// </summary>
+    public string? IdentifierTypeCode { get; set; }
+
+    /// <summary>
+    /// XCN.14
+    /// </summary>
+    public HD? AssigningFacility { get; set; }
+}
+
+public class HD
+{
+    /// <summary>
+    /// HD.1
+    /// </summary>
+    public string? NamespaceId { get; set; }
+}
+

@@ -1,0 +1,85 @@
+Admin	Non-Admin	URL
+Test		
+Username : adminuser@gmail.com	Username : user1@gmail.com	https://test-portal.vstintegration.com
+Password : Integration@123	Password  : Integration@123	
+		
+Demo		
+Username : demo_useradmin@gmail.com	Username : demo_user@gmail.com	https://demo-portal.vstintegration.com
+Password : Integration@123	Password  : Integration@123	
+		
+		
+Production		
+Username : admin_user@gmail.com	Username : prod_user@gmail.com	https://portal.vstintegration.com
+Password : Integration@123	Password  : Integration@123	
+		
+
+now dev production , test Ips for test 
+
+==============
+demo server
+=============
+demo external
+18.118.94.121 Bash Server , mean login this server and then it has access to other servers in Aws , 
+ShahZeb
+S2^7a4l6a#m99511
+
+demo internal
+18.118.79.17 //  this is the actual server 
+Shahzeb
+
+===========
+dev mirth system pASSWORD
+=====================
+dev
+54.225.208.208
+shahzeb
+S2^7a4l6a*m99511
+====mirth admin pass
+admin
+hobbitoN&46
+=================
+test server mllp
+54.227.208.238
+=====================
+testing ORU message thorugh local to merth
+step 1 : go to outgoinghl7configs table 
+step 2 : go to sourceclient table and find facility Id
+==============
+=================
+demo server
+=============
+demo external
+18.118.94.121 Bash Server , mean login this server and then it has access to other servers in Aws , 
+ShahZeb
+S2^7a4l6a#m99511
+
+demo internal
+18.118.79.17 //  this is the actual server 
+Shahzeb
+===========
+production Ip 
+52.43.60.147
+===========================
+production Mirth Server
+=============
+44.230.192.113
+Shahzeb
+Z*M8U1m#e1e6e$T2
+================
+vst alert 
+============
+https://test-notifyconsole.vstalert.com/home
+Username: EPICMLLP2
+Password:  Vst@12345
+=====================
+test message for room
+===========
+MSH|^~\&|Epic EHR|EPICMLLP2|VST Integration|EPICMLLP2|20250101060000-0000||ADT^A01|RegressionAfterPerformanceChanges_001|P|2.3
+EVN||20250101060000-0000
+PID|||PID1234567^^^^EMPI||proudction_test^proudction_test^yango||19470806
+PV1||SNFI|NICU^EPICMLLP^^^^^^1|||^EPICMLLP2
+OBX|1|NM|30400114538^Braden Scale Score^TCVIRTUSENSE||7||||||F
+OBX|2|NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||76||||||F
+ROL|5|LI|LPN|888131^HARDER^HANNAH^^^^^^^^^^EMP|20230512061354-0000|20280701055000-0000
+ROL|5|LI|LPN|888132^HARDER^HANNAH^^^^^^^^^^EMP|20230512061354-0000|20280701055000-0000
+===================================

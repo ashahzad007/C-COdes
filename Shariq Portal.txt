@@ -1,0 +1,18 @@
+Admin	Non-Admin	URL
+Test		
+Username : adminuser@gmail.com	Username : user1@gmail.com	https://test-portal.vstintegration.com
+Password : Integration@123	Password  : Integration@123	
+		
+Demo		
+Username : demo_useradmin@gmail.com	Username : demo_user@gmail.com	https://demo-portal.vstintegration.com
+Password : Integration@123	Password  : Integration@123	
+		
+		
+Production		
+Username : admin_user@gmail.com	Username : prod_user@gmail.com	https://portal.vstintegration.com
+Password : Integration@123	Password  : Integration@123	
+
+
+dev 
+s.ahmed9555@gmail.com
+Vst@123

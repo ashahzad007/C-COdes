@@ -1,0 +1,517 @@
+Request , what you give 
+Response , what you get 
+use generic request and response model.
+
+🎯 Your approach: Interface → Service → Controller
+You’re doing:
+
+Define contracts in the interface (Accession)
+
+Implement those contracts in the service (AuthTokenService)
+
+Call service methods from the controller (AccessTokenController)
+
+Split logic into small, single-responsibility methods (like GetAccessTokenFrom0Auth, GetUsersFromAuth0, etc.) and combine them in a “main” orchestration method (GetAuth0UserInformation)
+
+
+⚡ Verdict: Is your current approach good?
+✔ Yes. It’s solid. Professional devs do the same.
+✔ Interface → Service → Controller is a best practice
+✔ Small verb methods + orchestration = clean design
+✔ Adding Polly shows you’re already thinking “resiliency”
+
+For a “learning phase” project, you’re doing it exactly right. 👍
+
+🔥 Your orchestration method (GetAuth0UserInformation)
+You’re combining small verbs in one “main” orchestration method:
+
+GetAccessTokenFrom0Auth()
+
+GetUsersFromAuth0()
+
+error handling
+
+logging
+
+=======
+The truth about senior devs
+Here’s a secret:
+Even senior engineers don’t “write everything from memory.”
+They:
+
+Reuse old code.
+
+Use Google/GitHub Copilot/ChatGPT daily.
+
+Focus on problem-solving, not memorization.
+
+Your goal isn’t to memorize—your goal is to:
+📦 Break problems into parts.
+🧠 Understand patterns.
+⚡️ Know how to get answers (docs, AI, etc.) when stuck.
+
+You’re already doing all of this.
+=======================
+try to design workflow in copy and paper 
+like this 
+Draw a simple diagram of how data flows (request → service → Auth0 → response).
+===================
+Focus on problem-solving, not memorization.
+break problem into small parts , 
+focus on one thing first then second , 
+debug , debug to get real problem 
+Understand patterns, repo pattern , unit of work , factory , singlton
+===============
+writing new code , 
+starts from interface 
+then service class , 
+then DI injection in controller 
+create request and response generic classes
+example of clasess how to use like lists  , [{}] Jason type objetcs 
+in methods , use one main methods and calls child methods into it to make it clean and one function response with many result
+for example , is jaga per ek function ek hi kaam ker raha hai , agar apkey pass 10 kaam hain tu app 10 function banyan , 
+ek main function se unko call ker ke apna maqsad pora ker lein 
+
+ public interface IAccessToken
+    {
+        Task<string> GetAuth0UserInformation(Auth0TokenRequest auth0TokenRequest);
+        Task<AuthTokenResponse> GetAccesTokenFrom0Auth(Auth0TokenRequest auth0TokenRequest);
+        Task<List<Auth0User>> GetUsersFromAuth0(string accessToken);
+        Task<HttpRequestMessage> CreateRequest(Auth0TokenRequest auth0TokenRequest);
+        
+    }
+GetAuth0UserInformation method is responsible for access token and then goto website and get user records in its return type.
+======
+Genric Classess for request and response 
+===========================
+   public class ApiRequest<T> where T:class
+   {
+       public string Version { get; set; }
+       public int VersionPolicy { get; set; }
+       public T Content { get; set; }
+       public string Method { get; set; }
+       public string RequestUri { get; set; }
+   }
+
+=================
+ public class ApiResponse<T> where T:class
+ {
+     public string Result { get; set; }
+     public string Message { get; set; }
+     public T Data { get; set; }
+ }
+
+
+{
+    public class Auth0User
+    {
+        public string email { get; set; }
+        public string name { get; set; }
+        public DateTime created_at { get; set; }
+        public DateTime updated_at { get; set; }
+        public List<Identity> identities { get; set; }
+        public string user_id { get; set; }
+        public string nickname { get; set; }
+        public string picture { get; set; }
+        public bool email_verified { get; set; }
+    }
+=============
+    public class Identity
+    {
+        public string connection { get; set; }
+        public string user_id { get; set; }
+        public string provider { get; set; }
+        public bool isSocial { get; set; }
+    }
+===============
+using of inhterance in classes in response class to response in one location important example
+================
+ public class Auth0UserResponse : List<Auth0User>
+ {
+ }
+=====================
+to get more advance check the code here API CODE , IN INTERFACE I USE MAIN METHOD AND Calls all mthods in it
+==========
+using Newtonsoft.Json;
+using System.Text;
+using WebApplication7.Models;
+using WebApplication7.Models.Entities;
+
+namespace WebApplication7.Interface
+{
+    public interface IAccessToken
+    {
+        Task<Auth0UserResponse> GetAuth0UserInformation(Auth0TokenRequest auth0TokenRequest);
+        Task<AuthTokenResponse> GetAccesTokenFrom0Auth(Auth0TokenRequest auth0TokenRequest);
+        Task<List<Auth0User>> GetUsersFromAuth0(string accessToken);
+        Task<HttpRequestMessage> CreateRequest(Auth0TokenRequest auth0TokenRequest);
+        
+    }
+}
+
+=============
+SERVICE CLASS
+=============
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Polly;
+using Polly.Retry;
+using System.Net.Http.Headers;
+using System.Text;
+using WebApplication7.Interface;
+using WebApplication7.Models;
+using WebApplication7.Models.Entities;
+
+namespace WebApplication7.Service
+{
+    //to do 
+    // generic classes for request and response and error response
+    // make it generic request and response mechnasim
+    // make it ok , 200 and 400 , 404 error handles in controller..
+    // response .... handling 
+    // your method return string try to return with concrte class type
+    public class AuthTokenService : IAccessToken
+    {
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthTokenService> _logger;
+        private readonly RetryPolicy _retryPolicy;
+        private readonly int _retryCount;
+        private readonly string _clientUrl;
+        private readonly string _userUrl;
+        public AuthTokenService(IConfiguration configuration, ILogger<AuthTokenService> logger)
+        {
+            _configuration = configuration;
+            _logger = logger;
+            var retryCountText = _configuration["ConfigurationSettings:connRetries"];
+            _clientUrl = _configuration["ConfigurationSettings:clientUrl"];
+            _retryCount = Convert.ToInt32(retryCountText);
+            _userUrl = _configuration["ConfigurationSettings:userUrl"];
+            _retryPolicy = Policy
+            .Handle<Exception>()
+            //.Handle<SocketException>()
+            //.Or<TimeoutException>()
+            .WaitAndRetry(_retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
+            {
+                _logger.LogError(ex, "The direct publisher could not connect to endpoint after {@Seconds}s because of {@Exception} in {@Source})", time.TotalSeconds, ex.Message, ex.Source);
+            });
+        }
+
+        public async Task<Auth0UserResponse> GetAuth0UserInformation(Auth0TokenRequest auth0TokenRequest)
+        {
+            if (auth0TokenRequest == null)
+            {
+                _logger.LogError("GetAccessToken request is null.");
+                throw new ArgumentNullException(nameof(auth0TokenRequest), "Request is null");
+            }
+
+            try
+            {
+                AuthTokenResponse authTokenResponse = await GetAccesTokenFrom0Auth(auth0TokenRequest);
+
+                if (authTokenResponse == null || string.IsNullOrEmpty(authTokenResponse.AccessToken))
+                {
+                    throw new InvalidOperationException("Failed to retrieve access token from Auth0");
+                }
+
+                string accessToken = authTokenResponse.AccessToken;
+
+                List<Auth0User>? auth0Users = await GetUsersFromAuth0(accessToken);
+
+                if (auth0Users == null)
+                {
+                    throw new InvalidOperationException("Failed to retrieve users from Auth0");
+                }
+
+                // Create Auth0UserResponse from the list
+                var response = new Auth0UserResponse();
+                response.AddRange(auth0Users);
+                response.IsSuccess = true;
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception while calling GetAccessToken.");
+                throw; // Let caller handle the exception
+            }
+        }
+
+
+        public async Task<AuthTokenResponse> GetAccesTokenFrom0Auth(Auth0TokenRequest auth0TokenRequest)
+        {
+            if (auth0TokenRequest == null)
+            {
+                _logger.LogError("GetAccessTokenFrom0Auth request is null.");
+                throw new ArgumentNullException(nameof(auth0TokenRequest), "Request is null");
+            }
+
+            try
+            {
+                _logger.LogInformation("Preparing Auth0 token request for client_id: {ClientId}", auth0TokenRequest.client_id);
+
+                using HttpClientHandler clientHandler = new()
+                {
+                    UseCookies = false // Optional: depends on your API requirements
+                };
+
+                using HttpClient client = new(clientHandler);
+
+                HttpResponseMessage response = null;
+                await _retryPolicy.Execute(async () =>
+                {
+                    HttpRequestMessage? requestMessage = await CreateRequest(auth0TokenRequest);
+                    _logger.LogInformation("Sending Auth0 token request to {Url}", requestMessage.RequestUri);
+                    response = await client.SendAsync(requestMessage);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("Auth0 token request failed. Status: {StatusCode}, Reason: {ReasonPhrase}",
+                        response.StatusCode, response.ReasonPhrase);
+                    }
+
+                    response.EnsureSuccessStatusCode();
+                });
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Auth0 raw response: {ResponseContent}", responseContent);
+
+                var settings = new JsonSerializerSettings
+                {
+                    ContractResolver = new DefaultContractResolver
+                    {
+                        NamingStrategy = new SnakeCaseNamingStrategy()
+                    }
+                };
+
+                var tokenResponse = JsonConvert.DeserializeObject<AuthTokenResponse>(responseContent, settings);
+
+
+                _logger.LogInformation("Received Auth0 access token successfully.");
+                return tokenResponse ?? throw new InvalidOperationException("Failed to deserialize AuthTokenResponse.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception while fetching Auth0 access token.");
+                throw;
+            }
+        }
+
+        public async Task<List<Auth0User>> GetUsersFromAuth0(string accessToken)
+        {
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                _logger.LogError("GetUsersFromAuth0: JWT token is null or empty.");
+                throw new ArgumentNullException(nameof(accessToken), "JWT token is required");
+            }
+
+            try
+            {
+                _logger.LogInformation("Preparing request to fetch users from Auth0");
+
+                using HttpClientHandler clientHandler = new()
+                {
+                    UseCookies = false
+                };
+
+                using HttpClient client = new(clientHandler);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                HttpResponseMessage response = null;
+                await _retryPolicy.Execute(async () =>
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get,_userUrl);
+                    _logger.LogInformation("Sending request to Auth0 Users API");
+                    response = await client.SendAsync(request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("Auth0 users request failed. Status: {StatusCode}, Reason: {ReasonPhrase}",
+                            response.StatusCode, response.ReasonPhrase);
+                    }
+
+                    response.EnsureSuccessStatusCode();
+                });
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug("Auth0 users API raw response: {ResponseContent}", responseContent);
+
+                var settings = new JsonSerializerSettings
+                {
+                    ContractResolver = new DefaultContractResolver
+                    {
+                        NamingStrategy = new SnakeCaseNamingStrategy()
+                    },
+                    // Handle date format from Auth0
+                    DateFormatHandling = DateFormatHandling.IsoDateFormat
+                };
+
+                var users = JsonConvert.DeserializeObject<List<Auth0User>>(responseContent, settings);
+
+                _logger.LogInformation("Successfully retrieved {Count} users from Auth0", users?.Count ?? 0);
+                return users ?? throw new InvalidOperationException("Failed to deserialize Auth0 users response.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception while fetching users from Auth0");
+                throw;
+            }
+        }
+              
+        public async Task<HttpRequestMessage> CreateRequest(Auth0TokenRequest auth0TokenRequest)
+        {
+            var jsonBody = JsonConvert.SerializeObject(auth0TokenRequest);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(_clientUrl),
+                Content = new StringContent(jsonBody, Encoding.UTF8, "application/json")
+            };
+
+            request.Headers.Add("Accept", "application/json");
+            return request;
+        }
+
+   
+    }
+}
+
+=================
+CONTROLLER
+==============
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using WebApplication7.Interface;
+using WebApplication7.Models;
+using WebApplication7.Service;
+
+namespace WebApplication7.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AccessTokenController : ControllerBase
+    {
+        private readonly IAccessToken _authTokenService;
+        private readonly ILogger<AccessTokenController> _logger;
+
+        public AccessTokenController(IAccessToken authTokenService,ILogger<AccessTokenController> logger)
+        {
+            _authTokenService = authTokenService;
+            _logger = logger;
+        }
+
+        [HttpPost("GetAuth0UserInformation")]
+        public async Task<IActionResult> GetAuth0UserInformation([FromBody]ApiRequest<Auth0TokenRequest> request)
+        {
+            if (request == null)
+                return BadRequest("Request body is null");
+
+            Auth0UserResponse user = await _authTokenService.GetAuth0UserInformation(request.Content); //creating authserviced token instance in background
+            
+            if (user==null)
+            {
+                return StatusCode(500, new { message = "Empty response from Auth0" });
+            }
+
+            ApiResponse<Auth0UserResponse> response = =======================================
+very important class libray response codes API to translate it into main console App
+=======================================
+Good question 👍 — let’s break it down.
+
+1. Validation inside class library/plugin method
+
+Yes, it makes sense to validate business-critical fields like PIDInternal as early as possible, inside the class library (e.g. EpicPlugin).
+Your snippet is good:
+
+if (resetRequest == null || string.IsNullOrWhiteSpace(resetRequest.PIDInternal))
+{
+    _logger.LogError("Missing PIDInternal in {@Method}, {@Class}, {@Source}",
+        nameof(GetData),
+        nameof(EpicPlugin),
+        OperationConstants.Source);
+
+    response.ResponseCode = ResponseCode.BadRequest;
+    response.Message = "Bad Request: PIDInternal value is required";
+    return response;
+}
+
+
+That way the plugin itself decides “I cannot process this request without PIDInternal”.
+This is business validation, so it belongs in the class library.
+
+2. Translation to HTTP status code
+
+Your main API method (GetDataAsync) should not worry about business rules.
+It only looks at response.ResponseCode (from the library), and maps it to HTTP at the very end:
+
+Response.StatusCode = response.ResponseCode switch
+{
+    ResponseCode.Success => (int)HttpStatusCode.OK,
+    ResponseCode.BadRequest => (int)HttpStatusCode.BadRequest,
+    ResponseCode.Unauthorized => (int)HttpStatusCode.Unauthorized,
+    ResponseCode.Forbidden => (int)HttpStatusCode.Forbidden,
+    ResponseCode.NotFound => (int)HttpStatusCode.NotFound,
+    ResponseCode.InternalServerError => (int)HttpStatusCode.InternalServerError,
+    _ => (int)HttpStatusCode.InternalServerError
+};
+return new JsonResult(response);
+
+
+This keeps separation of concerns:
+
+Plugin → decides what went wrong (domain/business validation).
+
+API → decides how to translate that into HTTP (protocol concern).
+
+✅ So answer:
+
+Yes, it’s good practice to:
+
+Add PIDInternal validation inside your class library/plugin (where the business rule lives).
+
+Keep the final translation switch in your API controller so all responses (including this one) are converted to proper HTTP status codes in a consistent place.
+
+⚡ Optional: If you don’t want to repeat response.ResponseCode = ResponseCode.BadRequest; everywhere, you could write a helper in your base response class like:
+
+public static GeneralBaseResponse BadRequest(string message) =>
+    new GeneralBaseResponse { ResponseCode = ResponseCode.BadRequest, Message = message };
+
+
+Then your validation becomes:
+
+if (resetRequest == null || string.IsNullOrWhiteSpace(resetRequest.PIDInternal))
+{
+    _logger.LogError("Missing PIDInternal...");
+    return GeneralBaseResponse.BadRequest("PIDInternal value is required");
+}
+new ApiResponse<Auth0UserResponse>
+            {
+                Result = "SUCCESS",
+                Message = "User info retrieved successfully.",
+                Data = user
+            };
+            _logger.LogInformation("Success - Status 200 OK | Response: {Response}",
+             JsonConvert.SerializeObject(response, Formatting.None));
+            return Ok(response);
+        }
+    }
+}
+=====================
+STRUCTURE OF API DESIGN IN .NET 
+========================
+1. create empty solution with good name , i mean complete name HosptialManagmentSystem etc not use HMS , ORS short name
+2. Create Folders  , Contracts, DataAccessLayer, Entities ,Logger , Services , Utilities
+3. Now Add Class libraires in it
+4. Add Project API 
+thats it go to my outlook one drive and see the pic here to create all project
+5. ab ek dafa chala ker dekh lien swagger chal raha hai ke nai (imp point)
+6. now setup logger first
+7) now main project API reference from main API HosptialManagmentSystem right click and add reference of Logger class library , 
+8) (NOTE AND IMPORTANT ) appsettings.json and program.cs files hamesha Main Project API ki use kerin Logs ke Configurations ke lye sirf class librabry log ka reference use kerin
+class libray main aapsettings.json and program.cs nai hoti , 
+9) logs seri log configuration ki file dekhin logs implement kerne ke laye 
+10) ab logs and structure implement ho gya apka 
+11) ab ap main repository pattern ko implement kerein gey DB connetion , db write and read operations ke lye 
+====================== 

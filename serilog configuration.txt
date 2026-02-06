@@ -1,0 +1,267 @@
+===================================================================================
+logger
+====================
+using System;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
+
+namespace HelloWorldApp
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddConsole(); // JSON-formatted console logs
+            });
+
+            ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
+            Serilog.ILogger seriLogger = new LoggerConfiguration()
+                .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+                .WriteTo.File("Log.txt",rollingInterval:RollingInterval.Day,rollOnFileSizeLimit:true) //check debeug/.net8 folder 
+             
+                .CreateLogger();
+            logger.LogInformation("Application started.");
+            var name = "Amir";
+            var age = 22;
+            Console.WriteLine("Hello, World!");
+            logger.LogInformation("Printed 'Hello, World!' to console.");
+            logger.LogWarning("This is a sample warning log.");
+            logger.LogError("This is a sample error log.");
+            logger.LogInformation("{Name} turned {Age}", name, age);
+            logger.Log(LogLevel.Critical, "critial error");
+            logger.LogInformation("Application ended.");
+            seriLogger.Information("from serilog");
+            seriLogger.Warning("from serilog");
+            seriLogger.Error("from serilog");
+            Log.Logger = seriLogger; // remove at close app and flush logs in memory
+            Log.CloseAndFlushAsync();
+            Log.CloseAndFlush();
+
+        }
+    }
+}
+=============================
+dotnet add package Microsoft.Extensions.Logging
+dotnet add package Microsoft.Extensions.Logging.Console
+dotnet add package Microsoft.Extensions.Logging.Json
+========================================================================
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.9" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+==================================================================================
+sample program.cs for serilog
+======================================
+using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+Serilog.ILogger logger = new LoggerConfiguration()
+    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+    .WriteTo.File("Log.txt", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true).//check debeug/.net8 folder 
+    CreateLogger();
+Log.Logger = logger;
+logger.Information("Hello from serilog");
+Log.CloseAndFlush();
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+=======================================================================================================================
+hi jacking windows , Microsoft extension logging to serilog , most impotratnt,logger, in API, or web application .net
+=======================================================================================================================
+step 1 , install, Serilog.AspNetCore
+step 2 , program.cs addition
+==============program.cs==========
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+//Serilog Configuration
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+builder.Host.UseSerilog();
+//Log.Information("Hello from serilog");
+//Log.CloseAndFlush();
+//end serilog configuration
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+==================now in controller=============
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebApplication14.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class WeatherForecastController : ControllerBase
+{
+    private static readonly string[] Summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
+    private readonly ILogger<WeatherForecastController> _logger;
+
+    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    {
+        _logger = logger;
+    }
+
+    [HttpGet(Name = "GetWeatherForecast")]
+    public IEnumerable<WeatherForecast> Get()
+    {
+	// this will only change
+        _logger.LogInformation("start weather forcasting info from serilog");
+        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        {
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            TemperatureC = Random.Shared.Next(-20, 55),
+            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+        })
+        .ToArray();
+    }
+}
+=====================appsettings.json========================================
+{
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.File", "Serilog.Sinks.Console" ],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft.AspNetCore": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "D:\\TesLogs\\HospitalManagementSystem\\Information\\info-.log",
+          "rollingInterval": "Day",
+          "formatter": "Serilog.Formatting.Json.JsonFormatter, Serilog",
+          "restrictedToMinimumLevel": "Information",
+          "fileSizeLimitBytes": 2147483648,
+          "retainedFileCountLimit": 5
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "D:\\TesLogs\\HospitalManagementSystem\\Warning\\warning-.log",
+          "rollingInterval": "Day",
+          "formatter": "Serilog.Formatting.Json.JsonFormatter, Serilog",
+          "restrictedToMinimumLevel": "Warning",
+          "fileSizeLimitBytes": 2147483648,
+          "retainedFileCountLimit": 5
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "D:\\TesLogs\\HospitalManagementSystem\\Error\\error-.log",
+          "rollingInterval": "Day",
+          "formatter": "Serilog.Formatting.Json.JsonFormatter, Serilog",
+          "restrictedToMinimumLevel": "Error",
+          "fileSizeLimitBytes": 2147483648,
+          "retainedFileCountLimit": 5
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "D:\\TesLogs\\HospitalManagementSystem\\Fatal\\fatal-.log",
+          "rollingInterval": "Day",
+          "formatter": "Serilog.Formatting.Json.JsonFormatter, Serilog",
+          "restrictedToMinimumLevel": "Fatal",
+          "fileSizeLimitBytes": 2147483648,
+          "retainedFileCountLimit": 5
+        }
+      }
+    ]
+  },
+  "AllowedHosts": "*"
+}
+
+===============structured logging===============================
+    public class Payment
+    {
+        public int PaymentId { get; set; }
+        public Guid UserId { get; set; }
+        public DateTime OccuredAt { get; set; }
+    }
+============================write in program.cs for testing or in controller-------------------------------
+var payment = new Payment
+{
+    PaymentId = 1,
+    UserId = Guid.NewGuid(),
+    OccuredAt=DateTime.UtcNow
+
+};
+Log.Information("new payment data with information {@paymentData}",payment); // @ covert it to Jason format to readable and further processing
+=========
+output
+=======
+2025-09-28 00:40:41 [INF] new payment data with information {"PaymentId": 1, "UserId": "99683c21-8edf-4c77-a78e-9d259fef1aae", "OccuredAt": "2025-09-27T19:40:41.4723107Z", "$type": "Payment"}
+2025-09-28 00:40:41 [INF] Hello from serilog
+2025-09-28 00:40:42 [INF] Now listening on: https://localhost:7028
+2025-09-28 00:40:42 [INF] Now listening on: http://localhost:5251
+2025-09-28 00:40:42 [INF] Application started. Press Ctrl+C to shut down.
+2025-09-28 00:40:42 [INF] Hosting environment: Development
+2025-09-28 00:40:42 [INF] Content root path: C:\Users\AmirShahzad\source\repos\WebApplication14\WebApplication14
+2025-09-28 00:40:48 [INF] start weather forcasting info from serilog
+=====================================end=====serilog=====================================

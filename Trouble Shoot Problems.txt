@@ -1,0 +1,1684 @@
+Trouble Shoot Problems
+1) check all the database point to same , dev to dev , test to test , demo to demo
+2) must seen logs if something happend , MLLP logs check success , EPIC Plugin Logs , check success , Webhook API check logs.
+3) add logs as below example
+4) appsettings.json main urls jwt token or api endpoint plugin urls ko dekh lo , or devops main bi vearbales , group varables main , transform main bi or publish area devops ka us main bi 
+or server ki sorat main server per publish area main bi 
+case baz aqat yeah hota hai ke koye apsettings main varables ke naam change ker deta hai , 
+ 
+===============================================
+ if (isValidationSuccessful)
+ {
+     _processingQueue.Enqueue((strippedMsg, facilitySettings.Type, notificationDetails.MessageControlId, facilitySettings));
+     _queueSignal.Set();
+     await _messageStatusUtils.SaveInboundSuccessAsync(OperationConstants.SuccessMsg, notificationDetails.MessageControlId, facilityName);
+     _logger.LogInformation(
+      "Inbound message processed successfully. ControlId: {MessageControlId}, SuccessFlag: {SuccessFlag}, Facility: {Facility}, RemoteEndpoint: {Endpoint}",
+      notificationDetails.MessageControlId,
+      1,
+      facilityName,
+      $"{e.IPAddress}:{e.Port}"
+  );
+====================================================
+4) check dev local environment first , then check test environment and then test demo environment.
+==================================================
+5) every environment , mllp , pluginAPI, epicplugin, webhook logs must be read at any next level case please , jab bi data mllp listener se plugin-api, epic plugin and wehook per aye lazim log study kero
+================================
+6) Console ke logs , mllp , plugin api ke , and webhook ke zaroor dekho , LOCAL ENVIRNOMENT KE , Aksar EPIC PLUGIN DLLS LOAD NAI HOTI EPIC PLUGIN , PLUGIN API KE LOGS MAIN
+7) LOGS PORTALke logs , mllp , plugin api ke , and webhook ke zaroor dekho , TEST/DEMO/PRODUCTION ENVIRNOMENT KE , Aksar EPIC PLUGIN DLLS LOAD NAI HOTI EPIC PLUGIN , PLUGIN API KE LOGS MAIN
+
+=========================IMPORTANT POINT , BRANCH ISSUE CLONE 1 ==================================================================================================
+deployment email demo environment ya test enviremnt ke dene se pehel , ap check ker lo ke devops ke envirmant varables tu nai delwaney
+============
+connection string problem today 
+=================================
+when release fail in demo for example , and kms changes problem , revert back to old and old keys are given , 
+
+=============================
+jab demo main direct koye cheez update dalana ho , tu demo ki clone branch banyo or origanl demo main mege ker do 
+================================
+
+or khuda ke lye demo pe koye bi release dalny se Pehle dekho ke demo pe koye criticail kaam chal rahah hai , agar chal raha hai tu khabi bi apni release na bejho 
+===============================================================
+
+app settings ya koye ek file ka change nai jata , pora change set jata hai , is lye ya cherry pick ker ke old revision , ya phir clone bana ker demo main merdge kero 
+================================================
+
+ek tu logs main logger information main nameof(method) zaroor mention kero , ta ke logs dekh ker hi , exact method tak chaley jayo , other wise debug ker ke masla find kerty
+lamba ho jata hai
+
+========================================
+kisi bi ticket ko kerney se pehele apko yeah lazim plan study kerna ho ga 
+jasyee KMS , tu ap pehele plan kero study kero ke uska asal maqsad kya hai uskey baad aap usko implement kero ,
+please apni mistakes se seekho
+========================================
+container ko logs starting main hi error bata detey hain ke actual masla kya hai , please container ko logs study kero
+or khuchd bi jab bi log ko info kerwa rehe ho tu nameof(method), log information proper log kero , tak ke future main problems 
+nai ayin 
+====================================================
+ek tu yeah KMS ke case main apko usko lazim study kerna chahyee tha, juniad bhai se , ya proper docs study kerney chahyee they , 
+khali chappa nai lagana hota , usko implement ker ke ap ne dubug ker ke dekhna tha ke actual ya ho raha hai 
+
+kis bi kaam ko kerene se pehele , plan kero , mind main , phir uski docs study kero , phir implement kero , implement kereny ke baad debugger laga ker dekho actual kya ho raha hai 
+or phir chat gpt se sab ke sab classes ko study kero , 
+
+chapa mar ke kaam chal gya , is se growth nai ho gi
+=========================================
+webhook wala masla ... 
+ek dum inbound success messages main issue ana shuru howa , analysis ke baad pata chala ke webhook ki release prodcution pe ayi tu masla shuru ho gay 
+ab apko ... repostiry main history main commits chek kerney chayee 
+
+===========================
+container ke shuru ke logs zaroor study Ali point , wo sab bata rehe hotey hain ke service kwon nai chal reheh , kia db connections ka error aa raha hai , 
+even on KMS implemention.
+=============================
+method to method values agey le ker jayin , best solution hai , mllplistener NormalizeAndMapReason,CreateHl7Ack,HandleAckCreation ka method dekhin chain of methods with value ek method se dosrey method main catch kerwai hai.
+mtlb yar apko iska pata hai , kayee generic method banaya jata hai
+
+see below example
+          Hl7Validator validator = new(_logger, _profileManager);
+          string validationResult = validator.Validate(
+              strippedMsg,
+              facilitySettings.Type,
+              facilitySettings.Hl7Version,
+              facilitySettings.HL7ProfileName);
+          string[] resultParts = validationResult.Split('|', 2);
+
+          string ackCode = resultParts[0]; // 'AA' or 'AR' or 'AE'
+          string? rawReasonText = resultParts.Length > 1 ? resultParts[1] : null;
+          if (!string.IsNullOrWhiteSpace(rawReasonText))
+          {
+              _logger.LogDebug("Raw validation error: {RawReason}", rawReasonText);
+          }
+
+          // Normalize and map to user-friendly message
+          reasonText = NormalizeAndMapReason(rawReasonText);
+          bool isValidationSuccessful = ackCode == AcknowledgementCode.ApplicationAccept;
+          mllpFramedAck = _hl7ParsingService.HandleAckCreation(
+          notificationDetails.MessageTypeId,
+          notificationDetails.MessageControlId,
+          ackCode,
+          facilitySettings.Hl7Version,
+          notificationDetails.MessageTypeId,
+          _logger,
+          reasonText // null for AA, reason populated for AR
+      );
+kaysee rawReasonText ke varable main value populate kerwai , or uskey baad usko multiple methods main use kya hai
+=============================
+kms local settings important
+============================
+
+  "ConnectionStrings": {
+    "IntegrationDB": "Integrations_Dev_ConnStr_WR",
+    "IntegrationDB_RO": "Integrations_Dev_ConnStr_WR"
+
+  },
+  "DatabaseExtraConfigs": "ConnectionTimeout=30;Pooling=true;Max Pool Size=100;",
+  "EncryptionKey": "c8}(wlYF4ej6^*SkB527fr#0Jh$%5yt&",
+
+  "AppConfig": {
+    "RateLimit": "1",
+    "UseKmsEncryption": true,
+    "IsOnAwsCloud": false,
+    "REGION": "us-east-1"
+  },
+============================
+performance testing point
+===========================
+1) appsettings.json , file ko ek model class main daal ker ek dafa hi load kerwa lo , oe program.cs se sirf wo section read kerwa lo jis ki zarrort hai
+2) serilog daal ker loggining ko importve kero , console , or container on kero , file sirf server per dalo siniking , container per nai 
+3) arraypool use ker lo , linked list , ya hash use ker lo , on handleclient waley method main buffer ko read kerwa ker yani uski limit rekh lo , or phir flash kerwa lo
+4) connection db ke cache kerwa lo ,
+5) cache kerwa lo , 2.3,2.8.2.6 ki xsd ki files , startup main load kerwa lo 
+===============================================================
+debuuging hi main cheez hai , kidher phans jayo , tu chatgpt , co-pilot , claude se help le lo
+================================================================
+emails ko dekhney main issue find kerney main , domain knowlge , main apko , groups main message dekhny main apko taiz hona chahyee 
+================================================================
+business ka is update se kya impact ho ga , as CEO comapny issue ko dekho 
+==========================
+case Important BRANCH ISSUE CLONE 2 
+==================================
+baz auqat ap cherry picks ker ke , or clone branch bana ker i mean different pick le ker demo main merge ker dety ho or devops pe build error aa jata hai , 
+ab ap demo ko kaysee check kero gey ...???
+logs dekho gey .... build failed ka mtlb 100% code fail howa hai 
+
+solution
+
+ab aap devops per rehtey howey ek clone branch demo ke bana lo apney naam se .... jo bi naam ap rekhna chao 
+ab app is ko local pe khol ker build kero error aa jaye ga , 
+us error ko ap local purani revisions ke saat manual fix kero, purana code dekh ker ya use ko fix ker do 
+us error ko fix ker ke ap demo ke original branch se merge ke PR de do 
+
+==================================
+point important
+==========================
+friday ko khabi bi demo pe release nai dene , second half ke baad , phans jayo gey ... Monday pe khelo 
+============================================
+demo server issue , not deployed KMS
+============================================
+1 , logs ke date and time bhuht ahmiht rekhtey hain. data and time utc hon , ya phir apki calculation exact honi chahyee
+2 , error  ko ghaur se parho , apney wajdan ko jagayo , chat gpt exact error per apko distract kere ga , keep your findings
+3,  khuda ke lye error ko ghaour se parho , dekho us main kya likha hai 
+4,  agar Service nai chal rehee tu event logs , application and the error , and warning main talsah kero , ghaur se parho usko
+5, code apna hamesha pieces main chat gpt se likhwa ker pieces main paste kero , ta ke apko actual main pata chalye actual code main kya ho raha hai 
+6) acha developer debugging and error resolution main problem fining main , taiz hona chahyee , 
+   wo in 3 cheezon se banta hai , 1 , reading code , debug code and read error line by line word by word
+7) trick , app ko agar shak ho , tu app credmanager main jidher key generate ho rehe hai KMS udher logs lekiwa lo , ta ke jab container chaley tu apko pata chaley ke code method
+hit howa hai ke nai  , pro tip ,
+8) code ko pehele check kero , dry run ker ke dekho udher screen per hi or find kerney ki koshish kero actual ho kya raha hai , phir debug lagyo or fake values 
+send ker ke dekho kya chal raha hai , jayse ke fake api call , function ko fake values de ker , ya koye application chat gpt se banwa lo agage sound etc , send kerna hai
+
+Exaclty issue kaysee resolve howa
+
+1) ek , ek cheez ko narrow kerety jayo jaysee ke hum ne , soocha ke container per deploy ker ke dekhtey hain , or ek API call jo ke already ban rehe thi wo bana ker check kerety haim 
+jo ke hum ne Pehle hi find ker lya tha , cred API ko call ker ke , lekin proof ke lye hum ne wo call banyi jo ke confirm ho gaya ke demo per nai chalti block hai 
+2) phir hum ne jab service hi band ho jati thi tu decide kya ke event logs ko dekhtey hain , jo hum ne read nai kyasee or error ko galey laga ker Rekha 
+
+Findings
+
+yar error ko ghaur se strudy kero , line by line study kero plz , as per situation , mtlb service nai chal rehe tu windows logs study kero bhai na ke 
+apni application ke logs 
+
+Pipelines , hamesha check kero theek dali hain , devops main release jobs, ke under file transform ka option hota hai us main pata chal jata hai
+
+is path per published appsettings.json pari hoti hain , dekhney ke lye server main kya gya hai , 
+server main trouble shooting kerna assan hai , container main logs generate kerwany partey hain.
+D:\VSTIntegrationWindowsServices\VSTIntegration-MllpRequestListener
+
+or haan sab se zarrori baat , method generate kerty waqat aap logs bhuht achey tareqy se likwyo tak app ko pata chale jab container pe run ho raha ho
+
+error 
+Exception 1 of 4: The environment variables AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY/AWS_SESSION_TOKEN were not set with AWS credentials.
+Exception 2 of 4: The webIdentityTokenFile must be an absolute path. (Parameter 'webIdentityTokenFile')
+Exception 3 of 4: Unable to find the "default" profile.
+Exception 4 of 4: Failed to connect to EC2 instance metadata to retrieve credentials: Unable to get IAM security credentials from EC2 Instance Metadata Service..
+   at Program.<>c.<CreateHostBuilder>b__1_3(HostBuilderContext hostContext, IServiceCollection services) in D:\a\1\s\MllpListenerService\Program.cs:line 133
+   at Microsoft.Extensions.Hosting.HostBuilder.InitializeServiceProvider()
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Program.Main(String[] args) in D:\a\1\s\MllpListenerService\Program.cs:line 44
+
+sab se important is error ko read kerna hai 
+Exception 4 of 4 
+and check error lines in every error message please 
+for example t Program.Main(String[] args) in D:\a\1\s\MllpListenerService\Program.cs:line 44
+and 
+Exception 4 of 4: Failed to connect to EC2 instance metadata to retrieve credentials: Unable to get IAM security credentials from EC2 Instance Metadata Service..
+   at Program.<>c.<CreateHostBuilder>b__1_3(HostBuilderContext hostContext, IServiceCollection services) in D:\a\1\s\MllpListenerService\Program.cs:line 133
+
+IMPORTANT yar pora error word by word line by line with linenumber , and file name sab aa raha hota hai 
+ap logs and errors ko kwon nai read kerety please 
+
+is error ke hisab se agar app program.cs file main jaye tu pata chalta hai ke apki 
+   IHost app = builder.Build();
+   await app.RunAsync();
+application build hi nai howi 
+
+
+Exception 4 of 4: Failed to connect to EC2 instance metadata to retrieve credentials: Unable to get IAM security credentials from EC2 Instance Metadata Service..
+
+is error ke hisab se IAM security credentials , yani ke user ko premsion nai hai EC2 , KMS store ki in AMazon webservices per yehe main 
+CULPRIT THA HUMARA IS ERROR KO SOLVE KERNEY KE LYE , 
+user ko permison de or masla hal ho gaya new deployment server per build ho gyo 
+
+1. event viewer , bhuht important hai , agar service na chal rehe ho ......
+2. error ko study kerna , line by line read kerna , and line number , class file jis main error hai uska naam check kerna bhuht zaroori hai 
+3. phir us line number per code main ja ker research kerna.
+
+container ke logs main bi batata hai or console logs main bi  , ke actual kidher se KMS keys le raha hai
+
+: Services.ApiClientService[0]
+      Sending POST request to https://dev-credmanager.vstlearning.com/cipher/decrypt/Integrations_Dev_ConnStr_RO
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://dev-credmanager.vstlearning.com/cipher/decrypt/Integrations_Dev_ConnStr_RO
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://dev-credmanager.vstlearning.com/cipher/decrypt/Integrations_Dev_ConnStr_RO
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 280.4435ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 280.5296ms - 200
+info: Services.ApiClientService[0]
+      Received response with status code OK from https://dev-credmanager.vstlearning.com/cipher/decrypt/Integrations_Dev_ConnStr_RO
+
+=============================================END================================================================================================
+ticket , daily kitney messge receive send howye , admission discharge , ORU outgoing ke 
+==============================================================================================
+solution , receve hl7 message main ek event id rekhwa ker data nikal lein , code main adat ka event receieve hl7 ke data ke saat send kerna parey ga
+db level per ek lookup table , SELECT * from vstalertintg_hl7messagetype , lookup table
+id , eventtype, isdeleted,createddate,modifeddate etc dalein gey 
+or isko use kerein gey code main data save kereny ke lye ,
+receive hl7 message main ek eventtypeid dalein gey jo hum send kerein gey code se , 
+trick , wayse app chatgpt ko bi yeah problem with tables de saktein hain wo proper solution de ga apko
+===============================================================================
+case production fall risk score issue , 
+
+fall risk score , admsion ke case main high jata hai 
+Nurse usko update kerti hai manula for example low ker deti hai , tu bed ki sensnvity low ho jati hai 
+ya A08 ki call per agar fall risk score 45/55/ ya admsion ke value se change value hoti hai tu patient ka admsion dobara hota hai agar wo dischafe ho gya ho , 
+
+hamrey case main yeah nai ho raha tha , yani low refelect nai ho raha tha 
+
+
+tu is masley ko hal kerney ke lye ... hum ne issue replicate kerwaya production pe performance ke saat 
+
+ab db pe producdure ki call ......
+
+Nurse ka Low dekheny ke lye alga Register ka SP hai jis se nurse ka low check kya jata hai
+
+Note , Issue to reflect ker ke dekho production pe tester se kerwa lo
+
+
+case 
+patient admit , fall risk score high , its by default
+nurse get it low to 22 , it will low 
+A08 Update call , fall risk score = 55 , it will update to 55 
+if patient is discharged , and A08 call with 55 patient will re-admitted. , 
+
+we cannot send Hight to Low value 
+we can send only high value , if we send 22 in A08 it will marked as high
+if admission in 55 and A08 you send 55 and patient is admitted , it will not updated in same value\
+===================================================
+now complete solution by basit bhai , how to response client as layman language
+===================================================
+VST-Query: 
+a patient in room 113 at Thedacare Waupaca - whose morse fall was a 20 on 12/1/25 then increased to 50 on 12/1/25 at approximately 0900 on 12/1/25. Virtusense monitoring did not turn back on automatically with this. It was my understanding that this should occur automatically whenever the morse fall score increases. Would you please be able to create a ticket for this and evaluate this for me? We did manually turn this monitoring back on this morning.Can you please check the issue here?
+
+Dev-Response:
+1st message that we have received at 2025-12-01 07:20:10
+MSH|^~\&|Epic EHR|ThedaCare Waupaca|VST Integration|ThedaCare Waupaca|20251201072009-0000||ADT^A08|24433956|P|2.3
+EVN||20251201072005-0000
+PID|||E10332360^^^^EMPI||ERICKSON^VICKI^BETH||19550501
+PV1||I|TCWMEDSURG^113||||||||||||||||295334102
+OBX|1|NM|30400114538^Braden Scale Score^TCVIRTUSENSE||22||||||F
+OBX|2|NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||20||||||F
+
+The initial message received was an ADT^A08 update message, not an ADT^A01 admission message. According to our current rule, if the fall risk score is below 45 and the event type is update, an admission is not recorded for that message.
+
+Second message we have received at 2025-12-01 15:12:28
+MSH|^~\&|Epic EHR|ThedaCare Waupaca|VST Integration|ThedaCare Waupaca|20251201151222-0000||ADT^A08|24434145|P|2.3
+EVN||20251201151220-0000
+PID|||E10332360^^^^EMPI||ERICKSON^VICKI^BETH||19550501
+PV1||I|TCWMEDSURG^113||||||||||||||||295334102
+OBX|1|NM|30400114538^Braden Scale Score^TCVIRTUSENSE||22||||||F
+OBX|2|NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||55||||||F
+
+Which is also an ADT^A08 Update message but contains the fall risk score greater then 45 and as per our rule we have to admit that patient, which we did 
+================================================END=========================================
+case , db main dta store nai ho raha , test db main 
+1) sab se pehel env varaibles dekho , pipe line main , 
+2) release main transform check kero , kia kia varable gye hain
+3) appsettings.json published version main check kero agar server hai 
+4) logs dekho exception , mere case main 64 bit ki expection thi , kms ki last default pe ja raha hai lekin keys nai mili 
+=========solution============
+pipelines main varaibles delwa ker , kms true , aws on cloud true , keys delwa ker container re-deploy kya masla hai 
+Key learning , Test ke logs read kye 
+=========================================END======================================
+
+case , why method call again and again 
+=======
+check logs and check multiple entries of that method , 
+check references and click debug point 
+check timer if somebody did
+check await , delay call for that method 
+solution 
+change this method to Jason bulk send and handle with batch with 200 data chunks , or timer 1 minute.
+or find how to reduce this method calls , help with chat gpt
+============================================================================
+Ticket ==== clinet ko rozana ke bunyad per ek report chahye ke kitney messages ADT01 SE ADT08 tak hain or unka count kya hai
+solution: hamrey pass db main koye structure nai hai khuch purany table hain jinko sooch ker hum khuch new addition kerein get 
+
+DB Thinking ...........
+
+2 tables hain , inbound success ka or receive hl7 message ka , sooch yeah hai ke ek column dalin eventide ka jis main event ki ID store ki jaye 
+SELECT * from vstalertintg_hl7messagetype yeah lookup table hai events ka jis main event Ids hain , inkey join se yani inbound success message main jo id and inkey lookup table ke join 
+match ker jayin tu report ban saktai hai 
+
+column inbound success message main dala hai is se performance hit kam ho gi , receive hl7 ka table already loded hai ,
+SP procedure main ek parameter event id ka daal dya ta ke data save ho sakey , repo ke through code main SP ka naam hai uspInsertUpdateInternalMessageStatus
+db problem resolved now report can be handled at DB case
+======== bottle necks ========================
+now in code ..... problem , 
+hamrey pass yeah string main aa raha hai , for example ADT^A01 jabkey db main column id ka hai tu int type hi rekhni chahyee for report extraction.
+ab is ke 2 methods hain , 
+
+layman approach , ap data db se lye , ids , mtlb new repo , new SP and now in class level new private variable now match with HL7 message ADT^A01 and now get its Id
+
+Smart Approach , 
+get event type as string ADT^A01 and extract its last two words i mean 01,02 and so on and through switch statement map its ids through lookup table
+
+
+                _messageCodeInt = 0;
+
+                string msgType = notificationDetails.MessageTypeId;
+
+                if (!string.IsNullOrWhiteSpace(msgType) && msgType.Length >= 3)
+                {
+                    string hl7Code = msgType[^3..]; // "A01"
+
+                    _messageCodeInt = hl7Code switch
+                    {
+                        "A01" => 1,
+                        "A02" => 2,
+                        "A03" => 3,
+                        "A08" => 4,
+                        "A11" => 5,
+                        "A12" => 6,
+                        "A13" => 7,
+                        "R01" => 8,
+                        "S12" => 9,
+                        _ => 0
+                    };
+                  
+                       
+                }
+
+mtlb app ids ko lookp table ke Ids ke through map bi ker saktey ho or ab switch statement id apko mil jaye ga jo ap db main store kerwa do gey
+through repo and store procedure parameter jo ke agey code main hai 
+switch stament , ya dictionary use ke ja sakti hai , lekin dictionary performance ko slow ker de gi
+method main parameter and store procedure ke parameters like below 
+
+public async Task SaveInboundSuccessAsync(
+    string successLocation, int eventtype,
+    string messageControlId = "",
+    string facilityName = "")
+{
+
+event type le ker gye is method main 
+
+agey 
+
+  public async Task InsertInternalMessageStatusAsync(MessageStatus messageStatus, ILogger logger)
+		{
+logger.LogInformation("inserting in db....");
+try
+{
+	object parameters = new
+	{
+		pMessageDirection = messageStatus.MessageDirection,
+		pMessageControlId = messageStatus.MessageControlId,
+		pIsJunk = messageStatus.IsJunk,
+		pFacilityName = messageStatus.FacilityName,
+		pIsSuccessfulInternally = messageStatus.IsSuccessfulInternally,
+		pInternalFailureReason = messageStatus.InternalFailureReason,
+              pEventId= messageStatus.EventType
+          };
+
+papmeters main le ker gye pEventId
+
+is se pehel MessageStatus ke table main ek column add kya    public int EventType { get; set; }
+
+this it ticket resolved.
+
+learning : 
+
+1) ids hard code ker ke bi match ki ja sakti hain code main 
+2) db main data kayse jana hai , kidher kidher column delye gye , konsa SP change ho ga 
+3) db main or code main dono main performance hit dekhni hai
+
+lesson learned very important
+) DEVLEOPER HAMESHA EK CHEEZ IDHER KERE GA OR OSRI CHEEZ UDHER KE DE GA
+) mtlb ek cheez kharab or ek cheez theek , uska mind narrow ho ga sirf us code ke level tak , code is response dya , ok good , 
+) sirf method ke result ka nai soochna hota , high and broder level pe soochna hota hai 
+) jabkey software enginner yeah sochey ga , ke sab cheezin top level per kaysee cheling gi , genric , solid , dry in code and analyst level in gatering requirement and business
+per iska kya impact ho ga , as ceo level , 
+) wo pany app ko company ka CEO samjhney lagey ga , agar main ceo hota tu kya kerta 
+1) jab bi koye requirement aye deceloper ban ker na sooch please , 
+2) analyst ban ker socho , ke agr tum business owner hotey tu kya kertey 
+3) kis ko chahyee , or kis lye chahyee yeah requirement.
+4) agar banada A maang raha hai tu App ne B bi dena hai 
+5) broder aspect main requirements dekh ker map kern hai , 
+===========now codeing part===============
+1) code hamesha generic likho , jab generic ki baat ayi gi tu hl7 version 2.3,2.6.2.8 sab ke saat chalna chahyee
+2) oper waley code main dekho kaysee db exactly map howa hai code ke saat , generic way main apko switch statement ko generic bana ker , mllpserver main and hl7 clinet
+dono main use kerna hai , otherwise app 2no classes main code ko map kero gey 
+3) dry , solid principle donod use honey chayee  ,
+socho , algorthum first , Urdu main socho or step by step likho porey process ko beshak class or tables ke naam likho
+us ke baad generic code mtlb , dry , and sold , generic methods jo bar bar sab classes main use ho sakein , hl7 version 2.3 , 2.8 ta ke different clasess main problem na ho 
+4) performance ko dekho , made nazar rekho , jayse where to use dictionary , Enum , or switch 
+5) business ka impact dekho , end user ya ceo dekhey is report ko tu wo kia sochey 
+6) business analys , analyst , solution articitect level per apni thinking ko le jayo ,  requirement mani bi or code main bi 
+
+tumharey case main db paaning  code sab theek hai , result bi db main safe ho gya lekin 
+
+1. method , generic nai that , 
+2. tum ne 2.3 2.8 ka khayal nai Rekha , i mean method ko generic nai kya , yani ke mllp server , or hl7clinet dono clasess main chal jata 
+3. dry princlple , solid , use nai kye ... 
+
+ab keron ga 
+
+top level developer Pehle hi , generic method , dry , and solid ka sochta hai , or bar bar different clases main apna code repeat nai kerta 
+mllp server ki class main pacth nai lagana , generic method banyo or sab clasess main use kero 
+apkey clase main hl7 clinet wali calss main ap ne same code repaet kya hai 
+
+agar apko yeah ticket ila hota event wsie report ka t ap kayse sochtey isko 
+
+db level per 
+and code level per 
+business level per 
+analyst level per 
+or CEO ke level per 
+=================================
+problem , ssoapi chal hi nai reheh , check logs and Pehle masal connetion string ka hota hai , kal raat se nai chal rehe thi , 
+main ne keys encrpt ki lekin ho nai rehe thi 
+
+problem asla main kya thi
+
+phir emaan ne check ki tu samj gye ke encryption key ka masla hai , 
+kayse kwon ke wo old key se encrty ho gye , lekin code main key different thi , iska mtlb keys resove nai ho rehe thi 
+us ne new key jo alert walon ki this us ke through new connection strings banyan or pipeline ke lye anwar bhai ko de dein 
+ 
+coonection string key encrypted values le ker key ke through decrpt kero 
+agar decrpt nai hoti tu is lye ssoap nai chal reheh 
+key find kero , appsettings.json , ya whole code main
+
+solution 
+apkey pass 2 options hain , ya key ko change ker do code main , code change , pr and dev-demo-test-prod
+is lye behtar yeah hai ke pipeline main jo key code main use howi hai , us main encrypt ker ke chal do
+================================================================================================END======================================
+ticket make generic methods to use all classes.
+
+solution :
+1. static class banyo , uskey under static method rekho or call kerwa lo like this _messageCodeInt = HL7MessageCodeHelper.GetMessageCode(notificationDetails.MessageTypeId);
+2. proper interface banyo , uske under method rekho 
+3. service class banyo us main in methods ke implemntion rekho 
+4. DI Program.cs main register kerwayo 
+5. jis class main use kerna hai us main private variable bana ker constructor main use ker lo , controller method main phir us class ko inject ker do ya kisi bi class main use ler lo
+-------------PRO Techniques to make method generic and easy----------------------------------------
+=================================================
+pro tip
+sonnet 5.2 ko data do usko bolo analysis kero is method ko or batyo performance pe kitna asar daley ga 
+usko ask mode per rekho , agar agent mode main bi ho tu changes kere ga , or git changes main dekh lena is ne kya kya hai
+==================================================
+
+sara masla requirement ka hai , gather kaysee kerni hai , structure kaysee banana hai , or implement kaysee kerna hai 
+jo full scale pe extend ho saky .... bhuht zaroori hai yeah baat , 
+
+=========================================================
+Problem , KMS , is not running in Epic Plugin .....
+
+investigation: epic plugin per code KMS wala break ho raha tha 
+
+Plugin Artutre main hamesha jo main IP hoti hai us per hi sara kaam hona chahyee , dlls wali dosri APIs is ke uner hoti hain un per depenedency nai honi chanhyee
+mtlb kya ap har child APIs main KMS apply kerein gey ???
+
+ab ek service create ki plugin API main jo KMS ka data uta ker i mean API paramert connction tring expose ker ke  ap ko child API mtlb epic plugin ko deti hai , jis
+ko app use ker letey hain , KMS Keys expose ki hain 
+
+agar koye parameter app chahyee hain ke isko agey kidher kis or function main send kerna hai , local scope wala 
+
+1) tu ap method to method wo parameter pass ker dety hain , 
+2) class varaibale bana ker glocbal scope bana detey hain ,
+3) ek interface , service yani uski implemention ker ke sab classes main use ker lety ho 
+4) static class bana ker method implement ker ke sari clasees main use ker lety ho 
+5) application to application apni API se i mean parametes ke through data expose ker dety ho jo dosri API use ker le , jasye ke is case main kya hai ??? think please
+6) out of the box sooch bhuht zaroori hai , masley ka generic solution sochna chahyee jo har soorat future scale main chaley ..... 
+
+learning 
+
+hamesha out of the box socho or problem ka final solution with future expandtion , nikalo
+kya KMS ap har child class libraires main lagatey , ya kisi ek jaga centrilezed ?????? 
+kam se mut ghabrayo per solution clean do , or performance per future scaling do , 
+think like a solution arctitech , CEO , at requirement , not a coder or developer please , 
+ek kaam theek tu dosra kharab .....
+
+3) ek interface , service yani uski implemention ker ke sab classes main use ker lety ho 
+yeah sab se best hai , service se parameter/data expose kero or dosri class library main catch ker lo 
+--
+kms ka masla yah tha ke usko class library mai update kerna tha...
+ab class lbrary main DI etc nai hotey or manual update kerney perty hain , 
+ab soocha ke paent application mtlb PLUGINAPI main ek hi jaga KMS implement kya jaye 
+or is ko epose kya jaye kisi endpoint per or usko epic plugin main catch ker lye jayse 
+epic plugin ke db ki logic khutum ker di jaye , or dataasync ke method per ja ker isko parametres main connection strings de ker catch ker lya 
+or repository main connection string ki class main in varablebes ko jo plugin api se connection strings ke aye the map kerwa dya
+ab mere class populate ho gye ab main usko jidher mari use keron apni epic plugin ke app main
+solution : ab ek hi jaga parent API main KMS use ho ga or child usko epic plugin use ker lein gey 
+alga se har child per KMS implement nai ho ga 
+mtlb KMS ko generic bana dya
+--------
+Learning
+----------
+code khcu bi nai hota asal cheez apki problem fining and solution hoti hai , apki sooch ke is masley ko kaysee hal kerna hai
+implemention ap PLUGINAPI , or phir epic plugin main dekh lo 
+---------
+implemention logic 
+--------
+kisi bi kaam ko Interface se start kero , us interface ki impllemention , yani Service , us service ko controller main inject kero or har class main use kero
+
+1) ek interface banya 
+2) ek service banyi , jis main KMS ko call ker ke connection strings populate kerwa li , ab hamrey pass data aa gya 
+3) is service yani Interface ko inject kya DI ke through controller main , or phir is ko us method main nested ker dya jo api end point out ho raha tha yani datasycn
+4) data async ke values out ker di parameter connectionstring etc 
+5) ab epic plugin main usko catch ker lye , 
+6) ab apkey pass epic plugin main connection strings ki values aa gyei
+7) ab ap ne epic plugin main jis class main yeah connection string use ho rehe thei unko in parametes ke through map kerwa lya
+8) ab values apki calss ke varables ke saat map ho gyi 
+9) ab ap inko base repo main use ker lein tu yeah har jaga automatic jidher db ki calls ho gi match ho jayin gi 
+
+apki sooch generic , honi chahyee 
+
+=========================================================================
+Production Issue , How to trouble shoot step by step 
+=====================================================================
+2 , 2 message receive hotey thay , alert system per ...
+wo bi ORU or outgoing ke table main bi 2 message with different Ids
+=====================================================================
+Step 1  Ab check kerna tha ke yeah hamari tarf se hain  ya alert ki taraf se 
+How to Sab se pehele Narrow kerna hota hai issue ko , 
+
+Step 2 replicate ker ke dhkna hota hai ta ke issue generate ho or app main masley ki tarf ayo , yani issue exactly kya hai usko hal kero , 
+Masla bar bar aa raha tha , is lye hum ne db main check kya tu pata chal ORU 2 receive ho rehe hain , 
+ORU KA ROUTE  , alert system , 
+
+step 3 . ab logs check kerein dekhin logs main kitni dafa send ho raha hai 
+Logs main issue dekhney ke lye time bhuht important hai , logs main dekhin ke API se kab gya kitney records gye , 2 dafa tu send nai kya ,
+logs ko custom date time de in , 
+logs ko controlid ke through ya patient ke first name ya last name se send ker 
+or khud method likhtey waqat logs buht achey tareeqy se likhwayin important point
+logs main date time bhuht important hain same dat pe khuch seconds ke faislay per webhook main duplication ho rehe the
+ap webhook API or MLLP ke logs main duplicate entries nai find ker sakey 
+yeah 2 Ids thi 
+Admission: 79521b3249
+Discharge: 89521b3249
+----------------
+solution 
+web hook ke logs check kye tu duplication ho rhee thi 
+mllp main bi duplicate records ja rehe they basit bhai ne dekhey hain
+ap ne webhook ke code pe ja ker yeah 2 prompts they sonnet 5.4 ko 
+
+i am facing a issue from my side two time api hit with the same api
+CAN YOU PLEAE TELL ME HOW YOU FIX THIS ISSUE WITH THE CODE REFRENCE LIKE OLD CODE AND NEW CODE
+
+or code resolve ho gya , 
+us ne khud hi batya ke 
+webhook main 2 dafa send ho raha tha 89521b3249 yeah wal control id ,
+
+Learning :
+asal value production pe debug kaysee kerna hai , 
+steps logs , error narrow kerna , 
+main issue tester se replicate kerwana , re produce kerna 
+phir sonnet ko prompt de ker jaldi se masla hal kerna 
+logs hamesha method main is Tarah lekiwayo ke finindgs assan ho , 
+logs ke date time , and deeply check kero khud ke duplicate call gye ke nai , 
+logs first name last name se find kero , na mily tu control id , patient name , etc se 
+logs ko time dekho , or jisger send ho raha hai for example sending tu udher dekho , sending ka word serach ker ke ke kitni dafa gya hai 
+logs custom time dekh lo error ka or us custom time main issue ko dekho 
+logs apney method main likhwayo bhai 
+examples logs 
+==============
+S.No	Timestamp	Message
+1	2025-12-11 10:41:26	"MsgId": "89521b3249",
+2	2025-12-11 10:41:26	"MessageControlId": "89521b3249",
+3	2025-12-11 10:41:26	"MsgId": "89521b3249",
+4	2025-12-11 10:41:26	"MessageControlId": "89521b3249",
+
+--------------------------------------
+is per ghour kerein ek hi message 2 dafa gya hai 
+1	2025-12-11 10:41:26	"MsgId": "89521b3249",
+2	2025-12-11 10:41:26	"MessageControlId": "89521b3249",
+
+3,4 per yehe chee repeat howi hai , webhook pe 
+===================================
+2025-12-11 12:42:22	[12:42:22 INF] Sending HTTP request POST https://demo-datahooks.vstalert.com/Account/ProcessRequest
+isko search kero or check kero double entry ke lye 
+Sending HTTP request POST
+
+Apka Problem:
+
+ap stuck ho gye they or sarey din yehe bol rehe they ke ek hi bar message aya hai , 
+jabkey apki misake yeah thi ke logs ap sehe read nai ker sakey ,
+even arsha , ke sat jab double entry ho rehe thi tab bi ap webhook ke logs read nai ker sakey 
+sab khuch logs main hota hai agar ache tareqey se wo method main likhey gye hoon
+agar app us waqat logs ke enrites dekh leye , ke webhook , or so called mllp main duplication hai tu app sonet 4.5 ko complete de ker masla hal ker saktey they
+CLAM , AND STRESS FREE HO KE PRODUCTION KE ISSUE KO DEKHA KEREIN CHAHYE KITNA BI PRESSURE HO , STAY KAAM 
+basit bhai ssue ko kal hi dekh chkey thy ke duplication ka problem hamri tarf se hai , lekin ap bol rehe they ek call hai ,
+lekin asal main logs main 2 calls thi jo apko nai mil rehe thei , due to pooer logs checking
+logs ko khabi bi khud analse kero phr chat gpt ko do 
+NAKURI KA L PE REKHO YAR KEEP CALM UR SELF 
+production ke logs agar check kerne hoon tu kisi bi case ka control id le ke i ean message control d le ker end to end dekh lo 
+
+solution 
+problem debug ker ke apko pata chala ke webhook hl7 message 2 bar send ker raha hai 
+phir web hook pe sonnect lagya or problem solve ker dya 
+====================================================================
+Issue 
+================
+MLLP Listener end to end admission GUI portal per nai ker raha tha Test Envinoment
+=============
+problem identifications
+step 1 , sab se pehel db connections ko check kero k MLLp test db connections , devops ke env varables main thekk gye hain , 
+step 2 , appsettings.jason main dekho Urls kya gye hain for example 
+ 
+ "ApiEndpoints": {
+   "JwtIssuerUrl": "https://pref-connectorapi.vstintegration.com/api/ConnectorEngine/initialize",
+   "PluginUrl": "https://perf-plugins.vstintegration.com/api/Plugins/getdata"
+ },
+
+in urls ko nouman ne change ker dya tha , ApiEndpoints ke object main jabkey devops main root level per seddey seedy gye howye they 
+ab jab devop ke variable main transform main check kye tu yeah root per pary howy they jabkey inko object ke trah . laga ker use kerna hota hai , 
+ApiEndpoints.JwtIssuerUrl 
+ApiEndpoints.PluginUrl
+
+Learning
+jab bi end to end na chale tu pehele db connections , phir url sary ke sary test ke dalo bus
+========================================= 
+Pro Tips
+=========================
+code ko jab bi likho , 
+hamesha method generic , 
+interface , then service , and then inject through DI in controller or any class where you want 
+kn kon se varabls Appsettings.jon mai rekhney hain devos ke lye , example kisi bi appsetting.json ki file se mil sakti hai keep in mind
+pluginAPI main kms helper service dekhin 
+====================================
+pro tip 
+-----------
+ty , get confused, fix,understand
+chat gpt se Pehle apna mind , confused, fix , and then dry code to understand , then debug the code to undertand it better 
+---------------------- 
+ticket wehookAPI ka response message short ho gay 
+======
+solution webhookclient.cs ke file main pluginresponse method main response body ko read asyc ke thorugh paker ker doc.rot level se ler ke client ko send ker dya 
+logs main 
+
+using var doc = await JsonDocument.ParseAsync(stream);
+                
+                // Log the response content
+                string responseBody = JsonSerializer.Serialize(doc.RootElement);
+                _logger.LogInformation("Response body received from {@Client} for {@NotificationId}: {@ResponseBody}", webhookInfo.Url, webhookInfo.ActualNotificationId, responseBody);
+                
+                string ackNotificationId = doc.RootElement
+                                             .GetProperty("notificationId")
+                                             .GetString() ?? string.Empty;
+---------------------------------------end------------------------------------------------------
+ticket API endpoint creation NUC
+====================================
+@Basit Ahmed , @Sayida Rida Batool , @Madiha Shams  NUC changes flow as per requirement and its sample payload for alert side , integration side response will be shared by @Basit Ahmed which we need to response back to NUC 
+Request 
+
+POST /api/v1/alerts/trigger
+Content-Type: application/json
+Authorization: Bearer <your_api_key>
+
+{
+  "sensor_id": "TEMP_SENSOR_001"
+}
+
+
+Response 
+{
+  "sensor_id": "SENSOR_001",
+  "branch_id": "BRANCH_001",
+  "languages": [
+    {
+      "code": "en",
+      "description": "English"
+    },
+    {
+      "code": "es",
+      "description": "Spanish"
+    },
+    {
+      "code": "fr",
+      "description": "French"
+    }
+  ]
+}
+
+----------------How to think -------------------
+before writing code , we manually test this api 
+to test this api we have connector engine key for this sendor and then send 
+this body , entity   , entity id , apko bata hai apko kis plugin per jana hai 
+{
+    "Action": "ActivateSensorSettings",
+    "Entity": "f620c498-1f31-11ef-8cb6-12d819af0793",
+    "Data": {
+        "sensorId": "intel2"
+    }
+}
+
+first we have to create a postman call to check either this endpoints worked.
+so create api call to generate a connectonetor engine key to check its behavius 
+
+
+sourceclientapi table for plugins
+1) sourceclientdevices table for sensros , // is table se connector engine ki key baani hai , cleintid , client secrte le ke base 64 ki , kisi bi sensor ki 
+2) Basic919aba97-efdb-4ddd-8461-f33fca17d5c9:863cfbae-0f2b-4230-b130-8c46a8a914f9
+3) chatgpt ko do wo key generate kere ga , or plugin urdl de ga , note test dev , production sab ke sourceclientdevices ke client id , secrets ,  aaga lag hain
+4) output post man ki connector engine ki and url is for test is https://test-connectorapi.vstintegration.com/api/ConnectorEngine/initialize
+{
+    "responseCode": 200,
+    "message": "Success",
+    "token": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6IjkxOWFiYTk3LWVmZGItNGRkZC04NDYxLWYzM2ZjYTE3ZDVjOSIsImVudmlyb25tZW50IjoiVGVzdCIsInNjb3BlcyI6Ilt7XCJwbHVnaW5OYW1lXCI6XCJudWNwbHVnaW5cIixcInVybFwiOlwiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzOTMvYXBpL1BsdWdpbnMvZ2V0ZGF0YVwifV0iLCJleHAiOjE3NjU5NTg2NDEsImlzcyI6Imh0dHBzOi8vd3d3LnZpcnR1c2Vuc2UuYWkiLCJhdWQiOiJQbHVnaW5BcGkifQ.xFFA4gb428BnFdx5idDUxtt9F1idLCdHqy2wiVVo0RAF5gw6k_ia7ahcMbd8YEYPTwtY--dWtx_ogMg7GqqJog",
+    "pluginDetails": [
+        {
+            "pluginName": "nucplugin",
+            "pluginUrl": "https://test-vstnucapi.vstintegration.com/api/Plugins/getdata"
+        }
+    ]
+}
+
+=============
+5) ab folder local main bana lo isko dekh ker or plugin ke table main path check ker lo , yeah info is output se mili hai pluginurls details se or yeah path local main add kerna hai
+C:\inetpub\wwwroot\dev-vstnucapi.vstintegration.com\Plugins-NUC\dlls
+SELECT * FROM plugin
+is table main yeah path update ker dein 
+6. ab action method jo bi banan hai is table main add kerwa dein 
+@Aamir Liaqat Please Add Action named  "getSensorLanguages"  in  test environment SP name is uspGetClientAllowedActionDetails  , please verify at your end this is only for reference. Thanks in Advance ,  info to @Basit Ahmed
+for adding action method which you create in NUC plugin CALL `uspGetClientAllowedActionDetails`('237a44c5-7fdd-4877-bb74-2d6c480a686d') // yeah client id hai 
+db add for test Abdullah , add sensor give sourc client id 
+
+SELECT * from sourceclientdevices xlu WHERE xlu.DeviceSerialNumber IN ('Epicmllp4',
+'Epicmllp5')
+
+for check source client id is facility exactly 
+important
+
+SELECT * FROM sourceclient
+SELECT * from sourceclientdevices xlu WHERE xlu.DeviceSerialNumber IN ('Epicmllp4',
+'Epicmllp5')
+
+our case source client id is 13 which is VST-NUC
+
+ab yeah bi add kerwani hai 
+
+SELECT * from sourceapiallowedpluginsandoperation
+operationid is NUCEventService.
+SOURCE cinetid = 13 
+--db commands for all operations
+===============
+SELECT *
+FROM sourceapiallowedpluginsandoperation
+WHERE actionid = 'getSensorLanguages';
+CALL `uspGetClientAllowedActionDetails`('237a44c5-7fdd-4877-bb74-2d6c480a686d')
+
+
+SELECT *
+FROM sourceclientdevices AS SSL
+WHERE SSL.DeviceSerialNumber LIKE 'intel8%';
+
+SELECT * FROM plugin
+
+SELECT * FROM sourceclient
+SELECT * from sourceclientdevices xlu WHERE xlu.DeviceSerialNumber IN ('Epicmllp4',
+'Epicmllp5')
+
+SELECT * from sourceapiallowedpluginsandoperation
+operationid is NUCEventService.
+SOURCE cinetid = 13 
+================
+DB Work 
+=============
+//NUC DB Commands 
+SELECT * FROM sourceclientdevices x WHERE ISACTIVE  = 1 AND  x.DeviceSerialNumber like 'epicmllp4' 
+Basic2a0187f7-e400-4ddc-9715-d01cf9d58f3c:79de9c99-2aee-4d83-be62-13726811e988
+SELECT * FROM plugin  
+//FOR PATH LOCAL path IS 
+C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic\dlls
+OLD PATH : /app/Plugins-NUC
+
+CALL `uspGetClientAllowedActionDetails`('2a0187f7-e400-4ddc-9715-d01cf9d58f3c') , getPressureTimer // test 
+CALL `uspGetClientAllowedActionDetails`('4145458b-b75a-4230-9994-6b1685d172c0') , getPressureTimer // dev
+2a0187f7-e400-4ddc-9715-d01cf9d58f3c
+
+Please CREATE NEW ACTION for NUC plugin IN test ENV  
+actionid = getPressureTimer
+cleintid = 2a0187f7-e400-4ddc-9715-d01cf9d58f3c , 
+sensor : epicmllp4
+SP = uspGetClientAllowedActionDetails
+Thanks IN Advance
+
+dev CLIENT id = 4145458b-b75a-4230-9994-6b1685d172c0
+test CLIENT id = 2a0187f7-e400-4ddc-9715-d01cf9d58f3c
+
+
+adding action method which you create in NUC plugin CALL `uspGetClientAllowedActionDetails`('237a44c5-7fdd-4877-bb74-2d6c480a686d') 
+SELECT * from sourceclientdevices xlu WHERE xlu.DeviceSerialNumber IN ('Epicmllp4',
+'Epicmllp5') AND isactive =1  // FOR getting CLIENT id , which IS facilty id - 13 named VST-NUC
+
+SELECT * from sourceapiallowedpluginsandoperation  
+operationid is NUCEventService
+SOURCE cinetid = 13 
+
+SELECT *
+FROM sourceapiallowedpluginsandoperation
+WHERE actionid = 'getSensorLanguages';
+//
+
+====insert DB script, will automaticlly add entires in all tables======
+CALL uspGetClientAllowedActionDetails('3ac03434-d68e-4f9f-886d-a3f84d1d0713');
+SET @ApiClientId='7dd243f8-a041-490d-a02a-6a9537c0f389';
+SET @actionId='getSensorLanguages';
+SET @operationId='NUCEventService.';
+SET @CreatedDate=UTC_TIMESTAMP();
+SET @CreatedBy=1;
+
+INSERT INTO sourceapiallowedpluginsandoperation ( SourceApiId, PluginId, ActionId, OperationId, CreatedBy, CreatedDate, SourceClientId)
+
+SELECT  DISTINCT 
+spo.SourceApiId, spo.PluginId, @actionId  ActionId, @operationId OperationId, @CreatedBy CreatedBy, @CreatedDate CreatedDate, spo.SourceClientId
+FROM sourceclientdevicesauth sca
+JOIN sourceapiallowedpluginsandoperation spo ON spo.SourceClientId=sca.SourceClientId  AND spo.isDeleted=0
+JOIN plugin p ON p.pluginId=spo.pluginId AND IFNULL(p.isDeleted,'')=0
+JOIN pluginbusinesses pb ON pb.pluginId= p.pluginID AND IFNULL(pb.isDeleted,'')=0
+JOIN business b ON b.businessId=pb.businessId   AND IFNULL(b.isDeleted,'')=0
+JOIN pluginbusinessfacilites pbf ON pb.pluginBusinessesId=pbf.pluginBusinessesId AND IFNULL(pbf.isDeleted,'')=0
+JOIN businessfacility bf ON bf.businessFacilityId=pbf.businessFacilityId AND IFNULL(bf.isDeleted,'')=0
+JOIN pluginbusinessfacilityurl pbfu ON pbfu.SourceClientId=sca.SourceClientId AND IFNULL(pbfu.isDeleted,'')=0
+AND pbfu.pluginId=pb.pluginId
+AND pbfu.pluginBusinessFacilityId=pbf.pluginBusinessFacilityId
+WHERE sca.ApiClientId=@ApiClientId
+LIMIT 1
+;
+===========end db work===========
+------important--------------------
+7) ab code likhen NUC Plugin main , or update ker dein
+step 1 , make a class named getPressureTimer
+step 2 , go to INucEventService and add method  public Task<GeneralBaseResponse> GetPressureTimerAsync(string payload, ILogger logger);
+step 3 , go NucEventService and implement that 
+step 4 , create request and response model in models folder , 
+    public class GetPressureTimerRequest
+    {
+        public string sensorId { get; set; }
+ 
+    }
+
+   
+    public class GetPressureTimerResponse
+    {
+        public string pressuryInjuryTimer { get; set; }
+        public string pressuryInjuryTimerActionType { get; set; }
+    }
+	
+step 5 , goto NucInit class and add 
+["getPressureTimer"] = (payload, logger) => NucEventService.Instance.GetPressureTimerAsync(payload, logger)
+=====================================================
+8) plugin api , connector engine local per chalyin , or is url per call send kerin
+https://localhost:7184/api/Plugins/getdata
+body 
+{
+    "Action": "getSensorLanguages",
+    "Entity": "f620c498-1f31-11ef-8cb6-12d819af0793",
+    "Data": {
+        "sensorId": "intel2"
+    }
+}
+----------
+
+
+db table to check action method
+CALL `uspGetClientAllowedActionDetails`('237a44c5-7fdd-4877-bb74-2d6c480a686d')
+
+1) kisi bi jaga jwt ka token issue kerne ke lye client id , client secrte chahye hota hai , wo sensros ke table se mil jata hai sourceclientdevices
+2) ClientID:clientsecret ko le ker ek key banti hai , jo ek jwt token banti hai or plugin ya sensor ka batata hai ke kis sensor ya NUC , Vocera , per jana hai 
+3) phir apko action mehod NUC plugin manin code main and database main define kerna hota hai , is sp main action method delwana parta hai is sp main 
+@Aamir Liaqat Please Add Action named  "getSensorLanguages"  in  test environment SP name is uspGetClientAllowedActionDetails  , please verify at your end this is only for reference. Thanks in Advance ,  info to @Basit Ahmed
+-------------
+4) code ke lye NUC plugin dekh li , getSensorLanguages ka method ho ga udher.
+5) Pehle connector engine ke thorgh token lein , jo key ap ne sensor ki id, or secrte base 64 column laga ker use ki hai , or jwt token + url lein NUC ka 
+6) endpoint main dein or test ker lein post man main nuc ki 
+
+API Docuemt ka link 
+
+https://docs.google.com/document/d/1WeJhZSoy2k8f2r7ZG5RJ7pCBq2mfPgm8zzC9zHac0bs/edit?tab=t.0#heading=h.z6ne0og04bp5
+Insert New epic End Point script---Final , in documents folder for Database
+
+email format:
+Hi @Performance Testing Team 
+Need your go ahead for the demo deployment. Requesting it early as we have to cherry pick the changes which will take extra time to be completed.
+
+@Technevity Database Team 
+Update the NUC script on demo and allow the action method for the following facilities
+Action Method : getSensorLanguages
+SourceClientID , Name
+ 2 NUC,
+13 VST-NUC
+14 NUCTest
+32 NUCAUTH
+@devops@technevity 
+Please deploy the NUC Plugin on the Demo environment.
+
+Regards
+Amir
+---------PRO TIP-----------------------------------------
+sp ke , database tables ke change 3no envirment dev, test , demo per move kerwya kero , ab code merge dety ho please IMP Point hai 
+-----------------end work -----------------------
+
+
+-------------------
+issue , epic plugin per excptio aa rehe thi 
+----
+Epic.Repositories.OperationsRepository.WithConnection() experienced a SQL exception (not a timeout) encountered with Incorrect number of arguments for PROCEDURE IntegrationDB_Test.uspInsertUpdateExternalMessageStatus_V1; expected 6, got 7 while inserting external message status in InsertExternalMessageStatusAsync, and EpicPlugin
+118
+
+--------------
+ab is main saaf pata chal raha hai ke issue idher hai IntegrationDB_Test.uspInsertUpdateExternalMessageStatus_V1
+expected 6, got 7 while
+mtlb 6 parameter chaye jabkey 7 bejy ja rehe hain 
+---code---
+
+		public async Task InsertExternalMessageStatusAsync(MessageStatus messageStatus, ILogger logger)
+		{
+			try
+			{
+                Debugger.Break();
+                logger.LogInformation("Inserting external message status in the DB...");
+                await Task.Delay(10000); // 1000 ms = 1 second
+                object parameters = new
+				{
+					pMessageDirection = messageStatus.MessageDirection,
+					pMessageControlId = messageStatus.MessageControlId,
+					pIsJunk = messageStatus.IsJunk,
+					pFacilityName = messageStatus.FacilityName,
+					pIsSuccessfulExternally = messageStatus.IsSuccessfulExternally, // yeah wala izafi tha , 
+                    //pIsSuccessfulInternally = messageStatus.IsSuccessfulInternally,
+					pExternalFailureReason = messageStatus.ExternalFailureReason,
+                    
+                };
+----------------------------
+isko remove ker dya tu sp ko 6 parameters milein gey , masla hal ho gya 
+-------
+learning 
+--------
+sab se Pehle yeah dekho ke error kis application main hai , epic plugin main , ya mllp listner main , ya kisi or main 
+error ghour se perho sab us main likha hota hai , 
+panic main mut ayo , method ko gahor se , dekho 
+db main store procedure ko dekho 
+yeah code basit bhai ne dala tha , ap ko lazim dekhna chahye tha iska impact kya aye ga , debug ker ke dekh lena chahye that 
+dosra logs main error ko insano ki Tarah dekha kero , or panic mut howa kero
+BAR BAR MASLA ERROR DEHAN SE DEKHNEY KA OR LOGS DEHAN SE PARHNEY KA HAI JO TUM NAI KERTY PLEASE YAR 
+=============================================================
+error , api NUC ki dv pe chal ehe hai , lkein test per nai 
+===========
+1) issue test per pluginAPI per KMS implemented tha jabky apki release main KMS nai tha ,  
+2) Contratcs ki nuget package main version pluginAPI main KMS ki waja se updated tha , or NUC main old that 
+3) key theek thi 
+solution
+
+NUC ke contratcs nuget package update kya , ab pluginAPI and NUC ka contract match ker gya 
+ab KMS NUC ke logs main kms ka error any lag gya 
+
+ab ap ne key check ki , jwt pe , jwt.io ke sire pe client id check kya key theek thi 
+ab apo yaad aya ke yeah devops main delwani pari gey , jo ke pluginAPI main hain
+
+Add these variables into NUC Plugin Pipeline for test and restart the test container 
+
+ConnectionStrings.IntegrationDB: Integrations_Test_ConnStr_WR
+ConnectionStrings.IntegrationDB_RO: Integrations_Test_ConnStr_RO
+DatabaseExtraConfigs:  "Connection Timeout=30;Pooling=true;Max Pool Size=100;"
+AppConfig.UseKmsEncryption=true
+AppConfig.IsOnAwsCloud=true
+
+keys or sensor theek thay is lye error resolve ho ga NUC Plugin runs in test env
+
+forplugi API endpoint
+
+NUC Keys
+For Dev:
+SensorID: intel2 
+QmFzaWMyMzdhNDRjNS03ZmRkLTQ4NzctYmI3NC0yZDZjNDgwYTY4NmQ6ZTQ5OWFhMzUtNzk1MC00MDU0LThlOWMtMWY1ZDM2ZTFiN2Uz
+For Test:
+SensorID:  epicmllp5
+QmFzaWM3ZGQyNDNmOC1hMDQxLTQ5MGQtYTAyYS02YTk1MzdjMGYzODk6ZDNkNjU1MWItMDQzMS00YTExLThkZTQtNDBlYmRjYmRiNzZi
+==========================================================================================
+extract patient medical , pid_iternal and meical record MRN and PID
+===============================================================================
+method ke inder methid inmean filter methid de ker intrrnal id , and medical record number ki filtering ker li 
+or agey bejeaa dye , old method karab nai kya or wo agey cahlta rah sab case main
+apney commeit se parser 23 ka code nokal lena 
+
+or is method main illoger ap ne function mian as parameter lya hai , jis kobap mtthid calling main inject kerea rehe ho , 
+
+agar statxic class main logger ad nai ker saktey they , ya tubclass ko non static kerwa ker Di main dety itna lamaba chakker or momory pe issue ata is lye astatic class ke under hi ap ne method main illoger call kerwa ker masla hal ker lya , yeah looger wala bug hafsa wala apko mil jaye ga logger waley bug main 
+
+mere misktake yeah thi ke main method jo parsing ka hai us main change ker rah tha us se main parser pid kharab ho jta ,
+
+is lye internal pid, medical rocrd number ke 2 varavles tuoke main ek new function bana ker values populate kerwa li or extractpatientrecrd ke methid main de dei , 
+
+monday ko debugger laga ker actual dekh lena data kidher aa ja raha hai
+=========================================
+email format
+===========================================
+Hi @devops@technevity 
+Kindly deploy the latest changes of  KMS and Plugin Contracts Upgrade for Epic Plugin on test after approval from @Performance Testing Team 
+Also add these variables into pipeline:
+ConnectionStrings.IntegrationDB:  Integrations_Test_ConnStr_WR
+ConnectionStrings.IntegrationDB_RO:  Integrations_Test_ConnStr_RO
+ConnectionStrings.EpicDB:  Epic_Test_ConnStr_WR
+ConnectionStrings.EpicDB_RO: Epic_Test_ConnStr_RO
+DatabaseExtraConfigs: Connection Timeout=30;Pooling=true;Max Pool Size=100
+AppConfig.UseKmsEncryption: true
+AppConfig.IsOnAwsCloud: true
+AppConfig.REGION: us-east-1
+PR IDs:
+https://dev.azure.com/virtusense/Integrations/_git/PluginApi/pullrequest/21584
+https://dev.azure.com/virtusense/Integrations/_git/EpicPlugin/pullrequest/21583
+
+Regards,
+================================================================================================
+full funda domain vst alert system 
+===================================================
+start from admsiion in our private  EHR 
+then admission in device ,  // device is motion sensor or kintect device to catch patient movnment.
+device start getting patient data , heart beat , BP , temp , fall risk deductions and pressure injury alert .
+we have background service vst alert which get data from device and sensor and save to our db and other operations.
+-------------integration part ---------------
+clinet said i cannot use your private EHR and i wan to use my own EHR or epic , to admission..
+so we can create mllpserivice wheich get client data / patient information from epic system and send to alert system / alert system device.
+through mllp , puginapi , Plugin Articutre , then epic plugin then web hook , and then data hook , data hook sends that information to alert system / device or sensor.
+-------------------------------------------------------------------------------
+problem , inbound success messages fake 0 or 1 problem
+---------------------------------------------------
+give A to 4 files and to tell fid problem , we have internal = 1 ambugity , 
+he said hat removed iternal = 1 entries in epciplugin because there is no need to add internal , 
+internal belongs to Mllp only .... 
+add logs info with message control id , which control id is externally =1 
+-----------------------------------------
+=============
+issue epic plugin oru message exception , 
+====
+solution
+====
+sab se pehele mirth ko deko , uski confightio sb 
+uskey baad code check kya , code wrong tha , test ka code different tha or demo ka ifferent,
+network client.cs ka , 
+ab mege ki problem thi code ki , 
+phir socha ke test branch a clone le ker direct demo ke saat jr doon ,
+or code same o jaye , 
+uskey baad mirth ka channel delete ker dya or new channel bana dya or setting sab purani wali ker dein test ke mirth wali problem resolved ho gya 
+
+o haan jab ogs show er rehe hoo success flly sent to mirth tu please aap mirth ko deko  , apey code per shak mt kero
+mirth ki faltu settin klo mut chereo , or message grey hota hai agar ak na mil rehe h , tu ap message k rprcess kero riht click ker ke or phr new messge
+or channel ko deploy ker do 
+====================== 
+IMPORTANT POINT 
+======================
+kisi bi aticture ko bananey kw lye apko high end kenaqal kerini hai 
+jaysee Microsoft ke services , amazon ki services , google ke services kiy arctures , 
+clud service , ya kisi bi barey software ki articure ki naqal , 
+jaysee facebook , whats app , ober , careen etc , how they structured their infra structure , their code setup etc 
+is ke baad app apni application banyan. or bus app ne us se behtar naqal kerni hai 
+
+wyse koye bi structure shru hota hai 
+
+interfae / phr us itrface ki implemention, yani service / or repository , jis ko hum db level per kehtey hain , us ke baad us interface of app unit of work ke interface main 
+use kertey ho , or uskey baad controller main inject ker dety ho
+
+interface/reposiroty or service /Iunitofwork, register your repo interfaces /unitof work - implemention of your repos /controller injection
+check plugin api , or hms system for more information.  
+============================================
+ISSUE 
+===============================================================================================================================
+OUTGONG HL7 MESSAGE MIRTH MAIN RECEIVE NAI HO REHE THEY (imp) , plese heck bwlo mention tables for allow list of facilities
+================================================================================================================================
+solution ... wo IP ka og main error de raha tha .. 
+Error processing HL7 message 3b7f2a91-5e4c-4b2d-9f61-8c0a7d1e3f45: Timeout connecting to 10.30.1.113:81
+yeah ip demo se mirth e band hai , jabaky demn ka oignal ip yeah hai 18.118.79.17
+mirth ke server er ja ker agar app ipcong cmd main kerein gey tu apko mil jaye ga 
+step 2 , 
+ab db main ja ker dehin kis facility per konsa ip address allow hai (important point)
+SELECT * FROM sourceclient (check facilty id and facilty name which you are sending i ORU API pressure injury)
+SELECT * FROM outgoinghl7configs
+is table main facilityid and ip address dekhin kya allow hai , idher demo ke mirth ka IP hona chahyee 
+=============================================================================================================================
+point ki baat 
+=====================
+✔️ Serialization
+→ C# object ko JSON banana // is main kisi bi sorat error nai ata , 
+
+✔️ Deserialization  // is main type miss matec , strig to it , ya datatype ka error aa jata hai 
+→ JSON ko wapas C# object banana
+=============================================================
+Issue , Devops , pe pechli release deply nai o rehe thi
+=============================================================
+MLLP Production ka main branch remove kre di , or demo ka clone bana ker uska naam main rekh ker jor dya , release chal gyi , prod pe 
+ab purani release ko doara depoy kerein tu wo h nai rehe thi  chal rehe thi , 
+solution 
+deploy kero gey tu new release , current env varables ke saat jayi gi , 
+re-deploy kero gey tu purani release puraney code and purany env varables ke saat jaye gi , redeploy ke case main wo state deploy ho gi
+==================IMP POINT-------------------------------------------------------------------- 
+problem /issue , ResetEpochTime validate problem important
+===============================================================================================
+epoc rest time datatype long which is not converting to deserilze in json, error , 
+hamrey pass for example epoch time main koye banda xyz likh deta hai , tu code break ho jata hai , or neche wali validations apply nai hoti 
+Masla:
+ResetEpochTime invalid ya missing hone par direct deserialization se exception aa sakta tha aur code break ho raha tha.
+
+Solution:
+Pehle raw JSON ko JObject mein parse kar ke ResetEpochTime validate kiya, phir model deserialization ki. Is se invalid data pehle hi reject ho jata hai aur code safely execute hota hai.
+code:
+var json = JsonConvert.SerializeObject(epicRequest.Data);
+    var root = JToken.Parse(json);
+
+    var token = root.Type == JTokenType.Array
+        ? root.First?["resetEpochTime"]
+        : root["resetEpochTime"];
+
+    if (token == null ||
+        !long.TryParse(token.ToString(), out var resetEpochTimeLong) ||
+        resetEpochTimeLong <= 0)
+    {
+        response.ResponseCode = ResponseCode.BadRequest;
+        response.Message = "Bad Request: Invalid ResetEpochTime";
+        return response;
+    }
+
+explain 
+{
+  "messageId": "3b7f2a91-5e4c-4b2d-9f61-8c0a7d1e3f45",
+  "resetEpochTime": "xyz",
+  "resetReason": "Patient_Position_Changing",
+  "facility": "MLLPDB",
+  "sendingApplication": "VST Notifyzz",
+  "bed": "5WSL2G",
+  "sensorId": "EPICMllp",
+  "Facilitycode": "100018",
+  "FirstName": "umerelctronics11",
+  "LastName": "test_98",
+  "DateOfBirth": "2000-12-11T06:06:00",
+  "MedicalRecordNumber": "123",
+  "PIDInternal": "12312312",
+  "RoomNo": "EPICMLLP"
+}
+
+Tree JSON JTOKEN
+===========
+JToken (root)
+ └── JObject
+     ├── messageId → JValue("3b7f2a91-5e4c-4b2d-9f61-8c0a7d1e3f45")
+     ├── resetEpochTime → JValue("xyz")   ❌ (invalid for business logic)
+     ├── resetReason → JValue("Patient_Position_Changing")
+     ├── facility → JValue("MLLPDB")
+     ├── sendingApplication → JValue("VST Notifyzz")
+     ├── bed → JValue("5WSL2G")
+     ├── sensorId → JValue("EPICMllp")
+     ├── Facilitycode → JValue("100018")
+     ├── FirstName → JValue("umerelctronics11")
+     ├── LastName → JValue("test_98")
+     ├── DateOfBirth → JValue("2000-12-11T06:06:00")
+     ├── MedicalRecordNumber → JValue("123")
+     ├── PIDInternal → JValue("12312312")
+     └── RoomNo → JValue("EPICMLLP")
+=================================================
+how to grab data from Jason Jtoken , change only key , value always comes
+-------------------------------------------------
+   var json = JsonConvert.SerializeObject(epicRequest.Data);
+   var root = JToken.Parse(json);
+
+   var token = root.Type == JTokenType.Array
+       ? root.First?["resetEpochTime"]
+       : root["resetEpochTime"];
+--------
+var token = root.Type == JTokenType.Array
+    ? root.First?["facility"]
+    : root["facility"];
+-------
+format 
+-------
+JToken? GetValue(JToken root, string key)
+{
+    return root.Type == JTokenType.Array
+        ? root.First?[key]
+        : root[key];
+}
+========================================================================
+issue , 
+====================
+summary report problem 
+-------
+Facility Name: 10006
+Total Received Messages: 3441
+Internally Successful: 57
+Internally Failed: 3384
+Externally Successful: 48
+Externally Failed: 3393
+Junk Messages: 0
+------------------
+isko dekhin total recived , 3441 message and successful 57 oly why and how 
+----------
+solution 
+-----------
+sab se pehele db walon se summary report is facility ke mangwa lein ,
+----
+FacilityName	MessageControlId	IsJunk	IsSuccessfulInternally	IsSuccessfulExternally	CreatedDate	InternalFailureReason	ExternalFailureReason																		
+10006	256713800	0	0	0	2026-01-06 8:59:56	Duplicate Message	\N																		
+10006	256713800	0	0	0	2026-01-06 8:59:51	Duplicate Message	\N											------
+InternalFailureReason = Dulicate hai , 
+
+iska mtlb duplicate messages gye haim , 
+ab ap control id 256713800 db ko send ker ke iska hl7 message manwag lein 
+pata chal jaye ga konsa hl7 message dulicate hai ....
+
+findings :
+report hamesha read kerin , or belwo valeus zaroor check kerein , har ek facility ki daily report main 
+
+Facility Name: 10006
+Total Received Messages: 3441
+Internally Successful: 57
+Internally Failed: 3384
+
+now send the email to rida to send to client
+--------
+Hi Rida,
+
+Please be informed, we are receiving duplicate data for the facility  (10006)
+
+Message Summary:
+
+Date: Stats 2026-01-05 09:00:00 to 2026-01-06 09:00:00  PST
+
+Facility Name: 10006
+Total Received Messages: 3441
+Internally Successful: 57
+Internally Failed: 3384
+
+Duplicate HL7 Message:
+
+
+MSH|^~\&|EPIC EHR|10006|VST Integration|10006|20260105174251|31132|ADT^A02|256713800|P|2.3
+EVN|A02|20260105174251||ADT_EVENT|31132^WILSON^ROSLYN^J.^^^^^EH^^^^^EJCH|20260105174200
+PID|1||19264542^^^EPI^MR||GOOCH^MATTHEW^RAYAN^^^^D||19841115|M|GOOCH^MATTHEW|Black|1425 LAUREL CROSSING PKWY APT 10^^BUFORD^GA^30519-6831^US^P^^GWINNETT|GWINNETT|(404)855-6086^P^M^^^404^8556086~^NET^Internet^goochmatthew47@gmail.com||ENG|MARRIED|CHRISTIAN|220458697|428-51-9968|||NOT HISPANIC|||||No|||N
+ROL|1|UP|Consult MD|6805^THAKER^MAITRAYA^D^^^^^PROVID^^^^PROVID1699724427^THAKER^MAITRAYA^D^^^^^NPI^^^^NPI|20250513||||||4385 JOHNS CREEK PKWY^SUITE 200^SUWANEE^GA^30024^US|(770)418-0456^^W^^^770^4180456(770)418-1603^^FAX^^^770^4181603
+ROL|2|UP|GENERAL|90163^TALUKDAR^NINA^^^^^^PROVID^^^^PROVID1881270247^TALUKDAR^NINA^^^^^^NPI^^^^NPI|20250513||||GENERAL||3276 BUFORD DR^STE 100^BUFORD^GA^30519^US^^^GWINNETT|(404)251-2890^^W^^^404^2512890(678)714-0496^^FAX^^^678^7140496
+ROL|3|UP|NONE DEFINED|94274^PARIKH^SIMY^KABARIA^^^^^PROVID^^^^PROVID1912340415^PARIKH^SIMY^KABARIA^^^^^NPI^^^^NPI|20250513||||||12 EXECUTIVE PARK DR^^ATLANTA^GA^30329^US^^^DEKALB|(404)778-3444^^W^^^404^7783444(404)501-7659^^FAX^^^404^5017659
+PV1|1|IP|10006011^332-01^332-01^10006^R^^^^EJCH 3E^^DEPID|ER||10006025^4523^4523^10006^R^^^^EJCH EMERGENCY^^DEPID|103294^ASIF^MERAJ^MOHIUDDIN^^^^^PROVID^^^^PROVID||2648^GU
+
+
+Regards
+Amir Shahzad
+===============================
+issue ssl , or browsr se junk mak nai ho rehe they , 
+======================
+agar inbound success main juk data =1 store kerwana hai tu app direct saveinboundfailure use na kerein below wala use keren
+   if (buffer.Length > 0)
+   {
+       await this.CustomSendAckAsync(e, string.Empty, ackCreationError);
+       _logger.LogError("No complete MLLP container found, clearing buffer contents (length: {Length})", 
+           bufferText.Length);
+       buffer.Clear();
+
+       await RejectAndAckAsync(e, string.Empty, string.Empty, defaultHl7Version, ackCreationError, reasonText);
+
+   }
+----------------------------------------------
+issue 
+=====================
+tester ne log share ye hain 
+=================
+537	2026-01-07 06:58:33	fail: EpicPlugin.NetworkClient[0]
+3538	2026-01-07 06:58:33	Error processing HL7 message 96707ef0b77c4a9cbcfe3c40322d676a: Timeout connecting to 18.118.79.17:81
+3539	2026-01-07 06:58:33	System.TimeoutException: Timeout connecting to 18.118.79.17:81
+3540	2026-01-07 06:58:33	at SuperSimpleTcp.SimpleTcpClient.Connect()
+3541	2026-01-07 06:58:33	at EpicPlugin.NetworkClient.SendHl7MessageAsync(GeneratedHl7Message hl7Message, String messageControlId, FacilityConfigsForOutgoingHl7 facilityConfigs) in D:\a\1\s\EpicPlugin\NetworkClient.cs:line 111
+===================================================
+mere sooch .... ??
+db main check keron table main is is facility ke against konsa IP hai , 18.118.79.17:81
+jo main ne Hafsa se check kerwaya , tu theek tha 
+
+ab main ne yeah dekhan tha ke demo per mirth server on hai ke nai , on , ya off , 
+
+baad main pata chala ke production ke server se demo mirth ke server per access band hai (known issue , by basit bhai) please note this is important for testing
+only check that ORU Message runs completly ... if yes then its ok
+-------------
+fail: EpicPlugin.NetworkClient[0] is ka mtlb fail howa , applition epic plugin and file name NetworkClinet and NetworkClient.cs:line 111
+Logs ko bhuht ihtatyt se read kya kero  , 
+
+exception , error, fail , yeah keywords seracrh lagya kero logs main dekhney ke lye 
+
+basit bhai ka group main jawab
+-------
+Its the Mirth Ip and its installed on Demo server which is never/not accessible from production Environment.
+===============================================================================================
+problem
+=============================
+Store procedure V1 ka problem , masla yeah ta ke pre live and live env ke sp names same hain , jis ki waja se hum SP ko update nai ker sakty same env main V1 is lye lagaya 
+ke app pre live main or live main diif ker sakyin , V1 ka mtlb pre live , hai , or V1 na ho tu hum use nai kerein gey 
+==================
+code 
+===================
+
+       // ✅ Use cached connection strings - decryption happens only once per app lifetime
+       _IntegrationsConnectionString = connectionStringCache.GetConnectionString("WR");
+       _IntegrationsConnectionString_RO = connectionStringCache.GetConnectionString("RO");
+       
+       // Get DbVersion from AppConfig, default to empty string if not set
+       _dbVersion = appSettings?.AppConfig?.DbVersion ?? string.Empty;
+       
+       _logger.LogDebug("BaseRepository initialized with cached connection strings and DbVersion: {DbVersion}", _dbVersion);
+   }
+
+   /// <summary>
+   /// Gets the versioned stored procedure name by appending the DbVersion suffix.
+   /// Example: if DbVersion = "V1", "uspGetData" becomes "uspGetDataV1"
+   /// </summary>
+   protected string GetVersionedStoredProcedureName(string storedProcedureName)
+   {
+       if (string.IsNullOrWhiteSpace(storedProcedureName))
+       {
+           return storedProcedureName;
+       }
+
+       if (string.IsNullOrWhiteSpace(_dbVersion))
+       {
+           return storedProcedureName;
+       }
+
+       return storedProcedureName +"_"+ _dbVersion;
+   }
+
+eplaination
+==============
+sal masla kya hota hai? (ONE LINE)
+
+Live system mein change karna khatarnaak hota hai — is liye versioning aati hai.
+
+Bas.
+
+Ab detail 👇
+
+🧠 Simple Story (BILKUL BASIC)
+Step 1:
+
+Tumhari app chal rahi hai
+Hazaar log use kar rahe hain
+
+Database mein ek cheez hai:
+
+uspGetPatient
+
+
+Yeh ek function samjho jo patient ka data deta hai.
+
+Step 2:
+
+App ka code bolta hai:
+
+“Mujhe 5 cheezen chahiyein”
+
+Jaise:
+
+Name
+
+Age
+
+Gender
+
+City
+
+Phone
+
+Sab theek chal raha hai ✅
+
+Step 3:
+
+Boss aa ke bolta hai 😈
+
+“Is mein 2 aur cheezen add karo:
+
+InsuranceNo
+
+BloodGroup”
+
+❌ Galat tareeqa (DANGER)
+
+Tum direct jaa kar uspGetPatient change kar do.
+
+Problem kya hogi?
+
+👉 Old app ab bhi 5 cheezen expect kar rahi hai
+👉 Database 7 cheezen bhej raha hai
+
+Result ❌:
+
+App crash
+
+Report fail
+
+Users call
+
+Panic 😵
+
+🔥 YAHI REAL PRODUCTION PAIN HAI
+
+Old cheez chal rahi ho, usko todna mana hai
+
+✅ Sahi tareeqa (SAFE WAY)
+
+Tum naya version bana dete ho
+
+uspGetPatient_V1  → purana (5 cheezen)
+uspGetPatient_V2  → naya (7 cheezen)
+
+Ab magic yahan hota hai 🪄
+Old app:
+"DbVersion": "V1"
+
+
+➡️ Purana function use karegi
+➡️ Kuch nahi tootega ✅
+
+New app:
+"DbVersion": "V2"
+
+
+➡️ Naya function use karegi
+➡️ Extra data mil jaayega ✅
+
+🤯 Tumhein lag raha tha issue kya hai…
+
+Tum soch rahe ho:
+
+“2 column add karne se kya farq parta hai?”
+
+❌ Farq parta hai kyun ke:
+
+Code expectation pe chalta hai
+
+DB surprise de de to system toot jata hai
+
+🧹 Ab yeh method kyun bana?
+Bina method ke:
+
+Tumhein har jagah likhna parta:
+
+uspGetPatient_V1
+uspGetPatient_V2
+
+
+Problem:
+
+Ghalti ka chance
+
+Confusion
+
+Deploy pe edits
+
+Sar dard 🤕
+
+Is method ke sath:
+
+Tum sirf likhte ho:
+
+uspGetPatient
+
+
+Aur method khud decide karta hai:
+
+uspGetPatient_V1 ya V2
+
+
+Tumhein tension nahi 👍
+========================================
+
+====================================================
+ticket NUC 
+=====================
+@Basit Ahmed , @Sayida Rida Batool  We need to send timer count down when pressure injury event occured , we need end point for nuc device when its request against serial number it should return its total number of hours:minutes:seconds .
+Basit Ahmed, 1 min
+Quoted Sent by Aamir Sajjad@Basit Ahmed , @Sayida Rida Batool  We need to send timer count down when pressure injury event occured , we need end point for nuc device when its request against serial number it should return its total number of hours:minutes:seconds .End Quote press L to link back to original quoteAcknowledged
+1: Kindly share the details of Alert side end point on which we need to send request
+2: Any time preference from client or it will be moved along with the upcoming Complete Alert release.
+
+CC: @Sayida Rida Batool @Madiha Shams
+==========
+Solution ??
+=============
+ticket nuc
+================
+ public async Task<GeneralBaseResponse> ActivateSensorSettingsAsync(string payload, ILogger logger)
+ {
+
+     GeneralBaseResponse response = new();
+     JObject json = JsonConvert.DeserializeObject<JObject>(payload);
+     JToken dataToken = json.SelectToken("Data");
+     logger.LogInformation("Payload Recieve From Client:{@Payload}", payload);
+     ActivateSensorSettings request = JsonConvert.DeserializeObject<ActivateSensorSettings>(dataToken.ToString());
+
+     // Default behavior if missing
+     request.MonitoringStart ??= "00:00";
+     request.MonitoringEnd ??= "00:00";
+     request.IsFallenAlertEnabled ??= false;
+     request.IsEnabledPressureInjury ??= false;
+     request.IsExitAlertAllDay ??= false;
+     request.RoomNumber ??= string.Empty;
+
+     // Optional: validate format HH:mm
+     if (!TimeSpan.TryParse(request.MonitoringStart, out _) ||
+         !TimeSpan.TryParse(request.MonitoringEnd, out _))
+     {
+         response.ResponseCode = ResponseCode.BadRequest;
+         response.Message = "Invalid monitoring time format";
+         response.Data = "monitoringStart / monitoringEnd";
+         return response;
+     }
+
+     if (string.IsNullOrEmpty(request.sensorId))
+     {
+         response.ResponseCode = ResponseCode.BadRequest;
+         response.Message = "Bad Request";
+         response.Data = ValidateRequest.sensorId.Value;
+         return response;
+     }
+     if (string.IsNullOrEmpty(request.BedModeSensitivity))
+     {
+         response.ResponseCode = ResponseCode.BadRequest;
+         response.Message = "Bad Request";
+         response.Data = ValidateRequest.bedModeSensitivity.Value;
+         return response;
+     }
+     if (string.IsNullOrEmpty(request.Volume))
+     {
+         response.ResponseCode = ResponseCode.BadRequest;
+         response.Message = "Bad Request";
+         response.Data = ValidateRequest.volume.Value;
+         return response;
+     }
+     bool noAlertSelected =
+         request.IsBedChairExit != true &&
+         request.IsEnabledPressureInjury != true &&
+         request.IsFallenAlertEnabled != true;
+
+     // Rule 1: at least one alert must be true
+     if (noAlertSelected)
+     {
+         request.IsBedChairExit = true;
+     }
+
+     // Rule 2: isExitAlertAllDay is NOT part of validation
+     // Default false (do nothing unless explicitly sent by client)
+     request.IsExitAlertAllDay ??= false;
+
+
+
+     var settings = new JsonSerializerSettings
+     {
+         ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+     };
+     var jsonString = JsonConvert.SerializeObject(request, settings);
+
+     logger.LogInformation("Sending Payload to Client: {@Payload}", jsonString);
+
+     var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+    logger.LogInformation("Sending Content  to Client: {@Content}", content);
+     var responseObj = await RequestHelper.SendRequestAsync(content, "activateSensorSettings",request.sensorId, logger);
+     return responseObj;
+ }
+==========
+solution
+=======
+yar habi bi kisi bi sorate agar adha payoad send kero gey tu baqi values default ke saat jayi g , imp point 
+mtlb bool = nll ja rehe ho gi , or false , ya true set erna hot hai jayse e oper kya gya hai , sari values handle kerni parti hai 
+warna 400 bad request ati hai , srver se 
+
+phir necheh yheah dekha ke actla hu kya bday main default values ej rehe hai , 
+
+immidate window ke through check kya command laga ker ke humaa payload actual main kya ja raha haio 
+
+or uskji main sari fileds ka default value jati hai m, neche ruf work kya hai , payload or jo hum send ker rehe they API ko 
+immadate window ki command content ki body ko check kerney ke lye
+=====
+content.ReadAsStringAsync().Result
+===============
+"{\"roomNumber\":null,\"bedModeSensitivity\":\"high\",\"patientFacingAudio\":true,\"language\":\"en-US\",\"volume\":\"100\",\"isFallenAlertEnabled\":null,\"isBedChairExit\":true,\"isEnabledPressureInjury\":null,\"isExitAlertAllDay\":false,\"monitoringStart\":\"00:00\",\"monitoringEnd\":\"00:00\",\"sensorId\":\"02000024\"}"
+========
+dekhin room number default ke case main null , or sari boolian values default ke case main null or jo error aa raha tha usko dekhin us
+main saaf saaf likha hai , ke bool value ko convert nai ker pa raha , bool value , true ya false hoti hai , null nai 
+========
+error 
+=========
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"sensorDisplayRequest":["The sensorDisplayRequest field is required."],"$.isFallenAlertEnabled":["The JSON value could not be converted to System.Boolean. Path: $.isFallenAlertEnabled | LineNumber: 0 | BytePositionInLine: 136."]},"traceId":"00-16a1897053626275c1e3907a5dcc167d-eb8160e74a161b59-00"}
+=========
+"{\"roomNumber\":\"epicmllp5\",\"bedModeSensitivity\":\"high\",\"patientFacingAudio\":true,\"language\":\"zh-CN\",\"volume\":\"80\",\"isFallenAlertEnabled\":true,\"isBedChairExit\":true,\"isEnabledPressureInjury\":false,\"isExitAlertAllDay\":true,\"monitoringStart\":\"00:00\",\"monitoringEnd\":\"00:00\",\"sensorId\":\"02000024\"}"
+
+
+
+sensorId = "02000024",
+bedModeSensitivity = "high",
+patientFacingAudio = true,
+language = "zh-CN",
+volume = "80",                 // must be string
+roomNumber = "epicmllp5",
+
+isFallenAlertEnabled = true,
+isBedChairExit = true,
+isEnabledPressureInjury = false,
+isExitAlertAllDay = true,
+
+monitoringStart = "00:00",
+monitoringEnd = "00:00"
+
+=======================================================
+"{\"roomNumber\":null,\"bedModeSensitivity\":\"high\",\"patientFacingAudio\":true,\"language\":\"en-US\",\"volume\":\"100\",\"isFallenAlertEnabled\":null,\"isBedChairExit\":true,\"isEnabledPressureInjury\":null,\"isExitAlertAllDay\":false,\"monitoringStart\":\"00:00\",\"monitoringEnd\":\"00:00\",\"sensorId\":\"02000024\"}"
+
+=======
+"{\"roomNumber\":null,\"bedModeSensitivity\":\"high\",\"patientFacingAudio\":true,\"language\":\"en-US\",\"volume\":\"100\",\"isFallenAlertEnabled\":false,\"isBedChairExit\":true,\"isEnabledPressureInjury\":false,\"isExitAlertAllDay\":false,\"monitoringStart\":\"00:00\",\"monitoringEnd\":\"00:00\",\"sensorId\":\"02000024\"}"
+
+isFallenAlertEnabled null ho tu isko false kero do ,
+isEnabledPressureInjury null ho tu isko false ker do 
+roomNumber null ho tu string.empty le lo 
+
+
+
+"{\"roomNumber\":\"\",\"bedModeSensitivity\":\"high\",\"patientFacingAudio\":true,\"language\":\"en-US\",\"volume\":\"100\",\"isFallenAlertEnabled\":false,\"isBedChairExit\":true,\"isEnabledPressureInjury\":false,\"isExitAlertAllDay\":false,\"monitoringStart\":\"00:00\",\"monitoringEnd\":\"00:00\",\"sensorId\":\"02000024\"}"
+=======================================
+Masla Number 2 , API Respose ker rehe thi data object main string ko ... or response main client ko data object chaye tha 
+most important point bhuht khawar kewa tha is ne 
+===================================================
+  if (response.IsSuccessStatusCode)
+  {
+      generalBaseResponse.ResponseCode = ResponseCode.Success;
+      generalBaseResponse.Message = "Success";
+
+	generalBaseResponse.Data = responseText // old code jis ki waja se response data ke object main string ja raha tah below code main 
+iddher hi jason object main convert ker dya 
+
+      generalBaseResponse.Data = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(responseText);
+
+  }
+------------
+ var responseText = await response.Content.ReadAsStringAsync();
+idher bi changer ker sakta they direct 
+var responseText = await response.Content.ReadAsStringAsync();
+JsonElement jsonElement = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(responseText);
+
+check NUC Plugin RequestHelper.SendRequestAsync for more information.
+================================
+

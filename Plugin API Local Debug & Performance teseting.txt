@@ -1,0 +1,427 @@
+please check mllp listner db , pluginapi db , epic plugin in deb is it DEV or Test otherwise you will face problem , inbound message success table problem , eternal = 1 
+jab dekho wo dev ki db ko hit ker raha haota hai , is lye ap please in sab ki same db Rekha kero 
+==============
+dev db
+===========
+ "ConnectionStrings": {
+   "IntegrationDB": "ipupumZDNnUUCalHZln9URuU0M7g9plSvGChau524waADDDELMpgzn+YfM/jzQ1clVBLgvOyohsCgdih4w+vFPqs8NYAphg5pR5/3ZRkiDsjdyY/TSIRgbN40PbK1dx2bB0LkyqJpDKPHFqy5+7MkeaLXF/otKgdXdk2/MtRR/Im4Iz6T2xzmk1pU4MHKNclvhWa6tLWuXsH2DKX+7X1ehNy4T+xlFqs5Pr+Aepkqgo=",
+   "IntegrationDB_RO": "ipupumZDNnUUCalHZln9URuU0M7g9plSvGChau524waADDDELMpgzn+YfM/jzQ1clVBLgvOyohsCgdih4w+vFPqs8NYAphg5pR5/3ZRkiDsjdyY/TSIRgbN40PbK1dx2REsPD65A9poNwk2tV166dzS4wh3k62aWH7ahyfYISNalsEGjLRuhNt8H4cGxWbUHGl6P16jPF17k0sCJ75WrTfUWkUNujQfqlR2u28pYB7s="
+ },
+=======================
+test db
+=================
+ "ConnectionStrings": {
+   "IntegrationDB": "ipupumZDNnUUCalHZln9UScWrAnpscBH7rsJhNHayYnRZQIjSBKbttmMwMhokxDGdaE84wK/A7bgCaSG9NjxZM1n0q5kwME6quLhZ2wSrU/0bJDz2JszNr0New8AlAKk9npsrQIJWu8LZBMI8YuwITI+SVZOGOxT3wXfvWcWAOV6E0QZpWbP0MIzfn+Ui4N91OLEXAKjg29cqDTWiEeuju0H79H2KXFN8nD0veUAT5U=",
+   "IntegrationDB_RO": "ipupumZDNnUUCalHZln9UScWrAnpscBH7rsJhNHayYnRZQIjSBKbttmMwMhokxDGdaE84wK/A7bgCaSG9NjxZM1n0q5kwME6quLhZ2wSrU/0bJDz2JszNr0New8AlAKkxXwkIpJkw3JikmMdoMKXydWcEqT6jsPoWNhILcyxrB7C+pdLAcFpH/ftt8dyIa7VnpdtgvAt2MleoVLVvRpTfGi9Itz/YzsW0kUPiw5Vat0="
+ },
+
+==================
+
+
+Step 1 
+ go MLLP Appsettings.json and add these 
+
+old --------------
+
+ "jwtIssuerUrl": "https://test-connectorapi.vstintegration.com/api/ConnectorEngine/initialize",
+ "pluginUrl": "https://test-epicplugin.vstintegration.com/api/Plugins/getdata",
+
+local-----------------------
+
+  "jwtIssuerUrl": "https://localhost:7136/api/ConnectorEngine/initialize",
+  "pluginUrl": "https://localhost:7184/api/Plugins/getdata",
+===============
+54.227.208.238
+=================
+
+Step 2 
+goto connector engine and add this
+
+ "AppSettings": {
+   "PluginUrl": "https://localhost:7184/api/Plugins/getdata",
+    "AwsAuthenticationUrl": "https://authentication1.auth.us-east-1.amazoncognito.com/oauth2/token",
+   "HeaderKeyName": "Authorization"
+ },
+
+goto plugin API and add this 
+
+  "pluginUrl": "https://localhost:44365/api/Plugins/getdata",
+  "jwtIssuerUrl": "https://localhost:7184/api/ConnectorEngine/initialize",
+  "jwtRefreshingRetryCount": 3,
+
+and also add this into plugin API 
+
+
+  "DirectWebhookPublishing": {
+    "connRetries": 5,
+    "clientUrl": "https://localhost:44362/api/Initialize/directPublish",
+    "credentials": "71dd1ee2-50b9-48d0-9904-ed1e826bbeaf"
+  },
+
+Local address of WebHook API
+
+----------
+goto plugin table 
+
+add name=epicplugin and path D:\Integration-Plugin
+
+
+go to your d drive add 
+
+Integration-Plugin\dlls
+adnan ne C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic wala path use kya howa hai dev server per ... dlls idher nai likhtey lekin folder banatey hain apney C drive mai 
+C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic\dlls , apney C drive main yeh folder banyan .... 
+is lye ap bi local per yehe path bana lein , or dlls published dlls is main rekh dein , ta ke bar bar path change kerney ke zaroort nai prey (pro tip)
+=============================
+
+add debuuger in following methods to check the call 
+
+MLLP /HandleClientAsync
+Connector Engine / InitializeAsync
+PluginAPI /GetDataAsync
+
+===========
+please run mllp , connector engine and plugin api in local envirnomnet and grab your ip https://localhost:7136 , port numbers are different in your case.7136
+
+================
+container per sada timer laga do , wo container friendly hota hai , worker service ka timer kaam nai kerta .. MLLP main
+
+ private readonly int AutoFlushDelayMs;
+ private readonly System.Timers.Timer _flushTimer;
+       this._batchSize = _configurations.GetValue<int>("Hl7BatchSettings:BatchSize");
+       this.AutoFlushDelayMs = _configurations.GetValue<int>("Hl7BatchSettings:AutoFlushDelayMs");
+       // Initialize the flush timer (Container-friendly implementation)
+       _flushTimer = new System.Timers.Timer(AutoFlushDelayMs)
+       {
+           AutoReset = true, // Keep repeating
+           Enabled = true    // Start immediately
+       };
+
+       // Timer callback - uses async void because that's what Elapsed expects
+       _flushTimer.Elapsed += async (sender, e) =>
+       {
+           try
+           {
+               _timerElapsed = true;
+               await TryFlushBatchAsync(); // Note the async method
+           }
+           catch (Exception ex)
+           {
+               _logger.LogError(ex, "Error in timer-based flush");
+           }
+       };
+=================================
+=============================================================PLUGIN API SERVICE 1ST STEP================================ 
+    public class EpicConnectService
+    {
+
+        #region Declarations
+        private const string CredentialsApiUrl = "https://test-epicauthapi.vstintegration.com/config/GetAccessTokenConfigsFromAuthEndpoint";
+        private static readonly EpicConnectService instance = new();
+        #endregion
+
+        #region Initialization
+        private EpicConnectService()
+        {
+        }
+        public static EpicConnectService Instance
+        {
+            get
+            {
+                return instance;
+            }
+        }
+        #endregion
+        public static async Task<string> ConnectCallAsync(string request, ILogger logger)
+        {
+            if (string.IsNullOrWhiteSpace(request))
+            {
+                logger.LogError("ConnectAsync request is null or empty.");
+                return "badRequest";
+            }
+              
+
+=====================SECOND  STEP=============
+namespace Epic.Entities.Epic
+{
+    public class EpicPluginAction
+    {
+        //todo: rename this to "forwardVstNotifyAdt"
+        public static readonly string ForwardEpicAdt = "forwardEpicAdt";
+
+        //these are for adt messages that we receive from VST Notify and forward to Epic EHR
+        public static readonly string AdmitPatient = "admitPatient";
+        public static readonly string DischargePatient = "dischargePatient";
+        public static readonly string UpdatePatient = "updatePatient";
+        public static readonly string ResetPressureInjuryTimer = "pressureInjuryTimerReset";
+
+        //the following are for Epic-Balance integration
+        public static readonly string SearchPatientLocallyBasic = "searchPatientLocallyBasic";
+        public static readonly string SearchPatientLocallyAdvanced = "searchPatientLocallyAdvanced";
+        public static readonly string SearchPatientExternally = "searchPatientExternally";
+        public static readonly string GetPatientDetails = "getPatientDetails";
+        public static readonly string BalanceDocumentExport = "balanceDocumentExport";
+
+        //new integrations for Vst Notify
+        public static readonly string EpicConnectCall = "epicConnectCall";
+        public static readonly string EpicDisconnectCall = "epicDisconnectCall";
+        public static readonly string FetchPatientData = "fetchPatientData";
+        public static readonly string FetchPractitionerData = "fetchPractitionerData";
+        public static readonly string RefreshAccessTokenAsync = "refreshAccessToken";
+    }
+}
+
+=================2ND STERP============================
+using Epic.Entities.Epic;
+using Epic.Plugin.Services;
+using EpicPlugin.Services;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace EpicPlugin
+{
+    public class EpicInit
+    {
+        public static Dictionary<string, Func<string, ILogger, Task<string>>> ActionMapping = new()
+        {
+            //for Epic-Alert integrations (both directions)
+            [EpicPluginAction.ForwardEpicAdt] = AdtService.Instance.ForwardEpicAdtAsync,
+            [EpicPluginAction.AdmitPatient] = EpicAdmissionService.Instance.AdmitPatientAsync,
+            [EpicPluginAction.ResetPressureInjuryTimer] = PatientMonitoringService.Instance.ResetPressureInjuryTimerAsync,
+
+            //for Epic-Balance integration
+            [EpicPluginAction.SearchPatientLocallyBasic] = EpicFhirService.Instance.SearchPatientLocallyBasicAsync,
+            [EpicPluginAction.SearchPatientLocallyAdvanced] = EpicFhirService.Instance.SearchPatientLocallyAdvancedAsync,
+            [EpicPluginAction.SearchPatientExternally] = EpicFhirService.Instance.SearchPatientExternallyAsync,
+            [EpicPluginAction.GetPatientDetails] = EpicFhirService.Instance.GetPatientDetailsAsync,
+
+            //Balance report export
+            [EpicPluginAction.BalanceDocumentExport] = DocumentExportService.Instance.ExportDocumentAsync,
+
+            //new Epic-Alert integration for Connect/Disconnect
+            [EpicPluginAction.EpicConnectCall] = EpicConnectService.ConnectCallAsync,
+            [EpicPluginAction.EpicDisconnectCall] = EpicConnectService.DisconnectCallAsync,
+            [EpicPluginAction.FetchPatientData] = EpicConnectService.FetchPatientDataAsync,
+            [EpicPluginAction.FetchPractitionerData] = EpicConnectService.FetchPractitionerDataAsync,
+            [EpicPluginAction.RefreshAccessTokenAsync] = EpicConnectService.RefreshAccessTokenWrapperAsync,
+
+        };
+    }
+}
+=============================ADD BELOW ONE IN DB , WHEN YOU CALL IT FRONT END USE THIS ACTION , table name , sourceapiallowedpluginsandoperation
+  public static readonly string RefreshAccessTokenAsync = "refreshAccessToken";
+=============
+response sample
+==============
+Request
+
+ POST https://test-plugins.vstintegration.com/api/Plugins/getdata
+Authorization : <connector-engine-token>
+{
+  "Action": "RefreshAccessToken",
+  "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+  "Data": {
+    "state": "j6ymWxTNpWQhSN6_kMex-hVwH3-Q4m1EVWeagMlWINg"
+  }
+}
+=============================================================
+REFERSH ACCESS OKEN TEST api
+==============================
+{
+  "Action": "refreshAccessToken",
+  "Entity": "50abfa3a-90c5-4fd3-acc6-d23f1fd891dc",
+  "Data": {
+    "state": "j6ymWxTNpWQhSN6_kMex-hVwH3-Q4m1EVWeagMlWINg"
+  }
+}
+
+===================rough working HL7 messages summary report 
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM  receivedhl7 ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 40
+SELECT * FROM outgoinghl7messages
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC 
+LIMIT 20;
+SELECT * FROM outboundmessagestatus
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 100
+======================================
+
+mirth demo 
+=============
+username : admin
+pass : hobbitoN&46
+==================
+All SP and Flow of Integration Db Configuration.
+====================
+step 1 , HL7ProfileLookup , this table has profile id and its name , forexample theda care.
+step 2 check this table vstalertintg_hl7notificationsettings , this table has join info of facility and branch and message type id , which we need to allow.
+step 3 , check sourceclient table , this table has facility codes and branch names.
+step 4 , check vstalertintg_hl7messagetype , this table has message , Allow Message types.
+==================config complete==========================
+
+HL7Profiles.json in c# MLLP Listener and Epic Plugin
+======================================================
+incoming SP vstalertintg_uspGetHl7NotificationSettingDetails
+outgoing SP uspGetAllOutgoingHl7Configs
+
+================for outgoing configurations================
+step 1 , check this table outgoinghl7configs
+step 2 , check this table sourceclient,
+step 3 , check vstalertintg_hl7messagetype
+step 4 , check outgoinghl7profileslookup , important , this is separate from  HL7ProfileLookup incoming , outgoinghl7profileslookup outgoing
+===============================
+message saving tables 
+receivedhl7 , incoming
+outgoinghl7messages, outgoing
+HL7ProfileLookup , incoming
+outgoinghl7profileslookup , outgoing
+===================Workflow==================
+1. Add a branch from the Alert portal.
+2. Map the branch to the corresponding integration database.
+3. In the branch settings, enable Epic and PI configuration options.
+4. Add rooms and sensors, and associate rooms with sensors.
+5. Add users through the portal.
+6. Assign shifts to users via the VSTAlert portal.
+7. Allowing the integration profile for the particular branch (Thedacare)
+
+as per basit bhai
+=======================
+Facility register, 
+Mapping with Alert (Facility Code)
+AutoMapping in Alert(Nurse, Rooms... )
+HL7 events Alloowed
+OutGoing Configurations if required
+HL7 Profile set
+===================================================
+==========================================
+webhook
+===========================================
+CALL uspGetEventSubscriptionsDetail();
+call vstalertintg_uspGetHl7NotificationSettingDetails(0);
+SELECT * FROM plugin
+https://performance-v1-datahooks.vstalert.com/Account/ProcessRequest
+===========================================
+ruf work data mapping to alert system  database
+===========================================
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0);
+
+
+SELECT * FROM vstalert_externalbranchmapping;
+SELECT * FROM vstalert_businessbranches bb WHERE bb.Id=335;
+SELECT * FROM vstalert_externalbranchbedsmapping m WHERE m.ExternalBranchMappingId=4;
+
+SELECT * FROM vstalert_externalclients;
+
+
+SELECT * FROM hl7profilelookup;
+SELECT * FROM vstalertintg_hl7messagetype;
+SELECT * FROM sourceclient;
+SELECT * FROM vstalertintg_hl7notificationsettings;
+
+
+SELECT * FROM receivedhl7 a  ORDER BY 1 DESC LIMIT 10;
+
+    SELECT DISTINCT sc.Name AS Facility,ntfst.SenderIPAddress, ntfst.TargetUrl, ntfst.HL7Version, elups.Type, ntfst.FacilityId, hpl.Name AS HL7ProfileName
+    ,sc.FacilityCode
+    FROM  vstalertintg_hl7notificationsettings ntfst
+    JOIN sourceclient sc ON sc.SourceId = ntfst.FacilityId AND IFNULL(sc.IsDeleted,0)=0
+    left JOIN vstalertintg_hl7messagetype elups ON elups.Id = ntfst.MessageTypeId AND IFNULL(elups.IsDeleted,0)=0
+    left JOIN hl7profilelookup hpl ON hpl.Id = ntfst.HL7ProfileId AND ifnull(hpl.IsDeleted,0) = 0
+    WHERE (pFacilityId IS NULL OR ntfst.FacilityId = pFacilityId)
+    AND IFNULL(ntfst.IsDeleted,0) = 0;
+================================================
+SELECT * from eventsubscriptions
+WebHook 
+====================IMORTANT POINT , DB CONNECTIOS ZARROR DEKA KERO , SAB KE , EPIC PLUGIN , MLLP , PLUGIN API , WEBHOOK SAB KE SAME HONEY CHAHYEEE 
+RECORD KIDHER UPDATE HO RAHA HO GA OR DEKH KIDHER REHE HO GEY ..... DATA JAB EXACT JAGA SAVE NAI HOTA BHAI , TU DB CONNETION DEKHO , 
+SAB DB , TEST DEV , PERFOMANCE MAIN CHECK KERO DATA KIDHER JA RAHA HAI , ID KE THORUGH 
+================================================================
+Important 
+================================================================
+1) cpu spikes rokeny hain , tu ..... queue , concurrent queue 
+2) memory controll kerney ke lye instance control kereny partey hain , through DI
+
+✅ CPU spikes → Thread contention avoid karo, thread-safe queues aur producer-consumer pattern use karo.
+✅ Memory control → DI ke zariye service lifetimes properly configure karo (Singleton/Scoped/Transient).
+=============================================================================
+please tell me , did not release memory even no load if memory goes to 60% it will never went back to its base level which is 20% tell me which area needed to be checked and rectify to release memory , or memory leakage 
+ChatGPT said:
+✅ I’ve carefully reviewed your code (from AdtService, DirectPublisher, EpicPlugin, and supporting classes) and I can see why memory usage keeps growing and never goes back down even after load drops.
+This is a classic case of memory pressure caused by long-lived objects, static singletons, and disposable resources not being cleaned up. Let’s break it down:
+==================================================================================
+when db is off this error occured or db not connectiong.
+========================================================
+DataAccessLayer.MllpListenerRepository.WithConnection_RO() experienced a SQL exception (not a timeout) encountered with Connect Timeout expired. in MllpListenerRepository while fetching listener mappings, DataAccessLayer !MllpListener!
+=======================================================
+errors epic plugin /End to End Configs.
+=======================
+1ST check plugin API DLLs path.
+2nd Check DB , attached to performance , test , or dev
+Webhook API , also check attach to performance or Test Db
+====================================
+performance containers configs
+=====================================
+devops se inki values change kerwayin 
+
+MLLP LIstner 
+
+  "jwtIssuerUrl": "https://dev-connectorapi.vstintegration.com/api/ConnectorEngine/initialize", //perf kerwayin
+  "pluginUrl": "https://localhost:7184/api/Plugins/getdata",
+================
+connector engiber performance , 
+envirimnet ke variable ko Perf , and pluginapi main environment ke vrable ko Perf kerwa dein
+=====================================
+
+connector engine ko bi check kerein uskey variable bi performance per kerwayin 
+============
+   "PluginUrl": "https://localhost:44393/api/Plugins/getdata", is ko performance kerwyin
+===============================================================
+
+plugin API /Epic Plugin
+==========================
+
+  "pluginUrl": "https://localhost:44365/api/Plugins/getdata",
+  "jwtIssuerUrl": "https://dev-connectorapi.vstintegration.com/api/ConnectorEngine/initialize",
+=================================================================
+  "DirectWebhookPublishing": {
+    "connRetries": 5,
+    "clientUrl": "https://localhost:44362/api/Initialize/directPublish",
+    "credentials": "71dd1ee2-50b9-48d0-9904-ed1e826bbeaf"
+  },
+============================================================
+performance containers configs END
+=============================================================
+Performance On 
+================================================
+@Anwar Hameed Could you Please 
+1) Set up MLLP Listener / test container , Attached to Performance Db,
+2) Turn on Epic Plugin/Plugin / Connector Engine  performance containers 
+3) Attach Webhook API to performance Db
+4) Turn On Performance DB.
+Thanks in Advance , info to @Hafsa Yasmeen @Asad Rabani @Basit Ahmed 
+================================================
+turn Off request Performance.
+================================================
+@Anwar Hameed/ @Muhammad Adnan  Could you please 
+1) Set up MLLP Listener / test container , Attached to Integration Db Test.
+2) Turn Off Epic Plugin/Plugin API / Connector Engine performance containers 
+3) Attach Webhook API to Integration Db Test
+4) Turn Off Performance DB.
+Thanks in Advance , info to @Hafsa Yasmeen @Asad Rabani @Basit Ahmed
+==================================================
+if you have new branch then 
+================================================1. Kindly connect branch 'Diagnose' with performance strings on Test container for MLLP Service. 
+2. Release the latest build of PluginApi on Performance 
+3.Turn on Epic Plugin/Plugin/Connector Engine performance containers
+4. Attach Webhook API to performance Db
+==========================================

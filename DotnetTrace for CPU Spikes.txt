@@ -1,0 +1,83 @@
+**Using dotnet-trace to Generate and Analyze .nettrace Files in PerfView**
+
+## **Step 1: Install `dotnet-trace`**
+Run the following command to install `dotnet-trace` globally:
+
+```sh
+dotnet tool install --global dotnet-trace
+```
+
+To verify the installation, run:
+
+```sh
+dotnet-trace --version
+```
+
+---
+
+## **Step 2: Download and Open PerfView**
+1. Download PerfView from Microsoft GitHub:  
+   [PerfView Download](https://github.com/microsoft/perfview/releases)  
+2. Extract the `.zip` file.
+3. Open `PerfView.exe` (No installation required).
+
+---
+
+## **Step 3: Identify the Process ID (PID)**
+To list all running .NET processes, run:
+
+```sh
+dotnet-trace ps
+```
+
+Example output:
+
+```
+     1234   myapp.dll
+     5678   dotnet
+```
+
+If your application is **myapp.dll**, note down the **PID** (e.g., `1234`).
+
+---
+
+## **Step 4: Start Collecting the Trace**
+Run the following command to start tracing:
+
+```sh
+dotnet-trace collect --process-id 1234 --output mytrace.nettrace
+```
+
+**Replace `1234` with your actual process ID.**
+
+---
+
+## **Step 5: Stop the Trace**
+After letting the tracing run for some time (e.g., reproducing an issue), stop it by pressing:
+
+```
+Ctrl + C
+```
+
+This will finalize and save the `.nettrace` file.
+
+---
+
+## **Step 6: Open `.nettrace` in PerfView**
+1. Open **PerfView**.
+2. Click **File → Open**.
+3. Select `mytrace.nettrace`.
+4. Click **OK** and wait for PerfView to process the file.
+5. Navigate through different events, CPU usage, GC (Garbage Collection), and more.
+
+---
+
+## **Step 7: Analyze the Trace in PerfView**
+- **CPU Stacks**: Go to **"Events" → "CPU Stacks"** to see where CPU time is spent.
+- **Garbage Collection (GC) Stats**: Analyze memory management.
+- **Thread Time Stacks**: Investigate thread execution times.
+
+---
+
+## **Conclusion**
+By following these steps, you can effectively collect and analyze performance traces of .NET applications using `dotnet-trace` and **PerfView**. This helps in identifying bottlenecks, optimizing CPU/memory usage, and troubleshooting performance issues efficiently.

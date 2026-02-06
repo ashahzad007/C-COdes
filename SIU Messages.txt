@@ -1,0 +1,59 @@
+MSH|^~\&|Emory_Abc|VerusTestBranch|iFW|VerusTestBranch|20250815100000||SIU^S12|20250815100000|P|2.3||||||
+SCH|10345^10345|2196178^2196178|||10345|OFFICE^Office visit|Reason for appointment|OFFICE|60|m|^^60^20250815104500^20250815113000|||||9^DENT^ARTHUR^||||9^DENT^COREY^|||||Scheduled
+PID|1||42||SMITH^PAUL||19781012|M|||1 Broadway Ave^^Fort Wayne^IN^46804||(260)555-1234|||S||999999999|||||||||||||||||||||
+PV1|1|O|ER^101^^MainHospital||||1^Smith^Miranda^A^MD^^^^|2^Withers^Peter^D^MD^^^^||||||||||||||||||||||||||||||||||||||||||99158|
+RGS|1|A
+AIS|1||PROC567^Knee Replacement^CPT|CPT|20250815|120|min|Scheduled
+AIG|1|A|RM101^Operating Room 101|R^^|20250815100000|120|min|Scheduled
+AIL|1|A|OFFICE^^^OFFICE|^Main Office||20250815104500|45|min||Scheduled
+AIP|1|A|SURG001^White^Charles^A^MD^^^^|SUR^Surgeon||20250815090000|120|min||Scheduled
+AIP|2|A|ANES002^White^Douglas^^MD^^^^|ANES^Anesthesiologist||20250815090000|120|min||Scheduled
+====================================
+old running in MLLP Listener.
+======================================
+MSH|^~\&|MESA_OP|VerusTestBranch|iFW|VerusTestBranch|20110613061612||SIU^S12|testmessageSIU^S12Finall201|P|2.3||||||
+SCH|10345^10345|2196178^2196178|||10345|OFFICE^Office visit|reason for the appointment|OFFICE|60|m|^^60^20110617084500^20110617093000|||||9^DENT^ARTHUR^||||9^DENT^COREY^|||||Scheduled
+PID|1||42||SMITH^PAUL||19781012|M|||1 Broadway Ave^^Fort Wayne^IN^46804||(260)555-1234|||S||999999999|||||||||||||||||||||
+PV1|1|O|ER^101^^MainHospital||||1^Smith^Miranda^A^MD^^^^|2^Withers^Peter^D^MD^^^^||||||||||||||||||||||||||||||||||||||||||99158||
+RGS|1|A
+AIG|1|A|1^White, Charles|D^^
+AIL|1|A|OFFICE^^^OFFICE|^Main Office||45||20110614084500|||m^Minutes||Scheduled
+AIP|1|A|1^White^Charles^A^MD^^^^|D^White, Douglas||45||20110614084500|||m^Minutes||Scheduled
+========================================
+anurag
+========================================
+MSH|^~\&|EPIC||||20250924142002|44887|SIU^S12|2|T|2.3
+SCH||1652|||||||5400|S|^^^20251008101000|||||||||44887^CHEN^BRIAN^^|||||Sch^Scheduled^SCHEDULING
+PID|1||205212^^^MRN^MRN||TEST^VIRTUSENSE||20000819|F|||^^^^^US^L|||||||892605|938-13-0342|||||||||||N
+PD1|||EHS ASC^^10105
+PV1||Outpatient|10105001^^^10105^^^^^^^DEPID|||||||GEN|||||||1032^SURGERY^PHYSICIAN^^^^^^PROVID^^^^PROVID||892605|||||||||||||||||||||||||||||||892605
+DG1|1||^virtusense test message|virtusense test message||^95;ORC
+RGS|1||1
+AIS|1||26113^EXCISION OF SUBFASCIAL VASCULAR MALFORMATION OF SOFT TISSUE OF HAND, 1.5 CENTIMETERS OR GREATER|20251008102500|900|S|3600|S
+AIL|1||^EHS ASC 1^^10105
+AIP|1||1032^SURGERY^PHYSICIAN^^^^^^PROVID^^^^PROVID|1.1^Primary|GEN|20251008102500|900|S|3600|S
+=====================ALL Complte running pid,dg1,ais
+MSH|^~\&|MESA_OP|VerusTestBranch|iFW|VerusTestBranch|20110613061612||SIU^S12|testmesSU^S12il201|P|2.3||||||
+SCH|10345^10345|2196178^2196178|||10345|OFFICE^Office visit|reason for the appointment|OFFICE|60|m|^^60^20110617084500^20110617093000|||||9^DENT^ARTHUR^||||9^DENT^COREY^|||||Scheduled
+PID|1||42||SMITH^PAUL||19781012|M|||1 Broadway Ave^^Fort Wayne^IN^46804||(260)555-1234|||S||999999999|||||||||||||||||||||
+PD1|||EHS ASC^^10105
+PV1|1|O|ER^101^^MainHospital||||1^Smith^Miranda^A^MD^^^^|2^Withers^Peter^D^MD^^^^||||||||||||||||||||||||||||||||||||||||||99158||
+DG1|1||^virtusense test message|virtusense test message||^95;ORC
+RGS|1|A
+AIS|1||26113^EXCISION OF SUBFASCIAL VASCULAR MALFORMATION OF SOFT TISSUE OF HAND, 1.5 CENTIMETERS OR GREATER|20251008102500|900|S|3600|S
+AIG|1|A|1^White, Charles|D^^
+AIL|1|A|OFFICE^^^OFFICE|^Main Office||45||20110614084500|||m^Minutes||Scheduled
+AIP|1|A|1^White^Charles^A^MD^^^^|D^White, Douglas||45||20110614084500|||m^Minutes||Scheduled
+==============================db save=======================================
+MSH|^~\&|MESA_OP|VerusTestBranch|iFW|VerusTestBranch|20110613061612||SIU^S12|testmesSU^S12il201|P|2.3||||||
+SCH|10345^10345|2196178^2196178|||10345|OFFICE^Office visit|reason for the appointment|OFFICE|60|m|^^60^20110617084500^20110617093000|||||9^DENT^ARTHUR^||||9^DENT^COREY^|||||Scheduled
+PID|1||42||SMITH^PAUL||19781012|M|||1 Broadway Ave^^Fort Wayne^IN^46804||(260)555-1234|||S||999999999|||||||||||||||||||||
+PD1|||EHS ASC^^10105
+PV1|1|O|ER^101^^MainHospital||||1^Smith^Miranda^A^MD^^^^|2^Withers^Peter^D^MD^^^^||||||||||||||||||||||||||||||||||||||||||99158||
+DG1|1||^virtusense test message|virtusense test message||^95;ORC
+RGS|1|A
+AIS|1||26113^EXCISION OF SUBFASCIAL VASCULAR MALFORMATION OF SOFT TISSUE OF HAND, 1.5 CENTIMETERS OR GREATER|20251008102500|900|S|3600|S
+AIG|1|A|1^White, Charles|D^^
+AIL|1|A|OFFICE^^^OFFICE|^Main Office||45||20110614084500|||m^Minutes||Scheduled
+AIP|1|A|1^White^Charles^A^MD^^^^|D^White, Douglas||45||20110614084500|||m^Minutes||Scheduled
+====================================================================

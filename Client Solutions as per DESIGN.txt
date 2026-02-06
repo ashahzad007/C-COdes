@@ -1,0 +1,436 @@
+Ticket 
+===========
+We need to run MLLP in different ports , 13000 to 130005 tak 
+
+solution 
+
+we dont need to change our code base , we can create new container on the base of envirment varablble port:13000 one container , port 13001 dosra container
+All container runs at different port with same code base , 
+
+Pehle hum override kerwa rehe they same continer per ab hum new container banyey gey 
+
+
+1)cost saving , agar code base main instance banye jeye or different ports per MLLP ko run kya jayse mtlb different settings per tu 
+resource ka paysa lagaye ga , kaam bara ho ga , or programmer + devops ko 8 din lagey gey or cost bhrey gi , 
+
+2) maininace bi mushkil ho jaye gi , agar ek change howa tu sari code base main change kerna ho ga 
+
+3) clinet ko jaldi hai , ap is waqt solution de ker kaam chalyin , bus , yehe real world mai nhota hai 
+
+$) client ko pora truck bana ker nai dena hota client ko sirf solution dena hota hai , Pakistani Envirnoment main
+
+ap plugin arcature use ker saktey they lekin wo truck hai , or apko traffic ka idea nai hai , or zayda tar jab client ka kaam chal jata hai tab
+app yeah solution dety ho jo horizontal o vertical scaling kere ,,... 
+
+
+is case main bi 13001 ki port per emory hospital ki traffic alag ho jayi gi 
+================================================
+🏆 FINAL SUGGESTION (Short & Clear)
+
+✅ ONE CODEBASE
+✅ MULTIPLE CONTAINERS (AWS Fargate)
+✅ PORT via ENV VARIABLE
+❌ Multiple codebases = BAD IDEA
+
+Tumhara approach best possible design hai.
+
+🧠 Kyun ONE codebase best hai?
+1️⃣ Maintenance nightmare se bachao
+
+Agar:
+
+3 facilities
+
+3 codebases
+
+Toh:
+
+bug fix = 3 jagah
+
+security patch = 3 jagah
+
+HL7 change = 3 jagah
+
+❌ human error guaranteed
+
+ONE codebase me:
+
+ek fix
+
+ek deploy
+
+sab containers updated
+
+✔️ zero drift
+
+2️⃣ AWS Fargate ke liye perfect fit
+
+Fargate ka philosophy hi yeh hai:
+
+same image, different task definition
+
+Example:
+
+Image: mllp-listener:1.4.2
+
+
+Task definitions:
+
+Task	ENV
+Facility-A	MLLP__PORT=13001
+Facility-B	MLLP__PORT=13002
+Facility-C	MLLP__PORT=13003
+
+🔥 Clean, scalable, zero code change
+
+3️⃣ MessageBodyLength & BufferLength ka kya?
+
+Ye facility-specific nahi hotay 99% cases me.
+Isliye:
+
+"MessageBodyLength": 4000,
+"BufferLength": 8000
+
+
+✔️ Codebase-level config
+✔️ Same for all containers
+
+Agar future me kisi facility ko zyada chahiye:
+
+MLLP__MESSAGEBODYLENGTH=8000
+MLLP__BUFFERLENGTH=16000
+
+
+ASP.NET Core auto-override karega 💥
+
+🧱 Recommended Final Config Model
+public class MllpServerSettings
+{
+    public int Port { get; set; }
+    public int MessageBodyLength { get; set; }
+    public int BufferLength { get; set; }
+}
+
+🧩 Runtime behavior (Perfect Flow)
+
+Code start hota hai
+
+Config read hoti hai (JSON + ENV)
+
+Listener us port pe bind hota hai
+
+Facility HL7 MSH se resolve hoti hai
+
+DB mappings apply hoti hain
+
+👉 Container unaware hota hai ke wo kis facility ka hai
+👉 HL7 message hi decide karta hai
+
+⚠️ Sirf ek cheez ka khayal rakho (IMPORTANT)
+Logging & Isolation
+
+Har container ke logs alag path / stream me hon:
+
+FACILITY_CODE=HOSP_A
+
+
+Logs me add karo:
+
+LogContext.PushProperty("Facility", facilityCode);
+
+
+🩺 HIPAA ke liye gold standard
+
+🧠 Architecture Scorecard
+Aspect	Your Design
+Maintenance	⭐⭐⭐⭐⭐
+Scalability	⭐⭐⭐⭐⭐
+Cost	⭐⭐⭐⭐
+Risk	⭐
+Future-proof	⭐⭐⭐⭐⭐
+🎯 Final Verdict (Bold me suno 😄)
+
+ONE CODEBASE + MULTIPLE FARGATE CONTAINERS + PORT VIA ENV VAR
+= BEST PRACTICE, PERIOD.
+======================================
+"MessageBodyLength": 4000,
+  "BufferLength": 8000
+yar code base ek hi hai , mtlb source code ek hi hai env varaible ki base main mutilple containers baney gey , forgate container aws ke , mtlb port 13001 , one container , agar hum code base main port 3002 send kere tu ek or container baney ga , code base ek honey se maintance kam ho gi agar change aya tu ek code base main change ho ga , agar idher code base bi multiple rekha tu sab code base main changer kerna parey ga .. tum kya suggest kerty ho 
+
+100% tum bilkul sahi soch rahe ho 👍
+aur honestly: yeh senior / architect-level thinking hai — cost, maintenance, aur ops tino cover ho rahe hain.
+
+chalo seedha verdict + thora rationale 👇
+
+🏆 FINAL SUGGESTION (Short & Clear)
+
+✅ ONE CODEBASE
+✅ MULTIPLE CONTAINERS (AWS Fargate)
+✅ PORT via ENV VARIABLE
+❌ Multiple codebases = BAD IDEA
+
+Tumhara approach best possible design hai.
+
+🧠 Kyun ONE codebase best hai?
+1️⃣ Maintenance nightmare se bachao
+
+Agar:
+
+3 facilities
+
+3 codebases
+
+Toh:
+
+bug fix = 3 jagah
+
+security patch = 3 jagah
+
+HL7 change = 3 jagah
+
+❌ human error guaranteed
+
+ONE codebase me:
+
+ek fix
+
+ek deploy
+
+sab containers updated
+
+✔️ zero drift
+
+2️⃣ AWS Fargate ke liye perfect fit
+
+Fargate ka philosophy hi yeh hai:
+
+same image, different task definition
+
+Example:
+
+Image: mllp-listener:1.4.2
+
+
+Task definitions:
+
+Task	ENV
+Facility-A	MLLP__PORT=13001
+Facility-B	MLLP__PORT=13002
+Facility-C	MLLP__PORT=13003
+
+🔥 Clean, scalable, zero code change
+
+3️⃣ MessageBodyLength & BufferLength ka kya?
+
+Ye facility-specific nahi hotay 99% cases me.
+Isliye:
+
+"MessageBodyLength": 4000,
+"BufferLength": 8000
+
+
+✔️ Codebase-level config
+✔️ Same for all containers
+
+Agar future me kisi facility ko zyada chahiye:
+
+MLLP__MESSAGEBODYLENGTH=8000
+MLLP__BUFFERLENGTH=16000
+
+
+ASP.NET Core auto-override karega 💥
+
+🧱 Recommended Final Config Model
+public class MllpServerSettings
+{
+    public int Port { get; set; }
+    public int MessageBodyLength { get; set; }
+    public int BufferLength { get; set; }
+}
+
+🧩 Runtime behavior (Perfect Flow)
+
+Code start hota hai
+
+Config read hoti hai (JSON + ENV)
+
+Listener us port pe bind hota hai
+
+Facility HL7 MSH se resolve hoti hai
+
+DB mappings apply hoti hain
+
+👉 Container unaware hota hai ke wo kis facility ka hai
+👉 HL7 message hi decide karta hai
+
+⚠️ Sirf ek cheez ka khayal rakho (IMPORTANT)
+Logging & Isolation
+
+Har container ke logs alag path / stream me hon:
+
+FACILITY_CODE=HOSP_A
+
+
+Logs me add karo:
+
+LogContext.PushProperty("Facility", facilityCode);
+
+
+🩺 HIPAA ke liye gold standard
+
+🧠 Architecture Scorecard
+Aspect	Your Design
+Maintenance	⭐⭐⭐⭐⭐
+Scalability	⭐⭐⭐⭐⭐
+Cost	⭐⭐⭐⭐
+Risk	⭐
+Future-proof	⭐⭐⭐⭐⭐
+🎯 Final Verdict (Bold me suno 😄)
+
+ONE CODEBASE + MULTIPLE FARGATE CONTAINERS + PORT VIA ENV VAR
+= BEST PRACTICE, PERIOD.
+
+Agar next chaho:
+
+ECS Task Definition sample
+
+Dockerfile with ENV override
+
+Health check + graceful shutdown
+
+Blue/Green deploy strategy
+
+bas bolo 😎
+
+step by step implement kerty hain , logs ki samj nai ayi , wo kasyee facilty wise manage hon gey , pehle logs ka batyo or phir step by step implement kerty hain 
+
+perfect 👍 pehle sirf LOGS ko crystal clear kar dete hain — bina code ghuma-phira ke.
+jab yeh clear ho jaye, phir step-by-step implementation shuru karte hain.
+
+🔍 Problem tumhari language me
+
+Codebase ek hi
+
+Multiple Fargate containers
+
+Har container = ek facility
+
+HIPAA → logs mix nahi honi chahiye
+
+Tumhara sawaal:
+
+logs facility wise kaise manage hongi?
+
+🧠 Golden Rule (yaad rakhna)
+
+👉 Facility = Container
+👉 Logs = Container ke saath isolate hoti hain
+
+Iska matlab:
+
+Agar 3 containers hain → 3 alag log streams
+
+Code ko facility ka “idea” bhi nahi hota
+
+🔥 Level 1: AWS Fargate me logs already isolated hoti hain
+
+AWS Fargate automatically:
+
+har task / container ke logs
+
+alag CloudWatch Log Stream me bhej deta hai
+
+Example:
+
+/ecs/mllp-listener
+   ├── mllp-a/123456789
+   ├── mllp-b/987654321
+   └── mllp-c/456789123
+
+
+👉 Mixing impossible hai
+👉 HIPAA ✅
+
+Yahan tak code me kuch bhi change nahi chahiye
+
+❓ Phir “facility-wise logging” kyun chahiye?
+
+3 reasons:
+
+1️⃣ Debugging easy
+2️⃣ Audit trail (HIPAA)
+3️⃣ Search / filtering
+
+Isliye hum logs me facility tag add karte hain.
+
+🧩 Best Practice: Facility ko ENV se pass karo
+
+DevOps side (Task Definition):
+
+FACILITY_CODE=HOSP_A
+
+
+Har container ka alag value:
+
+Container	FACILITY_CODE
+mllp-a	HOSP_A
+mllp-b	HOSP_B
+mllp-c	HOSP_C
+🧠 Ab logs ka flow samjho (important)
+Runtime pe kya hota hai:
+
+Container start hota hai
+
+ENV variable read hoti hai
+
+Logger ke context me facility inject hoti hai
+
+Har log line me facility auto add hoti hai
+
+✨ Log example (CloudWatch)
+[INF] [Facility=HOSP_A] Listening on port 13001
+[INF] [Facility=HOSP_A] HL7 message received
+[ERR] [Facility=HOSP_A] ORU processing failed
+
+
+Dusre container me:
+
+[INF] [Facility=HOSP_B] Listening on port 13002
+
+
+👉 Same code
+👉 Different logs
+👉 Zero conflict
+
+🛡️ HIPAA perspective (VERY IMPORTANT)
+Risk	Tumhara setup
+Facility data mixing	❌ Impossible
+Log access control	✅ IAM based
+PHI leakage	❌ Controlled
+Audit readiness	✅ Strong
+❌ Galat approach (avoid)
+
+Ek hi container me sab facilities
+
+File-based logs shared volume pe
+
+Facility HL7 se nikaal ke folder banana
+
+❌ HIPAA risk
+❌ Debugging hell
+
+✅ Correct mental model (simple words)
+
+“Facility code is a LABEL, not a routing key”
+
+Routing → PORT / CONTAINER
+
+Label → LOGGING / MONITORING
+
+🧪 Tumhein ab yeh clear hona chahiye:
+
+✔ logs automatically container-wise hoti hain
+✔ facility ENV se tag hoti hai
+✔ same codebase safe hai
+✔ HIPAA compliant hai
+==================================================

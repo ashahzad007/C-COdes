@@ -1,0 +1,57 @@
+check list for tester,
+
+first check hl7profilesettings.json file and check any facility has restictions like theda care 
+
+    {
+      "ProfileName": "thedaCare",
+      "IsRolEnabled": true,
+      "ObservationIdentifier": {
+        "Identifier": "3040010320",
+        "Text": "Morse Fall Risk Score",
+        "NameOfCodingSystem": "TCVIRTUSENSE"
+      },
+      "ObservationValue": {
+        "LowerBound": 0,
+        "UpperBound": 125
+      },
+      "ValueType": "NM",
+      "AllowedNurseROL": "Registered Nurse,Certified Nursing Assistant,Licensed Practical Nurse,RN,CNA,LPN",
+      "UserDefinedCodes": {
+        "IdentifierTypeCode": {
+          "MedicalRecordNumber": "EMPI"
+        }
+      }
+    },
+
+=====================================
+point no 2 , please check this facility is available in test db , and working end to end , other wise check facility in demo db and check either this facility and profile works end to end
+
+===============
+point no 3 
+===========
+please check eith 2.6 message format is correct speciilay in 
+ADT^A01^ADT_A01
+and obx 
+if theda care 
+OBX||NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||77||||||F
+
+point 3 
+
+PV1 segement 
+PV1||ORGPRO|^EPICMllp|||EPICMllp2||||||||||
+3 and 6 pe room number send kerna hai 
+==========================
+theda care all checks 
+==========
+MSH|^~\&|Epic EHR|DevBranch|VST Integration|DevBranch|20251009131052-0000||ADT^A08|ca167645-0da1-4bda-a5c0-02a63bdb4ac8|P|2.3
+EVN||20251009131052-0000
+PID|||5832952^^^^MR||Granger^Hermione||20001130
+PV1||I|^E_V01
+OBX|1|NM|30400114538^Braden Scale Score^TCVIRTUSENSE||13||||||F
+OBX|2|NM|3040010320^Morse Fall Risk Score^TCVIRTUSENSE||115||||||F
+ROL|3|UP|Registered Nurse|DXH0825^HEISLER^DAKOTA^^^^^^^^^^EMP|20250506202416-0000
+======================================================================
+point no 3 , app setting.json , and hl7 profile.json ki file main profile dekin theda care ho jis main fall risk score and
+baqi , obersrvation values , and braden score etc atey hain , Pehle branch ke against check keein lein 
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0);
+========================================================================

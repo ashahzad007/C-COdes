@@ -1,0 +1,21 @@
+dotnet-gcdum ps // to take process Id
+dotnet-gcdump collect -p 10140 -o 1stCollection // to take collection before , after or 1ST collection 2nd Collection etc 
+
+======
+dotnet nuget disable source Technevity-Feed
+dotnet tool install --global dotnet-counters
+dotnet nuget enable source Technevity-Feed  # Re-enable after installation
+dotnet-counters ps
+dotnet-counters monitor -p 15240
+
+===========this one is good to check you source code as well in root level=====================
+dotnet tool install --global dotnet-dump
+dotnet-dump ps
+dotnet-dump collect -p 15240
+dotnet-dump analyze C:\Windows\System32\dump_20250225_104939.dmp
+dumpheap -stat
+dumpheap -mt 7ff9c2169ed0
+gcroot 01a1f513abc0
+
+=========================
+dotnet tool install --global dotnet-trace

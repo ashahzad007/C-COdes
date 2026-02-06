@@ -1,0 +1,325 @@
+Problem / issue
+=================
+Tumhara masla kyun aaya? (Real scenario breakdown)
+Tumhara scenario:
+
+New code
+
+New ENV variables
+
+Production deploy hua
+
+App crash ho gayi (AWS container)
+
+Tum logon ne kya try kiya:
+
+Old code deploy
+
+Old ENV variables manually set
+
+❌ Masla kyun hal nahi hua?
+Because:
+
+Release ki state new wali thi
+
+Azure DevOps / ECS ne:
+
+Old container ko fully replace nahi kiya
+
+Ya old env vars properly override nahi hui
+
+7️⃣ Redeploy se masla kyun solve hua?
+
+Jab kisi ne bola:
+
+“Redeploy karo”
+
+Toh hua yeh:
+
+DevOps ne:
+
+Old release ki snapshot state uthai
+
+Old artifact
+
+Old ENV variables
+
+Fresh container bana
+
+Proper switch-over hua
+
+✅ Is liye masla khatam ho gaya
+
+📌 Redeploy = clean re-apply of old known-good state
+=====================
+code to devops flow
+=============================
+Simple one-line definitions (yaad rakhne ke liye)
+
+Build
+👉 Code → Compiled output (artifact)
+
+Artifact
+👉 Build ka immutable output
+
+Release
+👉 Artifact + Environment config + Deployment definition
+
+Deploy
+👉 Release ko infra pe chalana
+
+Redeploy
+👉 Same release ko dubara fresh run karna
+
+Rollback
+👉 Purani release pe wapas jana
+======================
+workflow 
+=============
+Code (Git)
+   ↓
+Build Pipeline
+   ↓
+Artifact (DLL / Docker Image)
+   ↓
+Release (Artifact + ENV vars)
+   ↓
+Deploy
+   ↓
+Running Container
+==============================================
+c# Code to Devops
+============================
+Pipeline = Build
+Release = Deploy
+Artifact = Build ka output
+=================
+🔁 COMPLETE FLOW (Developer → AWS Container)
+🧑‍💻 STEP 1: Developer (tum)
+
+Tum kya karte ho:
+
+C# (.NET) code likhte ho
+
+Local machine pe test
+
+Git pe push kar dete ho
+
+C# Code
+↓
+git push
+
+⚙️ STEP 2: Azure DevOps → Pipelines (BUILD)
+
+📍 Azure DevOps → Pipelines
+
+Pipeline trigger hoti hai jab:
+
+Code push hota hai
+
+PR merge hoti hai
+
+Pipeline main kya hota hai?
+
+Example (C# app):
+
+Restore packages
+
+Build code
+
+Run tests
+
+Publish output
+
+Docker image build (agar container hai)
+
+dotnet restore
+dotnet build
+dotnet publish
+docker build
+
+Output kya hota hai?
+
+👉 Artifact
+
+Examples:
+
+/publish folder
+
+ZIP file
+
+Docker Image (sab se common)
+
+📌 Pipeline ka kaam yahin khatam
+
+Pipeline sirf banata hai, deploy nahi karta
+
+📦 STEP 3: Artifact (bridge between build & release)
+
+📍 Azure DevOps → Pipelines → Artifacts
+
+Artifact matlab:
+
+Final compiled product
+
+Immutable (change nahi hota)
+
+Artifact = 
+✔ Compiled C# app
+✔ Docker image
+❌ No ENV variables
+❌ No secrets
+
+
+Artifact ek sealed box hota hai 📦
+
+🚀 STEP 4: Azure DevOps → Release (DEPLOY)
+
+📍 Azure DevOps → Releases
+
+Yahan real DevOps ka kaam start hota hai
+
+Release kya karti hai?
+
+Artifact uthati hai
+
+Environment select karti hai
+
+ENV variables attach karti hai
+
+Deployment start karti hai
+
+Artifact
+ + ENV variables
+ + Secrets
+ + Infra rules
+ = Release
+
+
+📌 Isi liye DevOps kehta hai:
+
+“Release deploy karo”
+
+🌍 STEP 5: Release → AWS Container (Production)
+
+Release pipeline ke andar usually yeh steps hotay hain:
+
+Example:
+
+Login to AWS
+
+Push image to ECR
+
+Update ECS task definition
+
+Restart service
+
+New container start
+
+Old container stop
+
+Azure Release
+↓
+AWS ECR (Docker Image)
+↓
+AWS ECS / EC2
+↓
+Container Start
+
+Yahin ENV variables inject hoti hain:
+
+DB connection
+
+API keys
+
+Feature flags
+
+📌 ENV runtime pe lagti hain — build pe nahi
+
+🔄 STEP 6: Redeploy (tumhara masla yahin solve hota hai)
+
+Redeploy ka matlab:
+
+Same release ko dubara run karo
+
+Iska matlab:
+
+❌ New build nahi
+
+❌ New artifact nahi
+
+✅ Same ENV
+
+✅ Fresh container
+
+Release (same)
+↓
+New container
+↓
+Old container kill
+
+🧠 EASY YAAD RAKHNAY WALA FLOW (cheat sheet)
+Code
+ ↓
+Git Push
+ ↓
+Pipeline (Build)
+ ↓
+Artifact
+ ↓
+Release
+ ↓
+Deploy
+ ↓
+AWS Container
+
+🧩 Azure Menu Mapping (confusion khatam)
+Azure Menu	Kya karta hai
+Pipelines	Build karta hai
+Artifacts	Build ka output
+Releases	Deploy karta hai / aws container per published version 
+Environments	Dev / QA / Prod
+Variables	ENV vars / secrets
+==============================================================
+Pipeline → Build
+Artifact → Output
+Release → Deploy
+Redeploy → Same release
+==================================================
+Key concept (yaad rakhne wali line)
+
+Environment = jahan app chalti hai
+Release = jahan se app deploy hoti hai
+
+🟢 Environments kya hotay hain?
+
+Ye actual runtime jagah hoti hain:
+
+Dev → developers testing
+
+Test → QA testing
+
+Demo → client demo
+
+Prelive → production se pehle
+
+Live → production (real users)
+
+👉 Ye usually:
+
+AWS containers
+
+Databases
+
+Services
+
+📌 Ye real machines / containers hotay hain
+=========================
+Final takeaway
+==========================
+Release → sab ke liye base
+
+Dev/Test/Prod → sirf difference likho
+
+Same variable ho → Env jeet jata hai
+==============================================

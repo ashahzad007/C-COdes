@@ -1,0 +1,10 @@
+Sensor . Settings , 
+
+Setting one Fall Risk , 
+Setting 2 , Pressure injury 
+setiing 3 , chair mode , 
+
+
+if patient is fall alert has been generated to nurse and nurse attend the patient , and send ack from remote ..... 
+if setting is 2 , patient has been moved one side , or another side , system will tell or alarm that please move the patient , 
+nurse move the patient to avoid bed sores and send ack to mobile app or remote and ORU message has been generated and epic flow sheet of that patient is updated.

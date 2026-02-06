@@ -1,0 +1,290 @@
+git main cheery pick sirf ek commit ko hi le jata hai , agar multiple commits le ke janey hain , tu test branch ke clone le ker us main se wo comments remove / revert kerney parety hain , 
+jo apko nai chahyee , phir is clone branch or agey demo main merge ker dety hain,
+
+revert , comments ko delete , kerne ke lye hotey hain , or git khud revert likhta hai jab ap revert kerety ho , or remote branch per le jata hai ,
+
+reset , hard , delete chanes khabi na kero us se nechey waley sab commit remove ker deta hai , or previous stage per le jata hai 
+
+
+khabi khabr code deploy nai hota , apka code bi even remote repo pe nazar aa raha hota hai , lekkin chalta nai hai , us ke lye ap us method ko remove ker ke save kero , ek push do 
+dev pe , phir us method ko dobara add ker ke push do , automatic redeploy ho ga or masla solve ho jaye ga 
+
+===========dirct production main release le jana ,============= 
+clone main branch for example clone_mainBranch
+change in Clone_mainBranh 
+now send PR merdge request to mainBranch into main
+now ci , build , release , deploy to container
+============================================
+patch ho gya good very good 
+
+lekin ab apko dev se change neche se oper tak le ker  jani ho gi 
+kwon ke agar change over right ho gye tu new code production per chala jay ga 
+is lye ap sab se pehele dev se test and then demo pe le ky jayin gey cherry pick ker ke demo ko update kerein gey  
+=========================================================ab 
+jab code merged issue hoon or solve na ho rehe hon tu ... app remove ker don app ko or new clone ker lo project or apni files ka change un main le ker code push ker do.
+==============================================================
+main case Alishma resolve this 
+-================================
+baz auqat apko chery pick ker ke direct demo pe dena hota hai or conflicts aa rehe hotey hain tu address nai hotey dev ops portal pe or apko local per ana parta hai 
+case : mer masla yeah tha ke main apni dev ki changes direct demo pe cherry pick ker ke dena chahta that jo devops portal ke thorugh direct nai ho rehe thi 
+main local pe gya or apini wo branch kholi jis main main ne commit chery pick le ker jana tah yani ke demo branch , ko checkin kya , or dev ko select ker ke wo commit pe right click ker
+ke cherry pick kya ... 
+
+ab main demo pe wo commit push nai ker sakta tha , kwon ke test / demo brach main direct push nai ker sakty 
+
+solution ???
+tu phir main ne whoi branch demo ki jis main mera commit aa chuka tha us demo branch ka clone banya demo-clone jis per koye policy nai lagi thi remote per push ker dya
+step 2 .. ab main apni clone branch ko demo ki main branch main merge ki pull request doon ga tu koye approver approve ker de ga
+
+==========
+demo ka clone banyo , or apni test ya merge ke branch ko cherry pick kerwa lo , phir us demo ki clone branch ko main demo main merge ker lo 
+============
+
+=======
+agar devops portal main conflict aye tu seedha method yah hai ke demo ki ek clone branch banyo , us main apni cherry picks le jayo or us branch ko merge ker do demo main
+branch main ... thats it
+================================================================= 
+apni changes pehele stage kerein , uskey baad pull kerein uskey baad push kerein , best practice
+===================================================
+stash agar branch se bahar jana ho tu ker lein , or usey baad apni stash ko pop kerwa dein , use second option
+===========================================================
+agar koye or banda nai kaam ker raha tu direct push bi ker saktey hain lekin best practice yehe hai 
+=================================
+git auto resolve issues Important
+======================================
+01. kisi bi kaam ko dev per kero ya test pe pehel pull lo 
+1 step : commit only first , code on local 
+2 Step2: pull , // now comparing with remote incoming code , 80% chances issue megre resolves, conflicts removed
+3, step three Push
+
+solution 
+less merge issues , less problems , , less conflicts.
+=========================================
+git merge issues , very important
+=====================================
+baz auqat apka test env theek chal raha hota hai or demo env kharab hota hai , code merge ka issue hota hai 
+jis ke waja se ajeeb ajeeb problems and bugs atey hain , or un bugs ko theek kerety kertey apka time waste ho jata hai 
+solution
+
+test ke branch ka cone banyo , or direct devops ko bol ker is ko demo ke branch se connect kerwa do , 
+demo orignal branch ko remove kerwa ker iska naam demo rekh do , jab clone branch ache se chalney lagey 
+======================================================
+Azure GIT Confilct Screen , 
+==============================================
+left per apka code yani ke apki branch for example demo , Right per Main Branch 
+jidher jidher conflicts hoon  , unko dekho , or tasali se check kero , ek file accpt kerni hoti hai , apni ya remote wali , 
+us main last commits bi jis ne kayse hotey hain , unka naam likha hota hai ,
+confuse na hona , 
+branches ka naam , demo , or main saaf likhey hotey hain
+===============================
+GOT BRANCH CLONE ISSUE
+===============================
+ap ne test ki branch clone ki or demo ker container ke saat jor di , or ab aap driect us clone branch main changes kertey rehe ... 
+yeah ghalt hai ...
+solution ab app demo branch ka clone le ker uska naam dev rekh do or dev origanl delete ker do , phir dev to test main merge ker do 
+----
+imp 
+----
+jab bi koye clone branch banyo tu us clone branch main direct changes na kero , test se change kero or is branch yani clone branch main merge kerwayo
+======================================================
+imp git ignore
+==================================
+git igone zarror check kya kero , is main zayda tar json ki files ignore hoti hain , jo change any per reflect nai hoti or aap phansey rehty ho
+================================
+GIT ADVISE
+==============
+PART 2 — Yeh code ab repo mein NAHI hai, ab kya karein?
+
+Tumhara sawal bohat important hai 👇
+
+“Cherry-pick karoon ya manually copy?”
+
+🔥 Pehle clear decision rule
+❌ Manual copy tab karo jab:
+
+Code bohat zyada conflict kare
+
+Code already outdated ho
+
+Sirf 5–10 lines chahiyein
+
+✅ Cherry-pick tab karo jab (tumhara case):
+
+File poori remove hui ho
+
+Code pehle working tha
+
+Git history mein commit available ho
+
+👉 Tumhare case mein cherry-pick BEST solution hai
+
+✅ Correct Professional Approach (Recommended)
+🔹 Step 1: Commit find karo
+git log -- epicplugin.cs
+
+
+Ya GitHub/GitLab:
+
+File history kholo
+
+Wo commit dhoondo jahan yeh code last tha
+
+🔹 Step 2: Sirf us commit ko cherry-pick karo
+git checkout dev
+git cherry-pick <commit-hash>
+
+
+📌 Agar conflict aaye:
+
+Sirf EpicPlugin.cs resolve karo
+
+Baqi files ko untouched chhor do
+
+🔹 Step 3: Build + test
+
+Compile
+
+Epic action test karo:
+
+pressureInjuryTimerReset
+
+epicClientOnBoard
+
+❓ Agar cherry-pick possible na ho?
+Fallback (safe manual way):
+
+Old commit se EpicPlugin.cs copy karo
+
+Dev branch mein paste
+
+Sirf:
+
+Namespace
+
+DTO names
+
+Logger references
+adjust karo
+
+Validation logic same rakho
+
+📌 Logic kabhi rewrite mat karna jab tak zaroori na ho
+
+🧠 PART 3 — Future mein review ka masla khatam karne ke tips
+✅ Jab bhi aisi file mile:
+
+Pehlay yeh likho (mentally):
+
+“Yeh file kis action ko support karti hai?”
+
+Har action ko alag unit samjho
+
+Duplicate validation dikhe → smell samjho, ignore for now
+
+🟢 Senior-level advice (important)
+
+❝ Acha engineer woh hota hai jo pehlay flow samjhta hai, phir code ❞
+
+Tumhara masla skill ka nahi,
+approach ka hai — jo ab clear ho gaya hai 👍
+============================================================
+Kyun ab cherry-pick ghalat hai?
+
+Cherry-pick tab safe hota hai jab:
+
+Branches ka common ancestor clear ho
+
+Commit history intact ho
+
+Tumhare case mein:
+
+❌ Branch rename ho chuki
+
+❌ Dev actually demo ka snapshot hai
+
+❌ Baad ke demo commits logical continuation hain, direct ancestor nahi
+
+👉 Cherry-pick karoge to:
+
+Multiple conflicts
+
+Duplicate logic
+
+Ghost commits
+
+Review nightmare
+
+🧠 Senior Engineer ka rule (important)
+
+❝ Jab branch copy + rename ho jaye → Git history reference ban jati hai, source of truth nahi ❞
+
+Is case mein code is the truth, commit nahi.
+
+✅ Ab RIGHT approach kya hai? (Step-by-step)
+🔹 Step 1: Demo branch ko SOURCE OF TRUTH maano
+
+Demo = correct + updated logic
+
+Dev = outdated snapshot
+
+🔹 Step 2: Diff nikalo (logic-wise, commit-wise nahi)
+git diff demo..dev -- EpicPlugin.cs
+
+
+Tumhara focus ho:
+
+❓ Demo mein kya extra / improved hai
+
+❓ Dev mein kya missing hai
+
+🔹 Step 3: Manual port karo (controlled tareeqe se)
+
+❌ Blind copy-paste nahi
+✅ Logical merge:
+
+Action blocks (pressureInjuryTimerReset)
+
+Validation improvements
+
+Bug fixes
+
+📌 One action at a time
+
+🔹 Step 4: Refactor dev ko demo ke structure ke qareeb lao
+
+Tumhara goal:
+
+Dev ≈ Demo (behavior-wise),
+chahe history alag ho
+
+🔹 Step 5: New clean commit banao (VERY IMPORTANT)
+
+Commit message example:
+
+Re-align EpicPlugin logic with demo branch after branch restructuring
+
+
+📌 Yeh future reviewers ko context dega
+
+🟢 Tumhare exact case ka 1-line verdict
+
+Cherry-pick ab late ho chuka hai.
+Controlled manual re-alignment is the correct and safe approach.
+
+🧠 Future ke liye GOLDEN RULE (yaad rakhna)
+
+Agar kabhi:
+
+Branch clone + rename karni ho
+
+Toh yeh 2 kaam zaroor karo:
+
+1️⃣ Old branch ko archive/demo-old jaisa naam do
+2️⃣ New dev ko merge-based banao, copy-based nahi
+
+💬 Tumhein honestly boloon?
+
+Tum logon ka masla Git ka nahi
+process ka tha — aur yeh industry mein bohat common hai.
+======================================================
+
