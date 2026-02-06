@@ -1,0 +1,92 @@
+using System.Security.Cryptography;
+
+namespace hl7messagedemo
+{
+    public class HL7Message
+    {
+    }
+
+    public class SIU : HL7Message
+    {
+        public string AppointmentId { get; set; }
+    }
+
+    public class ADTA01 : HL7Message
+    {
+        public string PatientId { get; set; }
+    }
+
+    public class ADTA02 : HL7Message
+    {
+       public string NewLocation { get; set; }
+    }
+
+    public class ORUR01 : HL7Message
+    {
+        public string Result { get; set; }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            HL7Message messageORU = new ORUR01
+            {
+
+            };
+            HL7Message messageADT01 = new ADTA01();
+            HL7Message messageADT02 = new ADTA02();
+            HL7Message messageSIU = new SIU
+            {
+                AppointmentId = "APT-10345"
+            };
+
+            ProcessHl7Message(messageSIU);
+
+            //explicit casting
+            ADTA01 adt = (ADTA01)messageADT01;
+            adt.PatientId = "12345";   
+
+            // casting with as 
+            ORUR01 oru = messageORU as ORUR01;
+            oru.Result = "";
+            ADTA01 adt01 = messageADT01 as ADTA01;
+
+            if (adt != null)
+            {
+                adt.PatientId = "12345"; 
+            }
+
+
+            static void ProcessHl7Message(HL7Message message)
+            {
+                // casting with is 
+                if (message is ADTA01 adtA01)
+                {
+                    Console.WriteLine("ADT A01 received");
+                    Console.WriteLine($"PatientId: {adtA01.PatientId}");
+                }
+                else if (message is ADTA02 adtA02)
+                {
+                    Console.WriteLine("ADT A02 received");
+                    Console.WriteLine($"New Location: {adtA02.NewLocation}");
+                }
+                else if (message is ORUR01 oru)
+                {
+                    Console.WriteLine("ORU R01 received");
+                    Console.WriteLine($"Result: {oru.Result}");
+                }
+                else if (message is SIU siu)
+                {
+                    Console.WriteLine("SIU S12 received");
+                    Console.WriteLine($"AppointmentId: {siu.AppointmentId}");
+                }
+                else
+                {
+                    Console.WriteLine("Unknown HL7 message");
+                }
+            }
+
+        }
+    }
+
+}
