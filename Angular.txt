@@ -1,0 +1,848 @@
+step by step angular guide
+
+install NodeJS version 
+check for version after install 
+command line node -v
+v21.7.3 // this needed to be installed
+now installing angular CLI 
+
+npm i @angular/cli@18.0.1 -g //in command line 
+
+ng version // check angular version
+
+=======
+install vscode 
+add extensions, 
+angular essentials, angular language service
+ESlint
+====================
+Now Add your Angular Project
+
+ng new book-list-app // add this into command line 
+
+cd book book-list-app  // to open it vscode in command line 
+code . 
+
+project has been show in vs code goto vscode terminal and add command 
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+ng serve // your project is started and running
+
+===========
+connecting your angular app to your API you have to create Interface in Angular with same properties which is in your C# API
+so i am creating typescript Interface 
+export interface Book {
+id:number;
+title:string;
+author:string;
+}
+=======
+similar c# class 
+public class Book
+{
+    public int Id { get; set; }
+
+    public string Title { get; set; }
+
+    public string Author { get; set; }
+}
+===================================
+create your first component 
+got to vscode terminal
+ng g c book-list // generate component.
+src/app/book-list
+css,html,ts with book-list name 
+===========
+your app has also these files with
+aap.component.ts , css,html etc
+=======================================
+very important step , how to render your component into app.component.html
+==========================
+remove all text from app.comonent.html, save it and check url
+now we can use our newely created component selector here 
+go to app.componetfile add html boiler plate with ! and add this into body tag 
+<body>
+<app-book-list></app.book-list>
+</body>
+
+this will give you error because you cant register your class into app.component.ts file to recognize this very importnet step
+how to 
+go to app.component.ts
+
+go to import book-list component
+import{BookListComponent} from './book-list/book-list.component';
+  imports: [RouterOutlet,BookListComponent],
+===============================
+complete file below for reference only 
+------------
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import{BookListComponent} from './book-list/book-list.component';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet,BookListComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+  title = 'book-list-app';
+}
+===========================
+now  check error is gone and your component html file shown in root 
+-------
+go to appcomponent.html file remove all and paste it this below 
+--------
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BookListApp</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <app-book-list></app-book-list>
+</body>
+</html>
+------------------------------------------
+save and run the application
+------------------------
+important commands if all config correct but error
+---------
+ng cache clean
+ng build
+ng serve
+=======================
+add new service to Fetch Data from API
+======================
+ng g s book //service suffiex will automatically created book.service.
+CREATE src/app/book.service.spec.ts (363 bytes)
+CREATE src/app/book.service.ts (142 bytes)
+
+
+
+
+
+==========================
+Angular Complete Project
+============================
+in command line
+create your angular app
+ng new employe-magmt-app
+
+cd employe-magmt-app
+code .
+goto src goto app , goto app.compnent.html and delete all except this <router-outlet />
+check your application is running with blank display 
+----------
+first create models folder in src folder
+create new file in models folder named employee.ts
+
+now in employee.ts file write
+export interface Employee {
+    id: number;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    position: string;
+}
+==================
+this is your interface to get the values from your API through your comment. lets create your component in angular 
+in vs code use terminal split terminal both show app and your commands 
+ng g c employee-table // these 4 files were created in path app/employee-table
+
+CREATE src/app/employee-table/employee-table.component.html (30 bytes)
+CREATE src/app/employee-table/employee-table.component.spec.ts (665 bytes)
+CREATE src/app/employee-table/employee-table.component.ts (277 bytes)
+CREATE src/app/employee-table/employee-table.component.css (0 bytes)
+
+==========important point=========================Goal show this new component in main page====================
+goto employee-table.component.html
+and check here <p>employee-table works!</p>
+==============very important point===================================
+goto app.compnent.ts file 
+import { EmployeeTableComponent } from './employee-table/employee-table.component';
+imports: [RouterOutlet,EmployeeTableComponent]
+=================================
+go to employee-table.component.ts file and find selector
+selector: 'app-employee-table',
+==============================
+now goto app.component.html file and write this 
+<router-outlet />
+<app-employee-table></app-employee-table>
+======================================
+some times it will not run on give you problem
+so you can close browser(this is important because cache-clean will not work) ,stop the application with ctrl+c , close vscode
+use these commands 
+ng cache clean
+ng build
+ng serve
+-------------------
+set environment
+------------------
+goto source folder and create environment folder and create new file environment.ts
+and write this 
+export const environment = {
+  isproduction: false,
+  apiUrl:'https://localhost:7257/api'
+      
+  }
+----------------------------
+create new file in environment folder named environment.prod.ts and write 
+export const environment = {
+  isproduction: true,
+  apiUrl:''
+      
+  }
+
+----------
+goto your webAPI .net project and open launchsettings.json file and copy the url and paste in both 
+files   apiUrl:'https://localhost:7257/api'
+=========================================
+Add Service to Fetch data from API
+=========================================
+ng g s employee
+CREATE src/app/employee.service.spec.ts (383 bytes)
+CREATE src/app/employee.service.ts (146 bytes)
+========
+now goto app config.ts file 
+and write 
+
+provideHttpClient() in this area 
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes),
+    provideHttpClient()
+
+  ]
+};
+=====================
+now go to employee.service.ts and add method to fetch data from Api
+
+----------------------we need and instance of http client-------------
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class EmployeeService {
+
+  constructor() { }
+}
+
+----------------- after ---------
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { environment } from '../environment/environment'; // we need to fetch the environment file to get the apiUrl
+import { Observable } from 'rxjs';
+import { Employee } from '../models/employee';
+@Injectable({
+  providedIn: 'root'
+})
+export class EmployeeService {
+private apiUrl = `${environment.apiUrl}/Employee`; // we need to fetch the apiUrl from the environment file Employee is the controller 
+  constructor(private http : HttpClient) { } // creating a constructor to inject the http client
+
+  getEmployees(): Observable<Employee[]> { 
+    return this.http.get<Employee[]>(this.apiUrl); 
+  } 
+}
+=================================================================
+now use your service into employee-table-component to get data from API through Service
+---------------------
+import { Component,OnInit } from '@angular/core';
+import { Employee } from '../../models/employee'; // importing the employee model
+import { EmployeeService } from '../employee.service'; // importing the employee service
+
+
+@Component({
+  selector: 'app-employee-table',
+  standalone: true,
+  imports: [],
+  templateUrl: './employee-table.component.html',
+  styleUrl: './employee-table.component.css'
+})
+export class EmployeeTableComponent {
+
+  employees : Employee[] = []; // creating an array of employees
+  constructor(private employeeService : EmployeeService) { } // creating a constructor to inject the employee service
+ngOnInit(){
+  this.employeeService.getEmployees().subscribe((data: Employee[]) => { // subscribing to the getEmployees method of the employee service
+    this.employees = data; // assigning the data to the employees array
+    console.log(data); // logging the employees array to the console
+  });
+}
+
+  }
+
+===============================
+now run you API and angular application , goto inspect and check in the console. 
+you have successfully fetch data from api through Angular App
+================================
+agar run nai ho raha tu yeah bi masla ho sakta hai 
+================
+rm -rf node_modules dist
+npm install
+====================
+rm -rf .angular/cache
+======================
+now its time to show the data in front html page 
+---------------------
+goto employee-table.compnenets.html
+and add 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <table>
+    <thead>
+        <tr>
+<th>Id</th>
+<th>First Name</th>
+<th>Last Name</th>
+<th>Phone</th>
+<th>Email</th>
+<th>Position</th>
+    </tr>
+
+</thead>
+<tbody>
+    
+</tbody>
+    </table>
+</body>
+</html>
+==================
+in table body you need NGFOR for the loop so you can import 
+common module in employee-table-components. 
+---------------------------
+import { CommonModule } from '@angular/common';
+imports: [CommonModule],
+=============================
+there are two relations no 1 your component with App-compnents and your html and ts file.
+for example 
+============
+check app.components
+=============
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { EmployeeTableComponent } from './employee-table/employee-table.component';
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet,EmployeeTableComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+  title = 'employee-management-app';
+}
+
+===============check this line==================
+import { EmployeeTableComponent } from './employee-table/employee-table.component';
+  imports: [RouterOutlet,EmployeeTableComponent], // and this line 
+===============================
+app.component.html
+---------
+<router-outlet />
+<app-employee-table></app-employee-table> // selector here 
+----------------employee.componet.ts------------- check selector here------is file main main jo bi kereon ga 
+usko html file main call ker sakta hoon 
+--------------------------------------------
+import { Component,OnInit } from '@angular/core';
+import { Employee } from '../../models/interface/employee';// importing the employee model
+import { EmployeeService } from '../employeeService/employee.service'; // importing the employee service
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-employee-table',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './employee-table.component.html',
+  styleUrl: './employee-table.component.css'
+})
+export class EmployeeTableComponent {
+
+  employees : Employee[] = []; // creating an array of employees
+  constructor(private employeeService : EmployeeService) { } // creating a constructor to inject the employee service
+ngOnInit(){
+  this.employeeService.getEmployees().subscribe((data: Employee[]) => { // subscribing to the getEmployees method of the employee service
+    this.employees = data; // assigning the data to the employees array
+    console.log(data); // logging the employees array to the console
+  });
+}
+
+  }
+
+--------------------------------------------------------Crucks of Angular------------------------------
+route file app.router.ts
+-------------------------
+import { Routes } from '@angular/router';
+import { EmployeeTableComponent } from './employee-table/employee-table.component';
+import { EmployeeFormComponent } from './employee-form/employee-form.component';
+export const routes: Routes = [
+    { path: '', component: EmployeeTableComponent, pathMatch: 'full' },
+    { path: 'create', component: EmployeeFormComponent },
+    { path: 'employees', redirectTo: '', pathMatch: 'full' }
+  ];
+----------------------------
+please note in app.components.html
+-----------
+<router-outlet />
+<nav><a routerLink="/">Home</a><a routerLink="create">Create</a></nav>
+<!-- <app-employee-table></app-employee-table> // this is the static files please note , not dynamic , for dynamic you use router.ts
+<app-employee-form></app-employee-form> -->
+
+---------------------------------------------
+how to show product data in angular main page 
+---------------------------------------------
+step 1 , create interface , 
+ng g interface models/Product
+export interface Product {
+  Id: number;
+  desc: string
+}
+===============================
+step 2 , create service
+ng g s /services/productservice 
+import { Injectable } from '@angular/core';
+import { Product } from '../models/product';
+@Injectable({
+  providedIn: 'root'
+})
+export class ProductserviceService {
+ private products: Product[] = [
+    { Id: 1, desc: 'Laptop' },
+    { Id: 2, desc: 'Smartphone' },
+    { Id: 3, desc: 'Tablet' }
+  ];
+  constructor() { }
+
+   getAllProducts(): Product[] {
+    return this.products;
+  }
+}
+=============
+
+step 3 , create component
+ng g c component/product_list
+
+import { Component, OnInit } from '@angular/core';
+import { ProductserviceService } from '../../services/productservice.service';
+import { Product } from '../../models/product';
+
+@Component({
+  selector: 'app-product-list',
+  standalone: true,
+  imports: [],
+  templateUrl: './product-list.component.html',
+  styleUrl: './product-list.component.css'
+})
+export class ProductListComponent implements OnInit {
+
+  products: Product[] = [];
+
+  constructor(private productService: ProductserviceService) {}
+
+  ngOnInit(): void {
+    this.products = this.productService.getAllProducts();
+  }
+}
+============================
+product-list.html to show the data
+==================
+<h2>Product List</h2>
+
+@for (product of products; track product.Id) {
+  <p>{{ product.Id }} - {{ product.desc }}</p>
+}
+====================================
+============
+step 4 , show in app.component.ts
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { ProductListComponent } from './component/product-list/product-list.component';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet,ProductListComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+  title = 'Testproj';
+}
+
+=============
+app.componet.html file
+
+<app-product-list></app-product-list>
+==============
+npm start , if error
+==========================================
+npm install -g json-server
+==========================================
+Step 2: Create db.json file
+In your Angular project root (same level as package.json), create a file called db.json:
+
+{
+  "products": [
+    { "id": 0, "desc": "Computer", "model": "2020" },
+    { "id": 1, "desc": "Mobile", "model": "2024" }
+  ]
+}
+=-=======
+
+json-server --watch db.json
+By default, it runs at:
+http://localhost:3000/products
+You can test it in browser or Postman.
+=======================
+product service
+==================
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Product } from '../product';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ProductService {
+
+  private apiUrl = 'http://localhost:3000/products';  // JSON Server URL
+
+  constructor(private http: HttpClient) {}
+
+  getallProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(this.apiUrl);
+  }
+}
+=================================
+product list componnets
+===============================
+import { Component, OnInit } from '@angular/core';
+import { ProductService } from '../../services/product.service';
+import { Product } from '../../product';
+
+@Component({
+  selector: 'app-product-list',
+  standalone: true,
+  imports: [],
+  templateUrl: './product-list.component.html',
+  styleUrls: ['./product-list.component.css']
+})
+export class ProductListComponent implements OnInit {
+
+  products: Product[] = [];
+
+  constructor(private productService: ProductService) {}
+
+  ngOnInit(): void {
+    this.productService.getallProducts().subscribe(data => {
+      this.products = data;
+    });
+  }
+}
+=====================================
+step by step guide to create simple contact , privacy page with nav bar , routing
+======================================
+step 1 , generate header , home , contact , privacy , about components
+step 2 , register component in appcomponen.ts file in import section,  imports: [RouterOutlet,HeaderComponent],
+step 3 , to show in main page add this into appcomponent.html file 
+<app-header></app-header>
+<router-outlet />
+step 4 , now header is working .....
+
+step 4.1 go to header.html file
+   <li class="nav-item">
+        <a class="nav-link" routerLink="home" routerLinkActive="active">Home</a>
+      </li>
+step 4.2 g to herader.ts file and import routerlink , for ruunig routet link importnt
+ imports: [RouterLink,RouterLinkActive],
+
+===============
+step 5 , routing.ts file to set the routes , this will connect ts component file to path as below
+=====================
+export const routes: Routes = [
+
+{path:'home', component: HomeComponent},
+{path:'contact', component: ContactComponent},
+{path:'about', component: AboutComponent},
+{path:'privacy', component: PrivacyComponent},
+
+];
+=====================
+how to install boot strap 
+====================
+npm install bootstrap
+npm install bootstrap @popperjs/core
+got to angular.json file and add path
+
+"styles": [
+  "node_modules/bootstrap/dist/css/bootstrap.min.css",
+  "src/styles.css"
+],
+
+"scripts": [
+  "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+]
+============its add two times in both locations please note angular.json file
+npm list bootstrap
+==========================
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" routerLink="/">Application</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="home" routerLinkActive="active">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="contact" routerLinkActive="active">Contacts</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="about" routerLinkActive="active">About</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="privacy" routerLinkActive="active">Privacy</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+========================================
+3. Trick: “Angular ke Teen Flow Yaad Rakh Lo”
+
+Angular me sab kuch 3 flows ke aas-paas ghoomta hai:
+
+Component → Template Flow
+(Data binding, @Input/@Output, events)
+
+Service → API Flow
+(HttpClient → Backend → Observable → Subscribe)
+
+Auth Flow
+(Login → JWT → Interceptor → RouteGuard)
+
+Agar ye teen flows tumhe yaad hain, to tum Angular project kisi bhi scale ka pick kar loge easily.
+=============================================================
+structure
+=====================================
+src/
+ └── app/
+     │
+     ├── core/                         # App-wide singleton logic
+     │   ├── services/
+     │   │   ├── auth.service.ts
+     │   │   ├── token.service.ts
+     │   │   ├── http-base.service.ts
+     │   │   ├── storage.service.ts
+     │   │   └── notification.service.ts
+     │   │
+     │   ├── guards/
+     │   │   ├── auth.guard.ts
+     │   │   ├── role.guard.ts
+     │   │   └── guest.guard.ts
+     │   │
+     │   ├── interceptors/
+     │   │   ├── auth.interceptor.ts
+     │   │   ├── error.interceptor.ts
+     │   │   └── loading.interceptor.ts
+     │   │
+     │   ├── models/
+     │   │   ├── jwt-payload.model.ts
+     │   │   └── api-response.model.ts
+     │   │
+     │   └── core.config.ts
+     │
+     ├── shared/                       # Reusable UI & helpers
+     │   ├── components/
+     │   │   ├── navbar/
+     │   │   ├── footer/
+     │   │   ├── sidebar/
+     │   │   ├── loader/
+     │   │   ├── modal/
+     │   │   └── confirm-dialog/
+     │   │
+     │   ├── directives/
+     │   │   ├── has-role.directive.ts
+     │   │   └── debounce-click.directive.ts
+     │   │
+     │   ├── pipes/
+     │   │   ├── date-format.pipe.ts
+     │   │   └── truncate.pipe.ts
+     │   │
+     │   ├── models/
+     │   │   ├── user.model.ts
+     │   │   └── pagination.model.ts
+     │   │
+     │   ├── enums/
+     │   │   ├── role.enum.ts
+     │   │   ├── status.enum.ts
+     │   │   └── permissions.enum.ts
+     │   │
+     │   └── constants/
+     │       ├── app.constants.ts
+     │       └── api-endpoints.ts
+     │
+     ├── features/                     # Business features (Controllers)
+     │   │
+     │   ├── auth/
+     │   │   ├── login/
+     │   │   ├── register/
+     │   │   ├── forgot-password/
+     │   │   ├── reset-password/
+     │   │   ├── auth.routes.ts
+     │   │   └── auth.models.ts
+     │   │
+     │   ├── patient/
+     │   │   ├── components/
+     │   │   │   ├── patient-list/
+     │   │   │   ├── patient-create/
+     │   │   │   ├── patient-edit/
+     │   │   │   └── patient-detail/
+     │   │   │
+     │   │   ├── services/
+     │   │   │   └── patient.service.ts
+     │   │   │
+     │   │   ├── models/
+     │   │   │   └── patient.model.ts
+     │   │   │
+     │   │   └── patient.routes.ts
+     │   │
+     │   ├── doctor/
+     │   │   ├── components/
+     │   │   ├── services/
+     │   │   ├── models/
+     │   │   └── doctor.routes.ts
+     │   │
+     │   ├── appointment/
+     │   │   ├── components/
+     │   │   ├── services/
+     │   │   ├── models/
+     │   │   └── appointment.routes.ts
+     │   │
+     │   ├── admin/                    # FULL Admin Module
+     │   │   ├── users/
+     │   │   │   ├── components/
+     │   │   │   │   ├── user-list/
+     │   │   │   │   ├── user-create/
+     │   │   │   │   └── user-edit/
+     │   │   │   │
+     │   │   │   ├── services/
+     │   │   │   └── models/
+     │   │   │
+     │   │   ├── roles/
+     │   │   │   ├── components/
+     │   │   │   ├── services/
+     │   │   │   └── models/
+     │   │   │
+     │   │   ├── permissions/
+     │   │   │   ├── components/
+     │   │   │   ├── services/
+     │   │   │   └── models/
+     │   │   │
+     │   │   └── admin.routes.ts
+     │   │
+     │   └── reports/
+     │       ├── components/
+     │       ├── services/
+     │       ├── models/
+     │       └── reports.routes.ts
+     │
+     ├── pages/                        # Full-screen pages
+     │   ├── dashboard/
+     │   ├── profile/
+     │   ├── settings/
+     │   ├── access-denied/
+     │   └── not-found/
+     │
+     ├── layouts/                      # Page skeletons
+     │   ├── auth-layout/
+     │   ├── main-layout/
+     │   └── admin-layout/
+     │
+     ├── app.routes.ts                 # Root routing
+     ├── app.config.ts                 # Providers & bootstrap
+     └── app.component.ts
+=============================================================================================
+error 1  angular sto ker ke dobara on kero agar bootstrap nai chal raha ho tu 
+
+==============how to add components in angular and show them======================
+1️⃣ Component banao
+ng generate component shared/components/navbar
+
+2️⃣ HTML main selector use karo , appcomapnet.html main , agar bar bar har page per dekhana hai tu 
+<app-navbar></app-navbar>
+
+3️⃣ TS file main component import karo , appcomepent.ts main 
+import { NavbarComponent } from './shared/components/navbar/navbar.component';
+
+4️⃣ imports array main add karo , appcomaponet.ts
+imports: [NavbarComponent]
+
+5️⃣ Router use ho to yeh bhi add karo
+imports: [RouterOutlet, NavbarComponent]
+
+🔑 Rule (yaad rakhna)
+
+HTML main use → TS main import → imports array
+--------------------------------
+angular workflow , start to end How
+=====================================
+main.ts
+ ↓
+AppComponent.ts
+ ↓
+app.component.html
+ ↓
+NavbarComponent
+ ↓
+RouterOutlet
+ ↓
+LoginComponent.ts (constructor)
+ ↓
+LoginComponent.html (form binding)
+ ↓
+User input
+ ↓
+login() function
+===============================================
+GOLDEN RULE (SAVE THIS)
+
+Standalone component main jo directive use karo
+usko imports main lazmi add karo
+
+Examples:
+
+routerLink → RouterLink
+
+*ngIf → NgIf
+
+*ngFor → NgFor
+
+formGroup → ReactiveFormsModule
+==================================
+GOLDEN RULE (SAVE THIS)
+
+Data backend se aata hai
+Interface sirf us data ka blueprint hota hai
+
+🧠 One-line final clarity
+
+Interface JSON ko map nahi karti,
+TypeScript JSON ko interface ke against verify karta hai
+========================
