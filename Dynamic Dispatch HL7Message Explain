@@ -1,0 +1,85 @@
+namespace HL7Demo
+{
+    public class HL7Message
+    {
+
+    }
+
+    class ADAT01 : HL7Message
+    {
+        public string PatientId { get; set; }
+    }
+
+
+    class R0ORU1 : HL7Message
+    {
+        public string ObxRecord { get; set; }
+    }
+
+    class SIU : HL7Message 
+    {
+        public string Appoitment { get; set; }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            HL7Message adat01Message = new ADAT01
+
+            {
+                PatientId = "Aslam"
+            };
+
+            HL7Message SIUmessage = new SIU
+            {
+                Appoitment = "9:30"
+            };
+
+            // ab reference tu HL7Message ka lekin HL7 Empty hai , or yeah refrence based hai , or us ke pass sir HL7 Class ki information hai
+            // lekin new SIU ke case main object ke pass dono cheezein hain inhertance ki waja se , HL7 ka , or SIU ka bi info hai
+            // ab ap yeah data casting ke through nikal saktey ho 
+
+            // 1 is ke through , referen else case if casting is wrong its statment and not used without if
+            // 2 as ke through , return null when casting is wrong
+            // 3 , explict casting ke through // code gives excetion when failed to cast , risky 
+
+            // how to create Casting 
+            // you have to use HL7Message i mean partnet class variable for this not HL7Message Class name, Note please for all theree
+
+            //2 
+            ADAT01 Adat01AsCasting = adat01Message as ADAT01; // its return null if casting failed , you can use it with if 
+
+            // in memory Adat01AsCasting is in stack for example this varable address is 00x0111 = public string PatientId { get; set; }
+            // adat01Message this varable points HL7Message Class which holds it propties 
+            // we said adat01Message which has HL7 Class is same as ADAT01 so we get both HL7 and ADT01 properties 
+
+            if (Adat01AsCasting!=null)
+            {
+                Adat01AsCasting.PatientId = "Aslam";
+            }
+
+            // 3  its risky and return exception and code breaks does not run further ... 
+
+            ADAT01 explicitHL7ADT01Casting = (ADAT01)adat01Message;
+
+
+            GenerateHL7Message(adat01Message);
+            GenerateHL7Message(SIUmessage);   
+
+        }
+
+
+        static void GenerateHL7Message(HL7Message hl7Message )
+        {
+            if (hl7Message is ADAT01 adt)
+            {
+                Console.WriteLine("ADT A01 received");
+                Console.WriteLine($"PatientId: {adt.PatientId}");
+            }
+        }
+
+        
+    }
+}
