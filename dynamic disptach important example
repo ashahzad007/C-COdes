@@ -1,0 +1,166 @@
+using System;
+using System.Diagnostics.Metrics;
+
+namespace HL7CastingDemo
+{
+    // =========================
+    // PARENT CLASS
+    // =========================
+    class HL7Message
+    {
+        // Ye property sirf HL7Message ko pata hai
+        public string Description { get; set; }
+    }
+
+    // =========================
+    // CHILD CLASS
+    // =========================
+    class ADAT01 : HL7Message
+    {
+        // jab yeah ADAT01 Inhert howi HL7Message se tu is ke pass HL7Message ki Description and iski apni properties PatientId bi aa gyi
+        // (both HL7Message and ADAT01 its own Properties ) 
+        // nechey check kero MEMORY STATE (AFTER NEW ADAT01)
+
+        public string PatientId { get; set; }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // =========================================================
+            // STEP 1: LEFT SIDE vs RIGHT SIDE
+            // =========================================================
+
+            // LEFT SIDE  : HL7Message (reference type)
+            // RIGHT SIDE : ADAT01 (actual object)
+            HL7Message msg = new ADAT01();
+
+            /*
+            ================= MEMORY STATE (AFTER NEW ADAT01) =================
+
+            LEFT SIDE (msg)                         RIGHT SIDE (new ADAT01)
+
+            STACK                                  HEAP
+            -----                                  ----
+            msg  ───► 0x0125   ────────────────►   ADAT01 object
+                                                   ├── Description = null
+                                                   └── PatientId   = null
+
+            IMPORTANT:
+            - Object ADAT01 ka bana hai (heap)
+            - Reference HL7Message ka hai (stack)
+            - Is waqt sirf *ek* reference exist karta hai: msg
+            */
+
+            // Allowed: HL7Message ki property
+            msg.Description = "ADT Message";
+
+            // NOT allowed (compile-time error):
+            // msg.PatientId = "123";
+            // ❌ kyun?
+            // kyun ke LEFT side ka reference HL7Message ka hai
+            // aur HL7Message ko PatientId ka pata hi nahi
+
+
+            // =========================================================
+            // STEP 2: CASTING USING 'as'
+            // =========================================================
+
+            ADAT01 adat = msg as ADAT01;
+
+            /*
+                Simple samajhne wali baat:
+
+                1) new ADAT01() sirf ek dafa HEAP mein object banata hai
+                   maan lo us object ka address 0x0125 hai
+
+                2) msg ek HL7Message ka reference variable hai
+                   jo pehle se usi address (0x0125) ko point kar raha hota hai
+
+                3) 'as' casting koi naya object nahi banati
+                   balkay check karti hai ke:
+                   "kya msg ke andar ADAT01 ka object hai?"
+
+                4) jab jawab YES hota hai,
+                   to ek naya reference variable 'adat' ban jata hai (STACK pe)
+
+                5) adat ko bhi WAHI address (0x0125) mil jata hai
+                   jahan ADAT01 ka object mojood hai
+
+                Is liye:
+
+                STACK
+                msg  ───► 0x0125
+                adat ───► 0x0125
+
+                Dono references same object ko point kar rahe hain.
+                Farq sirf itna hai:
+                msg  = HL7Message view
+                adat = ADAT01 view (is liye PatientId access ho jati hai)
+                */
+
+            /*
+            ================= MEMORY STATE (AFTER CASTING) =================
+
+            LEFT SIDE REFERENCES                   RIGHT SIDE OBJECT
+
+            STACK                                  HEAP
+            -----                                  ----
+            adat ───► 0x0125   ────────────────►   ADAT01 object
+                                                   ├── Description = "ADT Message"
+            msg  ───► 0x0125   ────────────────►   └── PatientId   = null
+
+            KEY POINTS:
+            - adat aur msg dono STACK pe alag variables hain
+            - lekin dono SAME heap address (0x0125) ko point kar rahe hain
+            - koi naya object create nahi hua
+            - casting ne sirf ek naya reference diya
+            */
+
+            // GOLDEN RULE:
+            // Casting does NOT create a new object.
+            // It only creates another reference to the SAME object in memory.
+
+
+            // Agar casting successful hui
+            if (adat != null)
+            {
+                adat.PatientId = "Aslam";
+            }
+
+            /*
+            ================= MEMORY STATE (AFTER SETTING PatientId) =================
+
+            STACK                                  HEAP
+            -----                                  ----
+            adat ───► 0x0125   ────────────────►   ADAT01 object
+                                                   ├── Description = "ADT Message"
+            msg  ───► 0x0125   ────────────────►   └── PatientId   = "Aslam"
+
+            NOTE:
+            - adat.PatientId set karne se
+            - msg ke through bhi same object update ho gaya
+            - kyun ke object sirf ek hi hai
+            STACK
+            adat ───► 0x0125
+            msg  ───► 0x0125
+            yeh kaise hua?
+            ✅ Answer (simple words):
+            new ADAT01() sirf ek dafa heap mein object banata hai
+            msg pehle se us object ko point kar raha hota hai
+            as casting:
+            koi naya object nahi banati
+            bas same object ka ek aur reference bana deti hai
+            Is liye:
+            msg bhi → 0x0125
+            adat bhi → 0x0125
+            */
+            Console.WriteLine("Description: " + adat.Description);
+            Console.WriteLine("PatientId: " + adat.PatientId);
+        }
+    }
+}
+
+
+
