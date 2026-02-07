@@ -1,3 +1,4 @@
+using HL7CastingDemo;
 using System;
 using System.Diagnostics.Metrics;
 
@@ -189,7 +190,7 @@ namespace HL7CastingDemo
 
             // Ab hum ADAT01 mein cast karne ki koshish karte hain
             ADAT01 failedCast = msg2 as ADAT01;
- 
+
             if (failedCast == null)
             {
                 Console.WriteLine("Casting FAILED: msg2 ADAT01 ka object nahi hai");
@@ -212,11 +213,19 @@ namespace HL7CastingDemo
             {
                 Console.WriteLine("Casting SUCCESS: msg2 SIU ka object hai");
             }
-       
+
 
         }
     }
 }
+
+/*
+| Code | Result |
+| -------------------------------------------------- | ------------- |
+| `HL7Message msg = new ADAT01(); msg as ADAT01`     | ✅ Success |
+| `HL7Message msg = new SIU(); msg as ADAT01`        | ❌ Fail(null) |
+| `HL7Message msg = new HL7Message(); msg as ADAT01` | ❌ Fail |
+*/
 
 
 
