@@ -24,6 +24,12 @@ namespace HL7CastingDemo
         public string PatientId { get; set; }
     }
 
+    class SIU : HL7Message
+    {
+        public string AppointmentTime { get; set; }
+    }
+
+
     class Program
     {
         static void Main(string[] args)
@@ -158,6 +164,56 @@ namespace HL7CastingDemo
             */
             Console.WriteLine("Description: " + adat.Description);
             Console.WriteLine("PatientId: " + adat.PatientId);
+
+
+            // =========================================================
+            // STEP 3: CASTING FAIL EXAMPLE
+            // =========================================================
+
+            // Yahan HL7Message ka reference hai
+            // lekin actual object SIU ka hai
+            HL7Message msg2 = new SIU();
+
+            /*
+            ================= MEMORY STATE =================
+
+            STACK                                  HEAP
+            -----                                  ----
+            msg2 ───► 0x0200   ────────────────►   SIU object
+                                                     └── AppointmentTime
+
+            IMPORTANT:
+            - Object SIU ka hai
+            - ADAT01 ka NAHI
+            */
+
+            // Ab hum ADAT01 mein cast karne ki koshish karte hain
+            ADAT01 failedCast = msg2 as ADAT01;
+ 
+            if (failedCast == null)
+            {
+                Console.WriteLine("Casting FAILED: msg2 ADAT01 ka object nahi hai");
+            }
+
+            /*
+            Casting FAIL kyun hui?
+            s- msg2 ke andar SIU ka object hai
+            - SIU ≠ ADAT01
+            - is liye 'as' operator null return karta hai
+            */
+
+            // =========================================================
+            // STEP 4: CASTING SUCCESS EXAMPLE
+            // =========================================================
+
+            SIU SuccessCast = msg2 as SIU;
+
+            if (SuccessCast != null)
+            {
+                Console.WriteLine("Casting SUCCESS: msg2 SIU ka object hai");
+            }
+       
+
         }
     }
 }
