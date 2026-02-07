@@ -76,6 +76,19 @@ namespace HL7CastingDemo
 
             ADAT01 adat = msg as ADAT01;
 
+            // msg.PatientId = "123";
+            // ❌ kyun?
+            // kyun ke LEFT side ka reference HL7Message ka hai
+            // aur HL7Message ko PatientId ka pata hi nahi
+
+            //------------------LEKIN---------------------------
+            //adat.PatientId = "123"; 
+            // lekin ab adat.PatientId = "123"; allowed hai ,
+            // why us ke pass ab ADAT01 ka reference hai jis main both HL7Message and ADAT01 ki propties hain
+            // is case main pehle msg ka view HL7Messgae ki class ka tha 
+            // or ab adat ke Pass ADAT01 ka view hai jis main inhertance ki waja se HL7Message + ADAT01 dono ki properties hain
+
+            //=================================//========================================//=============//
             /*
                 Simple samajhne wali baat:
 
@@ -218,6 +231,7 @@ namespace HL7CastingDemo
         }
     }
 }
+
 
 /*
 | Code | Result |
