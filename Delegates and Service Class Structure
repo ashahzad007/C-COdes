@@ -50,6 +50,7 @@ namespace delegateDemo
 
 ===============================================2==== INTRERFACE EXAMPLE================================
 
+
 namespace delegateDemo
 {
     class Program
@@ -58,7 +59,17 @@ namespace delegateDemo
         {
             public void SendEmail(string message);
             public void SendSMS(string message);
+            
+        }
+
+        interface IOrder
+        {
             public void OrderPlaced();
+        }
+
+        class OrderService : IOrder
+        {
+            public void OrderPlaced() { Console.WriteLine("Order Placed"); }
         }
 
         class NotifactionService : INotification
@@ -72,22 +83,20 @@ namespace delegateDemo
             {
                 Console.WriteLine(message);
             }
-            public void OrderPlaced()
-            {
-                Console.WriteLine("Order Placed");
-            }
+      
 
         }
   
         class Order
         {
             NotifactionService _notifactionService = new NotifactionService();
-
+            IOrder _orderService = new OrderService();
             public void PlaceOrder()
             {
-                _notifactionService.OrderPlaced();
+                _orderService.OrderPlaced();
                 _notifactionService.SendSMS("sms sent");
                 _notifactionService.SendEmail("email sent");
+                
 
             }
         }
@@ -98,5 +107,3 @@ namespace delegateDemo
         }
     }
 }
-
-
