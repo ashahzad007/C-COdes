@@ -47,3 +47,56 @@ namespace delegateDemo
         }
     }
 }
+
+===============================================2==== INTRERFACE EXAMPLE================================
+
+namespace delegateDemo
+{
+    class Program
+    {
+        interface INotification
+        {
+            public void SendEmail(string message);
+            public void SendSMS(string message);
+            public void OrderPlaced();
+        }
+
+        class NotifactionService : INotification
+        {
+            public void SendEmail(string message)
+            {
+                Console.WriteLine(message);
+            }
+
+            public void SendSMS(string message)
+            {
+                Console.WriteLine(message);
+            }
+            public void OrderPlaced()
+            {
+                Console.WriteLine("Order Placed");
+            }
+
+        }
+  
+        class Order
+        {
+            NotifactionService _notifactionService = new NotifactionService();
+
+            public void PlaceOrder()
+            {
+                _notifactionService.OrderPlaced();
+                _notifactionService.SendSMS("sms sent");
+                _notifactionService.SendEmail("email sent");
+
+            }
+        }
+        static void Main(string[] args)
+        {
+            Order order = new Order();
+            order.PlaceOrder();
+        }
+    }
+}
+
+
