@@ -1,0 +1,49 @@
+//ticket 
+
+namespace delegateDemo
+{
+    class Program
+    {
+        class OrderService
+        {
+            public void OrderPlaced()
+            {
+                Console.WriteLine("Order Placed");
+            }
+        }
+
+        class EmailService
+        {
+            public void SendEmail(string message)
+            {
+                 Console.WriteLine(message);
+            }
+        }
+
+        class SMService
+        {
+            public void SendSMS(string message)
+            {
+                Console.WriteLine(message);
+            }
+        }
+
+        class Order
+        {
+            OrderService _orderService = new OrderService();
+            EmailService _emailService = new EmailService();
+            SMService _SMService = new SMService();
+            public void PlaceOrder()
+            {
+                _orderService.OrderPlaced();
+                _emailService.SendEmail("email is sent");
+                _SMService.SendSMS("sms is sent");
+            }
+        }
+        static void Main(string[] args)
+        {
+            Order order = new Order();
+            order.PlaceOrder();
+        }
+    }
+}
