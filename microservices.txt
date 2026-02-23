@@ -346,3 +346,115 @@ docker ps -a
 Producer → Send message\
 Consumer → Receives message 🎉
 ==============================
+# Docker Shared Network -- Simple Explanation
+
+## What is a Docker Network?
+
+A Docker network is a **virtual local network (LAN)** created inside
+Docker that allows containers to communicate with each other.
+
+Think of it like:
+
+-   Office LAN
+-   Home WiFi
+-   Devices connected to the same router
+
+Containers connected to the same Docker network can talk to each other
+using **container names**.
+
+------------------------------------------------------------------------
+
+## Create a Custom Network
+
+``` bash
+docker network create micro-net
+```
+
+This creates a virtual network named:
+
+`micro-net`
+
+------------------------------------------------------------------------
+
+## Connect Existing Container to Network
+
+``` bash
+docker network connect micro-net rabbitmq
+```
+
+This attaches the **rabbitmq container** to the `micro-net` network.
+
+------------------------------------------------------------------------
+
+## Why is This Important?
+
+Inside Docker:
+
+`localhost` refers to the container itself --- **not your PC** and not
+other containers.
+
+So this will fail:
+
+    cfg.Host("localhost") ❌
+
+Correct approach:
+
+    cfg.Host("rabbitmq") ✅
+
+Because Docker provides automatic DNS resolution using container names.
+
+------------------------------------------------------------------------
+
+## How Containers Communicate
+
+If all containers are connected to the same network:
+
+    micro-net
+     ├── rabbitmq
+     ├── consumer
+     └── producer
+
+They can reach each other by name:
+
+-   rabbitmq
+-   consumer
+-   producer
+
+------------------------------------------------------------------------
+
+## Key Benefits
+
+✔ Reliable container-to-container communication\
+✔ Name-based resolution (built-in DNS)\
+✔ Isolation from host networking issues\
+✔ Cleaner microservices architecture
+
+------------------------------------------------------------------------
+
+## Inspect Network
+
+``` bash
+docker network inspect micro-net
+```
+
+Shows all containers connected to the network.
+
+------------------------------------------------------------------------
+
+## Real-world Analogy
+
+  Docker Concept   Real Life
+  ---------------- -----------------
+  Network          LAN / WiFi
+  Container        Computer
+  Container Name   Hostname
+  micro-net        Router / Switch
+
+------------------------------------------------------------------------
+
+## Summary
+
+-   Docker network = virtual LAN
+-   Containers on same network = can communicate
+-   Use container names instead of localhost
+====================================================
