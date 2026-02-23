@@ -1681,4 +1681,22 @@ JsonElement jsonElement = System.Text.Json.JsonSerializer.Deserialize<JsonElemen
 
 check NUC Plugin RequestHelper.SendRequestAsync for more information.
 ================================
+ticket , rese reason ko automate ker do , mtlb agar xyz field true ho tu automatic le jayo , flse ho tu manual le jayo
+================================
+1) appsetting.jason main ek filed banyi , 
+2) ek class bani , serilize and de serlize kerne ke lye 
+3) Iconfigution se data pick kya or usko class ke hisab se automate ker dya 
+4) deployment ke waqat , env varaible devops ko de dya.
+============
+1) appsetting.jason main add ki "Hl7MessageDynamicObservation": false,
+2) eicpluginSetting.cs main  public bool Hl7MessageDynamicObservation { get; set; } = false;
+3) HL7Generator.cs ke class main validation add ker di 
 
+          if (!_settings.Hl7MessageDynamicObservation)
+            {
+                observationValue = "Patient repositioned";
+            }
+            string obx = CreateObxSegmentCustom("1", "TX", "292",facilityProfile.ObservationText,observationValue);
+4) ab yeah switch on ya off appsettings.jason ke varaible se ho ga ... Hl7MessageDynamicObservation = true or false
+5) yeah khabi fast deployment ke lye use ho sakta hai , jab pora code comment ker ek le ker jana ho , ap swithc on ya off bana sakty ho 
+=======================================

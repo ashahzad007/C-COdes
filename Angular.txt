@@ -846,3 +846,34 @@ Interface sirf us data ka blueprint hota hai
 Interface JSON ko map nahi karti,
 TypeScript JSON ko interface ke against verify karta hai
 ========================
+anular o check kerney ka tareqa
+==============================
+network table main ja ker dekhin API calls chali hain ke nai 
+=============================
+
+Angular Imortnet Point
+=========================
+your API response C#  and api Response Angular must be same for example
+========================
+FacilitySummary C# wali , must be equal to facilitySummary angular wali
+===================
+namespace IntegrationPortalApi.Models.EpicHL7.Response
+{
+    public class GetEpicHl7SummaryByFacilityResponse
+    {
+        public int ResponseCode { get; set; }
+
+        public string ResponseMessage { get; set; }
+
+        public List<BusinessEventSummaryByFacility> FacilitySummary { get; set; }
+    }
+}
+
+
+export interface GetEpicHl7DailyUsageFacilityResponse
+{
+    responseCode: number;
+  responseMessage: string;
+  facilitySummary: DailyUsageFacility[];
+}
+======================================

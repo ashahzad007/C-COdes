@@ -1,0 +1,574 @@
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+
+namespace funcDeno
+{
+    delegate int Operation(int a, int b); // iska parameter function ho ga 
+    delegate List<int> OperationList(List<int> list);
+    class Program
+    {
+
+        
+        public static int add(int a , int b)
+        {
+            return a + b; 
+        }
+
+        public  int multiply(int a, int b) // or yeah method agar static na ho tu erro kwon deta hai 
+        {
+            return a * b;
+        }
+        static List<int> listData = new List<int>();
+        
+        public static List<int> ListData(List<int> list) 
+        {
+            return list;
+        
+        }
+
+
+        static void Main(string[] args)
+        {
+            Program program = new Program();
+            listData.Add(1);
+            listData.Add(2);
+            listData.Add(3);
+
+
+            Operation op1 = add;
+            Operation op2 = program.multiply;// static non static funda
+            var op3 = program.multiply; // ab var ke tye check kero delegate ho gi 
+            Operation op;
+
+            string choice = Console.ReadLine(); // ab op jo hai wo function ka variable ban gya hai 
+
+            switch (choice)
+            {
+                case "+":
+                    op = add;
+                    break;
+
+                case "*":
+                    op = program.multiply;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid operator");
+                    return;
+            }
+
+
+
+            Console.WriteLine(op1.Invoke(2,2));
+            Console.WriteLine(op2.Invoke(1, 2));
+
+            Console.WriteLine(add(2,2));
+            Console.WriteLine(program.multiply(2,2)); // why delegate , main isko aysee bi tu use ker sakta tha 
+
+            // func 
+            Func<int,int,int> Funcadd = (a,b) => a+ b; // yeah annoymnaus arrow function hai , add ka 
+            Func<int, int, int> FuncMultply = (a, b) => a * b; // yeah annoymnaus arrow function hai , mutilpy ka
+            Func<int, int, int> funcAddNonAnnyoumsn = add; // koye bi same method ka signature match kerta howa de saktey ho  
+            // Funcadd,FuncMultply,funcAddNonAnnyoumsn varaibles hain , lekin inkey pass pory methods hain... na ke string , int etc important point
+            // mtlb kisi bi varable ke under hum pory function ko store ker lety hain delegate ke case main 
+            // melb arage main yeah likh doon var xyz = add , tu yeah dd ke pora function store ker le ga , or xyz ko 
+            // jab main call kero ga tu yeah us function ke parameters demand kere ga for eample
+            var xyz = ListData;
+            OperationList operationList = ListData;
+            // now in var its has func delagte who use List of intergrer as paramerter and one list of int as return type
+
+            Console.WriteLine(Funcadd(2, 2));
+            Console.WriteLine(FuncMultply(1,3));
+            Console.WriteLine("=============FUNC DELegate======================");
+            foreach (var item in listData)
+            {
+               
+                Console.WriteLine(item);  // check here , this is important 
+            }
+
+            Console.WriteLine("=============Delagte=====================");
+            var dataDelagate = operationList(listData);
+            foreach (var item in dataDelagate)
+            {
+                Console.WriteLine(item);
+            }
+            
+
+            }
+
+
+
+        }
+
+
+    }
+    
+===========================
+using System.Security.Cryptography;
+
+namespace ActionDemo
+{
+    delegate void CustomAction(string message); // equivalent to void customAction(string message){console.writeline(message)}
+    delegate bool CustomPredicate (string message);
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Correctly assign the delegate with a method group
+            CustomAction c1 = Log;
+            c1("Hello, this is a log message!"); // Example usage
+            CustomAction c2 = SMS;
+            c2("SMS SENT");
+            Action<string> action = Log;
+            Predicate<string> predicate = CustomPredicateMethod;
+            action("SMS SENT through delegate Action");
+            CustomPredicate c3 = CustomPredicateMethod;
+            bool result= c3("Sun Rises from the east");
+            bool Result2 =predicate("Sun Rises from Predicate");
+            Console.WriteLine(result);
+            Console.WriteLine(Result2);
+        }
+
+        static void Log(string message)
+        {
+           
+            Console.WriteLine(message);
+        }
+
+        static void SMS(string message)
+        {
+
+            Console.WriteLine(message);
+        }
+
+        static bool CustomPredicateMethod(string message) 
+        { 
+        return true;
+        
+        }
+    }
+}
+===============================================
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+namespace demo
+{
+    public delegate void EventDelegate (object sender, EventAnnouncer e);
+    // data class container
+    public class EventAnnouncer : EventArgs
+    {
+        public string Title { get; set; }
+        public int Discount { get; set; }
+
+        public EventAnnouncer(string title, int discount)
+        {
+            this.Discount = discount;
+            this.Title = title;
+        }
+    }
+    // publisher + event raiser / invoker
+    public class Shop
+    {
+       public event EventDelegate Deli;
+        
+        public void SaleAnnounce(EventAnnouncer eventAnnouncer)
+        {
+           
+            Console.WriteLine(eventAnnouncer.Title);
+            Console.WriteLine(eventAnnouncer.Discount);
+            Console.WriteLine("sale is on ");
+            Deli?.Invoke(this,eventAnnouncer);
+        }
+        
+        
+    }
+    
+
+    public class SMSService
+    {
+        public void sms(object sender , EventAnnouncer eventAnnouncer)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+    public class EmailService
+    {
+        public void email(object sender , EventAnnouncer eventAnnouncer) { Console.WriteLine("email sent"); }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            EventAnnouncer EventAnnouncer = new EventAnnouncer("Disounct Sale", 40);
+            SMSService SMSService = new SMSService();
+            EmailService EmailService = new EmailService();
+            Shop shop = new Shop();
+            shop.Deli += SMSService.sms;
+            shop.Deli += EmailService.email;
+            shop.SaleAnnounce(EventAnnouncer);
+            Console.ReadKey();
+
+
+        }
+    }
+
+
+}
+======================================
+step 1 create delegate  public delegate void EventDelegate (object sender, EventAnnouncer e);
+step 2 create publisher class who publish , 
+step 3 in publisher class you create public event EventDelegate Deli;
+step 4  Deli?.Invoke(this,eventAnnouncer);
+step 5 , create subscribers methods which match the delegate signature
+step 6  subscribe shop.Deli += SMSService.sms; shop.Deli += EmailService.email;
+step 7 fire event shop.SaleAnnounce(EventAnnouncer); 
+===========================
+example event without delegate
+=========================
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+namespace demo
+{
+    //public delegate void EventDelegate (object sender, EventAnnouncer e);
+    // data class container
+    public class EventAnnouncer : EventArgs //step 1
+    {
+        public string Title { get; set; }
+        public int Discount { get; set; }
+
+        public EventAnnouncer(string title, int discount)
+        {
+            this.Discount = discount;
+            this.Title = title;
+        }
+    }
+    // publisher + event raiser / invoker
+    public class Shop
+    {
+       //public event EventDelegate Deli;
+        public event EventHandler<EventAnnouncer> deli2; // step 2 
+        //public delegate void EventDelegate(object sender, EventAnnouncer e);
+        //back per yeah delegate khud bana leta hai
+        //or under the hood complier khud add_deli2(handler),public void remove_deli2(handler)
+        // add ker deta hai subscribe and unsubribe kerney ke lye  
+
+
+        public void SaleAnnounce(EventAnnouncer eventAnnouncer)
+        {
+           
+            Console.WriteLine(eventAnnouncer.Title);
+            Console.WriteLine(eventAnnouncer.Discount);
+            Console.WriteLine("sale is on ");
+            deli2?.Invoke(this,eventAnnouncer);
+        }
+        
+        
+    }
+    
+
+    public class SMSService // step 3  subscrber methods 
+    {
+        public void sms(object sender , EventAnnouncer eventAnnouncer)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+    public class EmailService
+    {
+        public void email(object sender , EventAnnouncer eventAnnouncer) { Console.WriteLine("email sent"); }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            EventAnnouncer EventAnnouncer = new EventAnnouncer("Disounct Sale", 40);
+            SMSService SMSService = new SMSService();
+            EmailService EmailService = new EmailService();
+            Shop shop = new Shop();
+            shop.deli2 += SMSService.sms; //step 4 subscribe
+            shop.deli2 += EmailService.email;
+            shop.SaleAnnounce(EventAnnouncer); // after subscribe fire the event if you
+            // use this before subscribers += then your event shows null , 
+            Console.ReadKey();
+
+
+        }
+    }
+
+
+}
+=================================
+1.event class inherted by events args
+2.publisher + event raiser / invoker
+2. subsciber class, method
+3. all in main
+
+===========please look below example with built in event=======
+
+using System.Runtime.CompilerServices;
+
+namespace EventDemo
+{
+    // step 1 create event rasier class for data collection
+    // delegate creation if you dont want to use builtin delegete
+    //public delegate void EventHandlerCustom(Object sender, EventAnnoucer eventAnnouncer);
+    public class EventAnnoucer : EventArgs
+    {
+        public string Title { get; set; }
+        public string Discount { get; set; }
+
+        public EventAnnoucer(string title, string discount)
+        {
+            Title = title;
+            Discount = discount;
+        }
+    }
+
+    // step 2 Publisher Class and Event Invoker  
+    public class Shop
+    {
+        // now you have two options use built in event or declare delagte in name space 
+        // step 2 
+        public event EventHandler<EventAnnoucer> AnnounceSale; // this is built in no need to declare delegate
+        // please note event will invoke in method 
+        // or if you want to use your own custome delegate 
+        //public event EventHandlerCustom CustomAnnounceSale;
+
+        // step 3 create method for event invoke
+        public void AnnounceSaleMethod(Object sender , EventAnnoucer eventAnnouncer)
+        {
+            Console.WriteLine($"{eventAnnouncer.Title} and {eventAnnouncer.Discount}");
+            AnnounceSale.Invoke( sender , eventAnnouncer );
+            //AnnounceSale(sender, eventAnnouncer); both ways you can use invoke or this way
+        }
+    }
+
+    // step 4 , create subscriber classes and their methods 
+    public class SendEmailService
+    {
+        public void SendEmail(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("Email Sent");
+        }    
+    }
+
+    public class SendSmsService 
+    {
+        public void SendSMS(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // step 5 calling  and subscribing
+            // please note you can subscribe first and then fire the event
+            EventAnnoucer e = new EventAnnoucer("Our Sale is Started","30% discount");
+            SendEmailService emailService = new SendEmailService();
+            SendSmsService smsService = new SendSmsService();
+            // please note you have to subscribe first other wise your event will be null
+
+            Shop shop = new Shop();
+            shop.AnnounceSale += emailService.SendEmail;
+            shop.AnnounceSale += smsService.SendSMS;
+
+            // step 6 , this method has event Invoke so in last you run this method as signal
+            // that sale is strated
+            shop.AnnounceSaleMethod(shop,e);
+            
+        }
+    }
+}
+
+===================================================
+please look below example with custom event and delegate
+==================================================
+using System.Runtime.CompilerServices;
+
+namespace EventDemo
+{
+    // step 1 create event rasier class for data collection
+    // delegate creation if you dont want to use builtin delegete
+    public delegate void EventHandlerCustom(Object sender, EventAnnoucer eventAnnouncer);
+    public class EventAnnoucer : EventArgs
+    {
+        public string Title { get; set; }
+        public string Discount { get; set; }
+
+        public EventAnnoucer(string title, string discount)
+        {
+            Title = title;
+            Discount = discount;
+        }
+    }
+
+    // step 2 Publisher Class and Event Invoker  
+    public class Shop
+    {
+        // now you have two options use built in event or declare delagte in name space 
+        // step 2 
+        //public event EventHandler<EventAnnoucer> AnnounceSale; // this is built in no need to declare delegate
+        // please note event will invoke in method 
+        // or if you want to use your own custome delegate 
+        public event EventHandlerCustom CustomAnnounceSale;
+
+        // step 3 create method for event invoke
+        public void AnnounceSaleMethod(Object sender , EventAnnoucer eventAnnouncer)
+        {
+            Console.WriteLine($"{eventAnnouncer.Title} and {eventAnnouncer.Discount}");
+            //AnnounceSale.Invoke( sender , eventAnnouncer );
+            CustomAnnounceSale.Invoke( sender , eventAnnouncer );
+            //AnnounceSale(sender, eventAnnouncer); both ways you can use invoke or this way
+        }
+    }
+
+    // step 4 , create subscriber classes and their methods 
+    public class SendEmailService
+    {
+        public void SendEmail(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("Email Sent");
+        }    
+    }
+
+    public class SendSmsService 
+    {
+        public void SendSMS(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // step 5 calling  and subscribing
+            // please note you can subscribe first and then fire the event
+            EventAnnoucer e = new EventAnnoucer("Our Sale is Started","30% discount");
+            SendEmailService emailService = new SendEmailService();
+            SendSmsService smsService = new SendSmsService();
+            // please note you have to subscribe first other wise your event will be null
+
+            Shop shop = new Shop();
+            //shop.AnnounceSale += emailService.SendEmail;
+            //shop.AnnounceSale += smsService.SendSMS;
+            shop.CustomAnnounceSale += emailService.SendEmail;
+            shop.CustomAnnounceSale += smsService.SendSMS;
+
+
+            // step 6 , this method has event Invoke so in last you run this method as signal
+            // that sale is strated
+            shop.AnnounceSaleMethod(shop,e);
+            
+        }
+    }
+}
+
+Best Example for events and Delegates my own created
+=======================================================
+using System.Runtime.CompilerServices;
+
+namespace EventDemo
+{
+    // step 1 create event rasier class for data collection
+    // delegate creation if you dont want to use builtin delegete
+    public delegate void EventHandlerDelegateCustom(Object sender, EventAnnoucer eventAnnouncer);
+    public class EventAnnoucer : EventArgs
+    {
+        public string Title { get; set; }
+        public string Discount { get; set; }
+
+        public EventAnnoucer(string title, string discount)
+        {
+            Title = title;
+            Discount = discount;
+        }
+    }
+
+    // step 2 Publisher Class and Event Invoker  
+    public class Shop
+    {
+        // now you have two options use built in event or declare delagte in name space 
+        // step 2 
+        //public event EventHandler<EventAnnoucer> AnnounceSale; // this is built in no need to declare delegate
+        // please note event will invoke in method 
+        // or if you want to use your own custome delegate 
+        // event only holds EventHandlerDelegateCustom , delegate with signture and return type which is 
+        // (Object sender, EventAnnoucer eventAnnouncer) signature , we can use same signture with subscriber methods
+        public event EventHandlerDelegateCustom CustomAnnounceSale;
+
+        // step 3 create method for event invoke
+        public void AnnounceSaleMethod(Object sender , EventAnnoucer eventAnnouncer)
+        {
+            Console.WriteLine($"{eventAnnouncer.Title} and {eventAnnouncer.Discount}");
+            //AnnounceSale.Invoke( sender , eventAnnouncer );
+            CustomAnnounceSale.Invoke( sender , eventAnnouncer );
+            //AnnounceSale(sender, eventAnnouncer); both ways you can use invoke or this way
+        }
+    }
+
+    // step 4 , create subscriber classes and their methods 
+    public class SendEmailService
+    {
+        public void SendEmail(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("Email Sent");
+        }    
+    }
+
+    public class SendSmsService 
+    {
+        public void SendSMS(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // step 5 calling  and subscribing
+            // please note you can subscribe first and then fire the event
+            EventAnnoucer e = new EventAnnoucer("Our Sale is Started","30% discount");
+            SendEmailService emailService = new SendEmailService();
+            SendSmsService smsService = new SendSmsService();
+            // please note you have to subscribe first other wise your event will be null
+
+            Shop shop = new Shop();
+            //shop.AnnounceSale += emailService.SendEmail;
+            //shop.AnnounceSale += smsService.SendSMS;
+            // complier use add or delete method to subscribe or unsubribe in events builtin c# methods
+            shop.CustomAnnounceSale += emailService.SendEmail;
+            shop.CustomAnnounceSale += smsService.SendSMS;
+
+            // step 6 , this method has event Invoke so in last you run this method as signal
+            // that sale is strated
+            shop.AnnounceSaleMethod(shop,e);
+
+            // you can also fire the delegate for this purpose
+            // this is ot safe , every one can use this , this is for informatroy purpose
+            //EventHandlerCustom eventHandlerCustom = emailService.SendEmail; // we also fire email here
+            //eventHandlerCustom += smsService.SendSMS;
+            // eventHandlerCustom += emailService.SendEmail;
+            // fire the delegete 
+
+            //eventHandlerCustom(shop,e);
+        }
+    }
+}
+
+==========================================END DELGETES AND EVENTS Thanks God========================

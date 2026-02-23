@@ -1,0 +1,7 @@
+# Solution folder میں
+dotnet new xunit -n WebHooksApi.Tests
+dotnet add WebHooksApi.Tests reference WebHooksApi
+
+ya manual add ker lo xunit ka project le ker or test pe right click ker ke reference add ker lo
+
+==============

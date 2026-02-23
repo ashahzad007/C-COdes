@@ -1,0 +1,20 @@
+================shariq portal Summary Report SPs and other stuff====================
+CALL portal_uspGetBusinessEventSummary (32,'2025-01-01 04:27:39','2026-02-09 04:27:39');
+SELECT * FROM intg_vstalertbusiness ;
+SELECT * FROM sourceclient;
+SELECT  sc.* ,b.Id , b.BusinessName 
+FROM sourceclient sc 
+LEFT JOIN intg_vstalertbusiness b ON b.Id = sc.AlertBusinessIntegrationId AND IFNULL(b.IsDeleted,0)=0
+WHERE ifnull(sc.IsDeleted,0)=0
+AND sc.AlertBusinessIntegrationId=32;
+
+store procedures
+portal_uspGetBusiness_V1   --for business 
+uspGetBusinessEventSummary -- for data
+
+tables
+SELECT * FROM intg_vstalertbusiness ; -- for business , Id
+SELECT * FROM sourceclient; -- for branches , AlertBusinessIntegrationId
+------------join--------------------------------------------------------
+join intg_vstalertbusiness.Id = sourceclient.AlertBusinessIntegrationId
+======================

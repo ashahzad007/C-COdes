@@ -1,0 +1,169 @@
+NuGet Package (Contracts)
+        ↓
+Producer Console App
+        ↓
+RabbitMQ Broker
+        ↓
+Consumer Console App
+=========================
+Great bhai 😎
+Ab hum simple language + example se samjhte hain:
+
+Publish vs Send in MassTransit
+
+Ye concept samajh liya → messaging ka core samajh gaya.
+
+🎯 1️⃣ SEND — Direct Message
+
+📌 Meaning:
+Message sirf ek specific consumer ko jata hai.
+
+👉 Jaise WhatsApp message
+→ ek hi banda receive karta hai
+
+Diagram
+Producer ───▶ Queue ───▶ Specific Consumer
+Real-life Example
+
+PaymentService → send → PaymentProcessor
+
+Only payment processor should receive.
+
+Code Example (Send)
+
+Producer:
+
+var endpoint = await bus.GetSendEndpoint(
+    new Uri("queue:simple-queue"));
+
+await endpoint.Send(new SimpleMessage
+{
+    Text = "Direct Message"
+});
+
+✔ message goes to
+simple-queue only
+
+📢 2️⃣ PUBLISH — Broadcast Message
+
+📌 Meaning:
+Message sab interested consumers ko jata hai.
+
+👉 Jaise Instagram story
+→ sab followers dekh sakte hain
+
+Diagram
+Producer ── publish ──▶ Exchange
+                         ├── Consumer A
+                         ├── Consumer B
+                         └── Consumer C
+Real-life Example
+
+OrderPlaced event
+
+Many services may listen:
+
+Email service
+
+Billing service
+
+Inventory service
+
+Analytics service
+
+Code Example (Publish)
+await bus.Publish(new SimpleMessage
+{
+    Text = "Broadcast message"
+});
+
+MassTransit automatically routes to all listeners.
+
+🔥 Key Difference Table
+Feature	Send	Publish
+Target	specific queue	all subscribers
+Consumers	1	many
+Coupling	tighter	loose
+Usage	commands	events
+
+============================================
+code c# , consumer app, producer app , reference to class library
+dotnet add Consumer package MassTransit.RabbitMQ
+dotnet add Consumer package MassTransit
+=====
+dotnet add Producer package MassTransit.RabbitMQ
+dotnet add Producer package MassTransit
+=====================
+Install Erlang 28.3.2
+Install RabbitMQ 3.13.7
+-----------------
+dashboard http://localhost:15672/
+user guest, password guest
+=============================
+message , contact , class library
+=============================
+namespace Contracts
+{
+    public class Message
+    {
+        public string Text { get; set; }
+    }
+}
+=================================
+consumer code
+=================
+using MassTransit;
+using Contracts;
+
+public class MessageConsumer : IConsumer<Message>
+{
+    public Task Consume(ConsumeContext<Message> context)
+    {
+        Console.WriteLine("Received: " + context.Message.Text);
+        return Task.CompletedTask;
+    }
+}
+============program.cs================
+using MassTransit;
+
+var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
+{
+    cfg.Host("localhost");
+
+    cfg.ReceiveEndpoint("simple-queue", e =>
+    {
+        e.Durable = true; // queue survives broker restart
+        e.AutoDelete = false; // queue doesn’t disappear
+        e.Consumer<MessageConsumer>();
+    });
+});
+
+await bus.StartAsync();
+
+Console.WriteLine("Listening...");
+Console.ReadLine();
+
+await bus.StopAsync();
+====================================
+producer code , program.cs
+====================================
+using Contracts;
+using MassTransit;
+
+var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
+{
+    cfg.Host("localhost");
+});
+
+await bus.StartAsync();
+
+Console.WriteLine("Enter message:");
+var text = Console.ReadLine();
+
+await bus.Publish(new Message { Text = text });
+
+Console.WriteLine("Message sent!");
+
+Console.ReadLine();
+await bus.StopAsync();
+==================================

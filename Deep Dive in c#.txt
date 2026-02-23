@@ -176,3 +176,1821 @@ casting ki limits dekhi
 Code likhna seekho taake design soch sako.
 Design samajh aaya to code koi bhi likh de — AI bhi.
 ================================
+events delgates important example
+============================
+
+namespace delegateDemo
+{
+    class Program
+    {
+        interface INotification
+        {
+            public void SendEmail(string message);
+            public void SendSMS(string message);
+            
+        }
+
+        interface IOrder
+        {
+            public void OrderPlaced();
+        }
+
+        class OrderService : IOrder
+        {
+            public void OrderPlaced() { Console.WriteLine("Order Placed"); }
+        }
+
+        class NotifactionService : INotification
+        {
+            public void SendEmail(string message)
+            {
+                Console.WriteLine(message);
+            }
+
+            public void SendSMS(string message)
+            {
+                Console.WriteLine(message);
+            }
+      
+
+        }
+  
+        class Order
+        {
+            NotifactionService _notifactionService = new NotifactionService();
+            IOrder _orderService = new OrderService();
+            public void PlaceOrder()
+            {
+                _orderService.OrderPlaced();
+                _notifactionService.SendSMS("sms sent");
+                _notifactionService.SendEmail("email sent");
+                
+
+            }
+        }
+        static void Main(string[] args)
+        {
+            Order order = new Order();
+            order.PlaceOrder();
+        }
+    }
+}
+================very important concept============EVENTS DELGATES EXAMPLES==============================================
+ab idher masla yeah hai ke order ki class announce kerti hai , order place ho gya hai , ab jis ne response kerna hai wo keree
+interface instruction hoti hai , yeah kaam kero , bank example , tum announce nai kerty main ne paysee deposit krney hain bus cashier ke pass jatey ho
+repositry example fetch or save , or retrieve data 
+
+delegate , event , annoument hoti hai yeah kaam ho gya , event driven articuture bi yehe kerta hai , 
+shadi haal example Event 
+Announcer kehta hai:
+
+“Barat aa gayi!”
+Ab reactions:
+Photographer ready
+Catering active
+Family welcome
+Band start
+Guests stand
+Announcer ko pata hai kaun react karega?
+Nahi
+Woh sirf announce karta hai.
+==============================
+Problem in Design Importnant
+ab is c# ki app main yehe masla aa gya hai ke hum order ki class main Interface use ker rehe hain , jabkey order ki class announce kere
+ke order place ho gya hai , ab email , sms , whats app ko reaction dena chahyee , yeahe design approach hai event driven ya delegates ya events ki
+==================
+Software example:
+OrderPlaced
+OrderService kehta hai:
+“Order placed”
+Ab:
+Email bhejo
+SMS bhejo
+Analytics update
+Audit log
+Cache refresh
+OrderService ko pata?
+❌ Nahi hona chahiye
+
+DataReceived (MLLP wala tumhara case 🔥)
+Server kehta hai:
+“Data aa gaya”
+Kaun react kare?
+HL7 parser
+Logger
+DB writer
+ACK generator
+Server ko ilm?
+❌ Nahi
+
+TimerElapsed
+Timer kehta hai:
+“Tick”
+Kaun react kare?
+Flush batch
+Cleanup
+Retry logic
+
+UserLoggedIn
+System kehta hai:
+“User login ho gaya”
+Reactions:
+Last login update
+Audit trail
+Welcome message
+Cache load
+⚖️ Golden Difference (MOST IMPORTANT)
+Interface	Event
+“Do this work”	“Something happened”
+Command	Notification
+Known target	Unknown listeners
+Direct control	Loose reaction
+
+🧠 Mental Model yaad rakho
+Agar tum keh rahe ho:
+👉 “Tum yeh kaam karo”
+→ Interface
+Agar tum keh rahe ho:
+👉 “Yeh ho gaya hai”
+→ Event
+🎯 Tumhara Order example shift
+❌ Order → SendEmail()
+❌ Order → SendSMS()
+✅ Order → “OrderPlaced”
+💥 Ek line jo sab clear kar deti hai
+Interface = Instruction
+Event = Announcement
+=========================
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+
+namespace funcDeno
+{
+    delegate int Operation(int a, int b); // iska parameter function ho ga 
+    delegate List<int> OperationList(List<int> list);
+    class Program
+    {
+
+        
+        public static int add(int a , int b)
+        {
+            return a + b; 
+        }
+
+        public  int multiply(int a, int b) // or yeah method agar static na ho tu erro kwon deta hai 
+        {
+            return a * b;
+        }
+        static List<int> listData = new List<int>();
+        
+        public static List<int> ListData(List<int> list) 
+        {
+            return list;
+        
+        }
+
+
+        static void Main(string[] args)
+        {
+            Program program = new Program();
+            listData.Add(1);
+            listData.Add(2);
+            listData.Add(3);
+
+
+            Operation op1 = add;
+            Operation op2 = program.multiply;// static non static funda
+            var op3 = program.multiply; // ab var ke tye check kero delegate ho gi 
+            Operation op;
+
+            string choice = Console.ReadLine(); // ab op jo hai wo function ka variable ban gya hai 
+
+            switch (choice)
+            {
+                case "+":
+                    op = add;
+                    break;
+
+                case "*":
+                    op = program.multiply;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid operator");
+                    return;
+            }
+
+
+
+            Console.WriteLine(op1.Invoke(2,2));
+            Console.WriteLine(op2.Invoke(1, 2));
+
+            Console.WriteLine(add(2,2));
+            Console.WriteLine(program.multiply(2,2)); // why delegate , main isko aysee bi tu use ker sakta tha 
+
+            // func 
+            Func<int,int,int> Funcadd = (a,b) => a+ b; // yeah annoymnaus arrow function hai , add ka 
+            Func<int, int, int> FuncMultply = (a, b) => a * b; // yeah annoymnaus arrow function hai , mutilpy ka
+            Func<int, int, int> funcAddNonAnnyoumsn = add; // koye bi same method ka signature match kerta howa de saktey ho  
+            // Funcadd,FuncMultply,funcAddNonAnnyoumsn varaibles hain , lekin inkey pass pory methods hain... na ke string , int etc important point
+            // mtlb kisi bi varable ke under hum pory function ko store ker lety hain delegate ke case main 
+            // melb arage main yeah likh doon var xyz = add , tu yeah dd ke pora function store ker le ga , or xyz ko 
+            // jab main call kero ga tu yeah us function ke parameters demand kere ga for eample
+            var xyz = ListData;
+            OperationList operationList = ListData;
+            // now in var its has func delagte who use List of intergrer as paramerter and one list of int as return type
+
+            Console.WriteLine(Funcadd(2, 2));
+            Console.WriteLine(FuncMultply(1,3));
+            Console.WriteLine("=============FUNC DELegate======================");
+            foreach (var item in listData)
+            {
+               
+                Console.WriteLine(item);  // check here , this is important 
+            }
+
+            Console.WriteLine("=============Delagte=====================");
+            var dataDelagate = operationList(listData);
+            foreach (var item in dataDelagate)
+            {
+                Console.WriteLine(item);
+            }
+            
+
+            }
+
+
+
+        }
+
+
+    }
+    
+===========================
+using System.Security.Cryptography;
+
+namespace ActionDemo
+{
+    delegate void CustomAction(string message); // equivalent to void customAction(string message){console.writeline(message)}
+    delegate bool CustomPredicate (string message);
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Correctly assign the delegate with a method group
+            CustomAction c1 = Log;
+            c1("Hello, this is a log message!"); // Example usage
+            CustomAction c2 = SMS;
+            c2("SMS SENT");
+            Action<string> action = Log;
+            Predicate<string> predicate = CustomPredicateMethod;
+            action("SMS SENT through delegate Action");
+            CustomPredicate c3 = CustomPredicateMethod;
+            bool result= c3("Sun Rises from the east");
+            bool Result2 =predicate("Sun Rises from Predicate");
+            Console.WriteLine(result);
+            Console.WriteLine(Result2);
+        }
+
+        static void Log(string message)
+        {
+           
+            Console.WriteLine(message);
+        }
+
+        static void SMS(string message)
+        {
+
+            Console.WriteLine(message);
+        }
+
+        static bool CustomPredicateMethod(string message) 
+        { 
+        return true;
+        
+        }
+    }
+}
+===============================================
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+namespace demo
+{
+    public delegate void EventDelegate (object sender, EventAnnouncer e);
+    // data class container
+    public class EventAnnouncer : EventArgs
+    {
+        public string Title { get; set; }
+        public int Discount { get; set; }
+
+        public EventAnnouncer(string title, int discount)
+        {
+            this.Discount = discount;
+            this.Title = title;
+        }
+    }
+    // publisher + event raiser / invoker
+    public class Shop
+    {
+       public event EventDelegate Deli;
+        
+        public void SaleAnnounce(EventAnnouncer eventAnnouncer)
+        {
+           
+            Console.WriteLine(eventAnnouncer.Title);
+            Console.WriteLine(eventAnnouncer.Discount);
+            Console.WriteLine("sale is on ");
+            Deli?.Invoke(this,eventAnnouncer);
+        }
+        
+        
+    }
+    
+
+    public class SMSService
+    {
+        public void sms(object sender , EventAnnouncer eventAnnouncer)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+    public class EmailService
+    {
+        public void email(object sender , EventAnnouncer eventAnnouncer) { Console.WriteLine("email sent"); }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            EventAnnouncer EventAnnouncer = new EventAnnouncer("Disounct Sale", 40);
+            SMSService SMSService = new SMSService();
+            EmailService EmailService = new EmailService();
+            Shop shop = new Shop();
+            shop.Deli += SMSService.sms;
+            shop.Deli += EmailService.email;
+            shop.SaleAnnounce(EventAnnouncer);
+            Console.ReadKey();
+
+
+        }
+    }
+
+
+}
+======================================
+step 1 create delegate  public delegate void EventDelegate (object sender, EventAnnouncer e);
+step 2 create publisher class who publish , 
+step 3 in publisher class you create public event EventDelegate Deli;
+step 4  Deli?.Invoke(this,eventAnnouncer);
+step 5 , create subscribers methods which match the delegate signature
+step 6  subscribe shop.Deli += SMSService.sms; shop.Deli += EmailService.email;
+step 7 fire event shop.SaleAnnounce(EventAnnouncer); 
+===========================
+example event without delegate
+=========================
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+namespace demo
+{
+    //public delegate void EventDelegate (object sender, EventAnnouncer e);
+    // data class container
+    public class EventAnnouncer : EventArgs //step 1
+    {
+        public string Title { get; set; }
+        public int Discount { get; set; }
+
+        public EventAnnouncer(string title, int discount)
+        {
+            this.Discount = discount;
+            this.Title = title;
+        }
+    }
+    // publisher + event raiser / invoker
+    public class Shop
+    {
+       //public event EventDelegate Deli;
+        public event EventHandler<EventAnnouncer> deli2; // step 2 
+        //public delegate void EventDelegate(object sender, EventAnnouncer e);
+        //back per yeah delegate khud bana leta hai
+        //or under the hood complier khud add_deli2(handler),public void remove_deli2(handler)
+        // add ker deta hai subscribe and unsubribe kerney ke lye  
+
+
+        public void SaleAnnounce(EventAnnouncer eventAnnouncer)
+        {
+           
+            Console.WriteLine(eventAnnouncer.Title);
+            Console.WriteLine(eventAnnouncer.Discount);
+            Console.WriteLine("sale is on ");
+            deli2?.Invoke(this,eventAnnouncer);
+        }
+        
+        
+    }
+    
+
+    public class SMSService // step 3  subscrber methods 
+    {
+        public void sms(object sender , EventAnnouncer eventAnnouncer)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+    public class EmailService
+    {
+        public void email(object sender , EventAnnouncer eventAnnouncer) { Console.WriteLine("email sent"); }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            EventAnnouncer EventAnnouncer = new EventAnnouncer("Disounct Sale", 40);
+            SMSService SMSService = new SMSService();
+            EmailService EmailService = new EmailService();
+            Shop shop = new Shop();
+            shop.deli2 += SMSService.sms; //step 4 subscribe
+            shop.deli2 += EmailService.email;
+            shop.SaleAnnounce(EventAnnouncer); // after subscribe fire the event if you
+            // use this before subscribers += then your event shows null , 
+            Console.ReadKey();
+
+
+        }
+    }
+
+
+}
+=================================
+1.event class inherted by events args
+2.publisher + event raiser / invoker
+2. subsciber class, method
+3. all in main
+
+===========please look below example with built in event=======
+
+using System.Runtime.CompilerServices;
+
+namespace EventDemo
+{
+    // step 1 create event rasier class for data collection
+    // delegate creation if you dont want to use builtin delegete
+    //public delegate void EventHandlerCustom(Object sender, EventAnnoucer eventAnnouncer);
+    public class EventAnnoucer : EventArgs
+    {
+        public string Title { get; set; }
+        public string Discount { get; set; }
+
+        public EventAnnoucer(string title, string discount)
+        {
+            Title = title;
+            Discount = discount;
+        }
+    }
+
+    // step 2 Publisher Class and Event Invoker  
+    public class Shop
+    {
+        // now you have two options use built in event or declare delagte in name space 
+        // step 2 
+        public event EventHandler<EventAnnoucer> AnnounceSale; // this is built in no need to declare delegate
+        // please note event will invoke in method 
+        // or if you want to use your own custome delegate 
+        //public event EventHandlerCustom CustomAnnounceSale;
+
+        // step 3 create method for event invoke
+        public void AnnounceSaleMethod(Object sender , EventAnnoucer eventAnnouncer)
+        {
+            Console.WriteLine($"{eventAnnouncer.Title} and {eventAnnouncer.Discount}");
+            AnnounceSale.Invoke( sender , eventAnnouncer );
+            //AnnounceSale(sender, eventAnnouncer); both ways you can use invoke or this way
+        }
+    }
+
+    // step 4 , create subscriber classes and their methods 
+    public class SendEmailService
+    {
+        public void SendEmail(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("Email Sent");
+        }    
+    }
+
+    public class SendSmsService 
+    {
+        public void SendSMS(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // step 5 calling  and subscribing
+            // please note you can subscribe first and then fire the event
+            EventAnnoucer e = new EventAnnoucer("Our Sale is Started","30% discount");
+            SendEmailService emailService = new SendEmailService();
+            SendSmsService smsService = new SendSmsService();
+            // please note you have to subscribe first other wise your event will be null
+
+            Shop shop = new Shop();
+            shop.AnnounceSale += emailService.SendEmail;
+            shop.AnnounceSale += smsService.SendSMS;
+
+            // step 6 , this method has event Invoke so in last you run this method as signal
+            // that sale is strated
+            shop.AnnounceSaleMethod(shop,e);
+            
+        }
+    }
+}
+
+===================================================
+please look below example with custom event and delegate
+==================================================
+using System.Runtime.CompilerServices;
+
+namespace EventDemo
+{
+    // step 1 create event rasier class for data collection
+    // delegate creation if you dont want to use builtin delegete
+    public delegate void EventHandlerCustom(Object sender, EventAnnoucer eventAnnouncer);
+    public class EventAnnoucer : EventArgs
+    {
+        public string Title { get; set; }
+        public string Discount { get; set; }
+
+        public EventAnnoucer(string title, string discount)
+        {
+            Title = title;
+            Discount = discount;
+        }
+    }
+
+    // step 2 Publisher Class and Event Invoker  
+    public class Shop
+    {
+        // now you have two options use built in event or declare delagte in name space 
+        // step 2 
+        //public event EventHandler<EventAnnoucer> AnnounceSale; // this is built in no need to declare delegate
+        // please note event will invoke in method 
+        // or if you want to use your own custome delegate 
+        public event EventHandlerCustom CustomAnnounceSale;
+
+        // step 3 create method for event invoke
+        public void AnnounceSaleMethod(Object sender , EventAnnoucer eventAnnouncer)
+        {
+            Console.WriteLine($"{eventAnnouncer.Title} and {eventAnnouncer.Discount}");
+            //AnnounceSale.Invoke( sender , eventAnnouncer );
+            CustomAnnounceSale.Invoke( sender , eventAnnouncer );
+            //AnnounceSale(sender, eventAnnouncer); both ways you can use invoke or this way
+        }
+    }
+
+    // step 4 , create subscriber classes and their methods 
+    public class SendEmailService
+    {
+        public void SendEmail(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("Email Sent");
+        }    
+    }
+
+    public class SendSmsService 
+    {
+        public void SendSMS(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // step 5 calling  and subscribing
+            // please note you can subscribe first and then fire the event
+            EventAnnoucer e = new EventAnnoucer("Our Sale is Started","30% discount");
+            SendEmailService emailService = new SendEmailService();
+            SendSmsService smsService = new SendSmsService();
+            // please note you have to subscribe first other wise your event will be null
+
+            Shop shop = new Shop();
+            //shop.AnnounceSale += emailService.SendEmail;
+            //shop.AnnounceSale += smsService.SendSMS;
+            shop.CustomAnnounceSale += emailService.SendEmail;
+            shop.CustomAnnounceSale += smsService.SendSMS;
+
+
+            // step 6 , this method has event Invoke so in last you run this method as signal
+            // that sale is strated
+            shop.AnnounceSaleMethod(shop,e);
+            
+        }
+    }
+}
+
+Best Example for events and Delegates my own created
+=======================================================
+using System.Runtime.CompilerServices;
+
+namespace EventDemo
+{
+    // step 1 create event rasier class for data collection
+    // delegate creation if you dont want to use builtin delegete
+    public delegate void EventHandlerDelegateCustom(Object sender, EventAnnoucer eventAnnouncer);
+    public class EventAnnoucer : EventArgs
+    {
+        public string Title { get; set; }
+        public string Discount { get; set; }
+
+        public EventAnnoucer(string title, string discount)
+        {
+            Title = title;
+            Discount = discount;
+        }
+    }
+
+    // step 2 Publisher Class and Event Invoker  
+    public class Shop
+    {
+        // now you have two options use built in event or declare delagte in name space 
+        // step 2 
+        //public event EventHandler<EventAnnoucer> AnnounceSale; // this is built in no need to declare delegate
+        // please note event will invoke in method 
+        // or if you want to use your own custome delegate 
+        // event only holds EventHandlerDelegateCustom , delegate with signture and return type which is 
+        // (Object sender, EventAnnoucer eventAnnouncer) signature , we can use same signture with subscriber methods
+        public event EventHandlerDelegateCustom CustomAnnounceSale;
+
+        // step 3 create method for event invoke
+        public void AnnounceSaleMethod(Object sender , EventAnnoucer eventAnnouncer)
+        {
+            Console.WriteLine($"{eventAnnouncer.Title} and {eventAnnouncer.Discount}");
+            //AnnounceSale.Invoke( sender , eventAnnouncer );
+            CustomAnnounceSale.Invoke( sender , eventAnnouncer );
+            //AnnounceSale(sender, eventAnnouncer); both ways you can use invoke or this way
+        }
+    }
+
+    // step 4 , create subscriber classes and their methods 
+    public class SendEmailService
+    {
+        public void SendEmail(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("Email Sent");
+        }    
+    }
+
+    public class SendSmsService 
+    {
+        public void SendSMS(Object sender, EventAnnoucer e)
+        {
+            Console.WriteLine("SMS Sent");
+        }
+    }
+
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // step 5 calling  and subscribing
+            // please note you can subscribe first and then fire the event
+            EventAnnoucer e = new EventAnnoucer("Our Sale is Started","30% discount");
+            SendEmailService emailService = new SendEmailService();
+            SendSmsService smsService = new SendSmsService();
+            // please note you have to subscribe first other wise your event will be null
+
+            Shop shop = new Shop();
+            //shop.AnnounceSale += emailService.SendEmail;
+            //shop.AnnounceSale += smsService.SendSMS;
+            // complier use add or delete method to subscribe or unsubribe in events builtin c# methods
+            shop.CustomAnnounceSale += emailService.SendEmail;
+            shop.CustomAnnounceSale += smsService.SendSMS;
+
+            // step 6 , this method has event Invoke so in last you run this method as signal
+            // that sale is strated
+            shop.AnnounceSaleMethod(shop,e);
+
+            // you can also fire the delegate for this purpose
+            // this is ot safe , every one can use this , this is for informatroy purpose
+            //EventHandlerCustom eventHandlerCustom = emailService.SendEmail; // we also fire email here
+            //eventHandlerCustom += smsService.SendSMS;
+            // eventHandlerCustom += emailService.SendEmail;
+            // fire the delegete 
+
+            //eventHandlerCustom(shop,e);
+        }
+    }
+}
+==========================================END DELGETES AND EVENTS Thanks God========================
+================================Delgate Desin End============= now code change per ja rehe hain isko refactor kerein gey or delegates per change kerein gey
+Perfect. Ab maza aayega.
+
+Hum tumhare hi code ko
+👉 Direct calls → Delegate → Event → Pub/Sub
+mein refactor karenge.
+
+Rule: Step-by-step.
+Har step ka reason + change clear.
+
+🧱 STEP 0 — Current Situation (baseline)
+
+Abhi:
+
+Order → NotificationService.SendSMS()
+Order → NotificationService.SendEmail()
+
+Problem:
+
+❌ Tight coupling
+❌ Order ko pata hai Email + SMS
+❌ Future change = Order modify
+
+Goal:
+
+✅ Order sirf announce kare → “OrderPlaced”
+
+🧱 STEP 1 — Delegate introduce karte hain
+🎯 Reason
+
+Order ko yeh nahi pata hona chahiye:
+
+Email kaun bhej raha
+
+SMS kaun bhej raha
+
+Order sirf bole:
+
+👉 “Agar koi interested hai → call ho jao”
+
+Yahan delegate ka entry point.
+
+✅ Change #1 — Delegate type
+
+Program ke andar define karo:
+
+delegate void OrderPlacedHandler(string message);
+
+Meaning:
+
+👉 “Jo bhi handler hoga, string lega”
+
+✅ Change #2 — OrderService publish karega
+
+OrderService:
+
+public OrderPlacedHandler OnOrderPlaced;
+
+Aur:
+
+OnOrderPlaced?.Invoke("Order Confirmed");
+
+Meaning:
+
+👉 “Agar koi subscribed hai → callback call”
+
+🧠 Yahan kya hua?
+
+Delegate = function slot
+Invoke = callback execution
+
+🧱 STEP 2 — NotificationService subscriber banega
+🎯 Reason
+
+Ab NotificationService ko OrderService call nahi karega.
+
+Instead:
+
+👉 NotificationService bolega
+“OrderPlaced pe mujhe bula lena”
+
+✅ Change
+
+Wiring Main() mein hogi:
+
+orderService.OnOrderPlaced += notificationService.SendSMS;
+orderService.OnOrderPlaced += notificationService.SendEmail;
+🧠 Mental Model
+
+OrderService = Publisher
+NotificationService = Subscriber
+Delegate = Callback contract
+
+🧱 STEP 3 — Ab problem detect karo 🚨
+
+Abhi delegate public field hai:
+
+❌ Koi bhi overwrite kar sakta hai
+❌ Koi null kar sakta hai
+❌ Dangerous
+
+Solution?
+
+👉 Event
+
+🧱 STEP 4 — Delegate → Event conversion
+🎯 Reason
+
+Event = Safe delegate
+
+Protection:
+
+✅ Bahar wala sirf += / -=
+❌ Bahar wala invoke nahi
+❌ Bahar wala overwrite nahi
+
+✅ Change
+public event OrderPlacedHandler OnOrderPlaced;
+
+बाकी same.
+
+🧠 Ab system ka shape
+Publisher  → OrderService
+Event      → OnOrderPlaced
+Subscribers→ Email + SMS
+Callback   → Send methods
+🧱 STEP 5 — Proper Publisher / Subscriber model
+
+Ab flow:
+
+1️⃣ Order placed
+2️⃣ OrderService raises event
+3️⃣ Unknown listeners react
+4️⃣ OrderService ko ilm nahi kaun sun raha
+
+🔥 Loose coupling achieved
+
+📡 FINAL ARCHITECTURE (conceptual)
+Order → OrderService.PlaceOrder()
+
+
+OrderService:
+   └── OnOrderPlaced EVENT
+
+
+Subscribers:
+   ├── EmailService
+   ├── SmsService
+   └── Future services
+⚠️ IMPORTANT INSIGHT
+
+Delegate use kiya kyun?
+
+👉 Behavior inject karne ke liye
+
+Event use kiya kyun?
+
+👉 Delegate ko safe banane ke liye
+
+Pub/Sub use kiya kyun?
+
+👉 Unlimited reactions + loose coupling
+
+Callback kya tha?
+
+👉 SendEmail / SendSMS methods
+
+🔥 Next Move (best learning for YOU)
+
+Ab main code nahi likhunga.
+
+👉 Tum khud likho:
+
+✅ Delegate version
+phir
+✅ Event version
+
+✍️ Task
+
+Refactor your example so that:
+
+OrderService event raise kare
+
+NotificationService subscribe kare
+
+Order class direct SendXXX call na kare
+
+Jab likh lo:
+
+👉 Code bhejo
+👉 Main line-by-line review karunga
+👉 Sirf design pe, syntax pe nahi
+
+Ready? 😄💪
+=================================================== 
+conole app for delgates and events importnat
+==============================================
+using System;
+using static delegateDemo.Program;
+
+namespace delegateDemo
+{
+    class Program
+    {
+        // Delegate defines method signature for notifications
+        public delegate void OrderPlacedHandler(string message);
+
+        // Notification contract
+        interface INotification
+        {
+            void SendEmail(string message);
+            void SendSMS(string message);
+        }
+
+        // Order contract
+        interface IOrder
+        {
+            void OrderPlaced();
+        }
+
+        // Order processing service
+        class OrderService : IOrder
+        {
+            public void OrderPlaced()
+            {
+                Console.WriteLine("Order successfully placed.");
+            }
+        }
+
+        // Notification service
+        class NotificationService : INotification
+        {
+            public void SendEmail(string message)
+            {
+                Console.WriteLine("Email: " + message);
+            }
+
+            public void SendSMS(string message)
+            {
+                Console.WriteLine("SMS: " + message);
+            }
+        }
+
+        // Publisher class
+        class Order
+        {
+            
+            // Event based on delegate (recommended over raw delegate)
+            public event OrderPlacedHandler OnOrderPlaced; // Prevents outside classes from invoking the delegate ,Only allows subscription/unsubscription
+            // like this
+            // order.OnOrderPlaced += notificationService.SendSMS;
+            //order.OnOrderPlaced += notificationService.SendEmail;
+            // only notificationService class has right to use it 
+            //IOrder _orderService = new OrderService();
+            private readonly IOrder _orderServce;  //DI
+            public Order(IOrder orderServce)
+            {
+                _orderServce = orderServce;
+            }
+            public void PlaceOrder()
+            {
+                // Business logic
+                _orderServce.OrderPlaced();
+
+                // Notify subscribers (safe invocation)
+                OnOrderPlaced?.Invoke("Order confirmation notification sent.");
+                //Calls all subscribed handlers
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            // Create services
+            NotificationService notificationService = new NotificationService();
+           IOrder orderservice = new OrderService(); // DI
+
+            // Create order (publisher)
+            Order order = new Order(orderservice);
+
+            // Subscribe notification methods to event
+            order.OnOrderPlaced += notificationService.SendSMS;
+            order.OnOrderPlaced += notificationService.SendEmail;
+
+            // Execute action
+            order.PlaceOrder();
+            Console.ReadLine();
+        }
+    }
+}
+
+//Why Use event Instead of Public Delegate?
+//If you declare:
+//public OrderPlacedHandler OnOrderPlaced;
+//Other classes could:
+//Overwrite it
+//Invoke it
+//Break encapsulation
+//Using event protects it.
+==========================================END DELGATES AND EVENTS=================================================
+
+================================================
+FUNC , ACTION , PREDICATE BUILT IN DELGATES FOR LINQ
+=============================================================
+Great question — this is exactly how to understand why Func<> exists.
+
+You asked:
+
+Func se pehle kya use karte thay? Func ne kaunsi problem solve ki?
+Show console app without Func and with Func
+
+Let’s go step by step 👇
+
+🧠 What is Func<>?
+
+Func<> is a generic built-in delegate.
+
+It represents a method that:
+
+✔ Returns a value
+✔ Can take 0…16 parameters
+
+Example:
+
+Func<int, int, int> add = (a, b) => a + b;
+
+Meaning:
+
+Func<T1, T2, TResult>
+
+⏳ Before Func<> existed…
+
+Developers had to create manual custom delegates every time.
+
+Example 👇
+
+❌ WITHOUT Func (Old Style)
+using System;
+
+
+namespace WithoutFuncDemo
+{
+    class Program
+    {
+        // Custom delegate (manual work 😓)
+        public delegate int MathOperation(int a, int b);
+
+
+        static int Add(int x, int y)
+        {
+            return x + y;
+        }
+
+
+        static int Multiply(int x, int y)
+        {
+            return x * y;
+        }
+
+
+        static void ExecuteOperation(int a, int b, MathOperation operation)
+        {
+            int result = operation(a, b);
+            Console.WriteLine("Result: " + result);
+        }
+
+
+        static void Main(string[] args)
+        {
+            ExecuteOperation(5, 3, Add);
+            ExecuteOperation(5, 3, Multiply);
+
+
+            Console.ReadLine();
+        }
+    }
+}
+😓 Problems WITHOUT Func
+
+1️⃣ Need to declare delegate manually
+2️⃣ Extra boilerplate code
+3️⃣ Duplicate delegates everywhere
+4️⃣ Harder to read
+5️⃣ Not flexible with generics
+
+Imagine writing:
+
+delegate string MyStringDelegate(string name);
+delegate bool MyFilterDelegate(int age);
+delegate decimal PriceCalculator(decimal price);
+
+Too much clutter 😵‍💫
+
+✅ WITH Func (Modern Style)
+
+Same logic using Func<>
+
+using System;
+
+
+namespace WithFuncDemo
+{
+    class Program
+    {
+        static int Add(int x, int y)
+        {
+            return x + y;
+        }
+
+
+        static int Multiply(int x, int y)
+        {
+            return x * y;
+        }
+
+
+        // Func<int, int, int>
+        // Takes 2 ints → Returns int
+        static void ExecuteOperation(int a, int b, Func<int, int, int> operation)
+        {
+            int result = operation(a, b);
+            Console.WriteLine("Result: " + result);
+        }
+
+
+        static void Main(string[] args)
+        {
+            ExecuteOperation(5, 3, Add);
+            ExecuteOperation(5, 3, Multiply);
+
+
+            // Lambda expression 🚀
+            ExecuteOperation(5, 3, (x, y) => x - y);
+
+
+            Console.ReadLine();
+        }
+    }
+}
+🎯 What Problem Did Func Solve?
+
+✔ Removed need for custom delegates
+✔ Generic & reusable
+✔ Cleaner code
+✔ Better readability
+✔ Perfect for LINQ
+✔ Works beautifully with lambdas
+
+🔥 Biggest Advantage
+
+Without Func:
+
+public delegate int MathOperation(int a, int b);
+
+With Func:
+
+Func<int, int, int>
+
+No custom delegate needed ✅
+
+📌 Func vs Custom Delegate
+Feature	Custom Delegate	Func<>
+Manual Declaration	❌ Required	✅ Not needed
+Generic	❌ Extra work	✅ Built-in
+Boilerplate	❌ More	✅ Minimal
+Lambda Friendly	😐	🚀 Excellent
+🧪 Real Mental Model
+
+Think:
+
+👉 Delegate = “Method Shape”
+👉 Func = “Ready-made Delegate Shape”
+
+✅ Next (as you requested)
+
+If you want, I’ll now explain:
+
+✔ Action<> (no return)
+✔ Predicate<> (returns bool)
+✔ Real filtering examples
+✔ LINQ relation
+
+Just say:
+👉 “Explain Action & Predicate” 👍
+===========================
+Delegate used with events 
+==========================
+Delegate = Holds Functions
+Events = Hold Delegate
+Delegate = Method reference holder
+Multicast Delegate = Multiple methods list
+Event = Controlled multicast delegate
+======
+Delegate = “Do this work”
+Event = “This happened”
+✔ Delegates for decision / logic
+✔ Events for state change / notification
+======
+Best Real-Life Event Examples
+✔ Button clicked
+✔ File downloaded
+✔ Order placed
+✔ Payment failed
+✔ Message received
+✔ Connection lost
+✔ Data validated
+✔ HL7 message arrived 👈 (tumhara MLLP case)
+==========================
+using System;
+
+namespace EventDemoCustomDelegate
+{
+    // Custom Event Data
+    public class SaleEventArgs : EventArgs
+    {
+        public string SaleName { get; }
+        public int DiscountPercentage { get; }
+
+        public SaleEventArgs(string saleName, int discountPercentage)
+        {
+            SaleName = saleName;
+            DiscountPercentage = discountPercentage;
+        }
+    }
+
+    // ✅ Step 1: Custom Delegate
+    public delegate void SaleAnnouncedHandler(Object sender,SaleEventArgs e);
+
+    // Publisher (Shop)
+    public class Shop
+    {
+        // ✅ Step 2: Event using custom delegate
+        public event SaleAnnouncedHandler SaleAnnounced;
+
+        public void AnnounceSale(string saleName, int discount)
+        {
+            Console.WriteLine($"\n📢 Sale Announced: {saleName} - {discount}% OFF");
+
+            // Raise Event
+            OnSaleAnnounced(new SaleEventArgs(saleName, discount));
+        }
+
+        protected virtual void OnSaleAnnounced(SaleEventArgs e)
+        {
+            SaleAnnounced?.Invoke(this, e);
+        }
+    }
+
+    // Subscriber 1 (SMS Service)
+    public class SmsService
+    {
+        public void HandleSaleAnnounced(object sender, SaleEventArgs e)
+        {
+            Console.WriteLine($"📱 SMS Sent: {e.SaleName} - {e.DiscountPercentage}% OFF");
+        }
+    }
+
+    // Subscriber 2 (Email Service)
+    public class EmailService
+    {
+        public void HandleSaleAnnounced(object sender, SaleEventArgs e)
+        {
+            Console.WriteLine($"📧 Email Sent: {e.SaleName} - {e.DiscountPercentage}% OFF");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var shop = new Shop();
+            var smsService = new SmsService();
+            var emailService = new EmailService();
+
+            // ✅ Subscribe
+            shop.SaleAnnounced += smsService.HandleSaleAnnounced;
+            shop.SaleAnnounced += emailService.HandleSaleAnnounced;
+
+            // Trigger Event
+            shop.AnnounceSale("Mega Winter Sale", 40);
+
+            Console.WriteLine("\n✅ Notifications completed.");
+            Console.ReadLine();
+        }
+    }
+}
+=================================================================
+delegates kwon use hotey hain , why in ki zarrort kwon hoti hai 
+=================================================================
+flexbilty ke lye 
+methods ko as varables use kerney ke lye , like int , string , double etc
+methods key under parameter ke taur per use kereny ke lye 
+swithc  ya if then else main use kerney ke lye if(op==+) then
+==========================================
+using System.Collections.Generic;
+
+namespace MulticastDelegateDemo
+{
+    delegate int Operation(int a, int b);
+
+    class Program
+    {
+
+        static void Main(string[] args)
+        {
+            // simple way to use methods
+            Console.WriteLine(add(1, 2));
+            Console.WriteLine(sub(4, 1));
+            Console.WriteLine(mul(5, 2));
+            // delegate and multicast delegate
+            Operation op = add;
+            Operation op2 = sub;
+
+            // ✔ Sab methods execute honge
+            //  ✔ Lekin return value = last method ka
+            // agar return void ho tu bi sab chelin gey
+            // afar main ne is main publisher , subsber model wali logic likhi hai 
+            // tu wo chal jaye gi for example sms sent , and email sent in belwo
+            op += sub; // sms
+            op += mul; // email
+            op += add; // anyNotifiaction run ho jaye gi jab bi op delegate run ho ga
+            //output
+            //add(10, 5) → 15
+            //sub(10, 5) → 5
+            //mul(10, 5) → 50
+            var result = op(1, 4); // now op
+            result = op2(5, 1);
+            Console.WriteLine(result);
+            // delegate used as method parameter Importnat
+            Process(1, 3, add); // dynamic and run times decision 
+            Process(1, 3, sub);
+        }
+
+        static int add(int a, int b)
+        {
+            return a + b;
+        }
+        static int sub(int a, int b)
+        {
+            return a - b;
+        }
+        static int mul(int a, int b)
+        {
+            return a * b;
+        }
+        static void Process (int a, int b, Operation op)
+        {
+
+            Console.WriteLine(op(a,b));
+        }
+    }
+
+}
+====================================================================
+Delegate driect use ho sakta hai , uski example
+Delegate Version — External Invoke Allowed (Unsafe)
+===================================================================
+using System;
+
+namespace DelegateVsEventDemo
+{
+    // Delegate
+    public delegate int Operation(int a, int b);
+
+    class Calculator
+    {
+        // ⚠️ Public delegate (unsafe design)
+        public Operation op;
+
+        public void DoCalculation(int a, int b)
+        {
+            if (op != null)
+            {
+                int result = op(a, b);
+                Console.WriteLine($"Inside Calculator: {result}");
+            }
+        }
+    }
+
+    class Program
+    {
+        static int Add(int a, int b)
+        {
+            Console.WriteLine("Add method executed");
+            return a + b;
+        }
+
+        static void Main()
+        {
+            var calc = new Calculator();
+
+            // Assign delegate
+            calc.op = Add;
+
+            // ✅ Normal usage
+            calc.DoCalculation(1, 2);
+
+            // ❌ External direct invoke (problem!)
+            int result = calc.op(5, 3);
+
+            Console.WriteLine($"Direct invoke from Main: {result}");
+
+            Console.ReadLine();
+        }
+    }
+}
+============================================================
+Event Version — External Invoke BLOCKED (Safe)
+============================================================
+using System;
+
+namespace DelegateVsEventDemo
+{
+    public delegate int Operation(int a, int b);
+
+    class Calculator
+    {
+        // ✅ Event (controlled delegate)
+        public event Operation CalculationDone; // hi jack the Opertion delegate , event is wrapper to delegate
+
+        public void DoCalculation(int a, int b)
+        {
+            if (CalculationDone != null)
+            {
+                int result = CalculationDone(a, b);
+                Console.WriteLine($"Inside Calculator: {result}");
+            }
+        }
+    }
+
+    class Program
+    {
+        static int Add(int a, int b)
+        {
+            Console.WriteLine("Add method executed");
+            return a + b;
+        }
+
+        static void Main()
+        {
+            var calc = new Calculator();
+
+            // ✅ Subscribe allowed
+            calc.CalculationDone += Add;
+
+            calc.DoCalculation(2, 3);
+
+            // ❌ NOT allowed — compile-time error
+           // calc.CalculationDone(5, 3);
+            //error The event 'CalculationDone' can only appear on the left hand side of += or -=
+
+            Console.ReadLine();
+        }
+    }
+}
+
+=======================================================
+explanantions , events , vs delegate important
+
+✅ Better Rule
+✔ Delegate → Namespace or Type level
+✔ Event → Only Type level can only be used in class , struct or interface level
+===========================================================
+Delegate vs Event — Short & Simple
+🟢 Delegate
+
+Method reference holder hota hai
+
+Tum:
+
+✔ = se assign kar sakte ho
+✔ Direct invoke kar sakte ho
+
+calc.op = Add;
+calc.op(1, 2);   // ✅ allowed
+
+⚠ Issue:
+👉 Koi bhi external code delegate ko invoke kar sakta hai
+
+🔵 Event
+
+Delegate hi hota hai, lekin controlled
+
+Tum:
+
+✔ += se subscribe
+✔ -= se unsubscribe
+
+❌ = se assign nahi
+❌ Direct invoke nahi
+
+calc.CalculationDone += Add;
+calc.CalculationDone(1, 2);  // ❌ NOT allowed
+
+✔ Sirf class ke andar:
+
+CalculationDone?.Invoke(...)
+
+=======================
+lekin is case main jis main paraerts hon , ya return type ho tu multicast last result show kerta hai 
+method sarey cahala deta hai , lekin issue atey hain
+=======================
+namespace demodelagate
+{
+    delegate void ShopHandler(string message);
+    class Shop
+    {
+       
+        public void SendSms(string message)
+        {
+            Console.WriteLine(message);
+        }
+        public void SendEmail(string message)
+        {
+            Console.WriteLine(message);
+        }
+        public void SendWhatsApp(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Shop shop = new Shop();
+            ShopHandler handlerSms =  shop.SendEmail;
+            handlerSms("send email");
+
+            ShopHandler handlerSMS = shop.SendSms;
+            handlerSms("send sms");
+
+            ShopHandler handlerWhatsApp = shop.SendWhatsApp;
+            handlerSms("whats app sent");
+
+            //handler += shop.SendSms;
+            //handler += shop.SendWhatsApp;
+
+            //// call 
+
+            //handler("send sms");
+            
+        }
+    }
+}
+
+=================================================================
+agar sarey method main parameter na oon tu delegate mlti cast chal jata hai 
+=================================================================
+namespace demodelagate
+{
+    delegate void ShopHandler();
+    class Shop
+    {
+       
+        public void SendSms()
+        {
+            Console.WriteLine("sent sms");
+        }
+        public void SendEmail()
+        {
+            Console.WriteLine("send emil");
+        }
+        public void SendWhatsApp()
+        {
+            Console.WriteLine("send whatsapp");
+        }
+
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Shop shop = new Shop();
+            ShopHandler handler =  shop.SendEmail;
+            handler += shop.SendSms;
+            handler += shop.SendWhatsApp;
+
+            //// call 
+
+            handler();
+            
+        }
+    }
+}
+==========================
+// ✅ Event declaration (uses generic EventHandler delegate)
+public event EventHandler<Tevents> SaleStarted;
+
+// back ground main event yeah delegate use ker raha hota hai 
+
+// ✅ Delegate definition (simplified, correct form)
+public delegate void EventHandler<TEventArgs>(object sender, TEventArgs e);
+===========================
+hamra case
+==================
+public event SaleEventHandler SaleStarted;
+public delegate void SaleEventHandler(object sender, SaleEventAnnouncement info);
+==================
+Thinking Process (Without Code)
+
+Chalo bilkul basic level pe sochte hain 👇
+
+🧾 Problem Statement
+
+Ek Shop sale announce karti hai.
+
+Jab sale announce hoti hai:
+
+Customers ko SMS jaye
+
+Customers ko Email jaye
+
+Future me WhatsApp bhi ja sakta hai
+
+Hum chahte hain:
+
+👉 Shop ko pata na ho kaun-kaun notifications bhej raha hai
+👉 Services automatically react karein
+
+🎯 Step 1: Identify Roles
+🏪 Publisher (Event raise karega)
+
+Shop
+
+Kyun?
+
+✔ Action yahin se start ho raha hai
+✔ Sale announce karne wali entity
+
+📱📧 Subscribers (React karenge)
+
+SMS Service
+Email Service
+WhatsApp Service (optional)
+
+Kyun?
+
+✔ Ye wait karte hain kisi signal ka
+✔ Shop announce kare → Ye message bhejein
+
+🎯 Step 2: Event ki Need Kyun?
+
+Socho:
+
+❌ Shop manually call kare:
+
+SendSms()
+
+SendEmail()
+
+Tight coupling 😬
+
+✔ Event use kare:
+👉 “Sale hui hai — jo interested hai react kare”
+
+Loose coupling ✅
+
+🎯 Step 3: Data Kya Pass Karna Hai?
+
+Subscribers ko kya info chahiye?
+
+✔ Sale ka naam
+✔ Discount percentage
+
+👉 Isliye Event Data Class
+
+Example conceptually:
+
+SaleEventAnnouncement
+
+Meaning:
+
+📦 “Ye box sale ki details carry karega”
+
+🎯 Step 4: Communication Flow
+
+1️⃣ Shop sale announce kare
+2️⃣ Shop signal fire kare (event)
+3️⃣ Subscribers ko signal mile
+4️⃣ Har subscriber apna kaam kare
+
+🎯 Step 5: Main Method ka Role
+
+Main method:
+
+✔ Objects create kare
+✔ Subscribers attach kare
+✔ Sale trigger kare
+
+👉 Ye wiring area hai
+
+🔄 Dry Flow (Execution Order)
+
+1️⃣ App start
+2️⃣ Shop object banega
+3️⃣ SMS / Email objects banenge
+4️⃣ Subscribers Shop ke event se attach honge
+5️⃣ Shop sale announce karegi
+6️⃣ Event fire hoga
+7️⃣ Sab subscribers react karenge
+
+🧠 Mental Model (Very Important)
+
+Think like:
+
+📢 Shop = Announcement Speaker
+👂 Services = Listeners
+📦 Event Data = Announcement Details
+
+✅ Final Conceptual Summary
+
+✔ Publisher → Shop
+✔ Subscribers → SMS / Email / WhatsApp
+✔ Event → Signal mechanism
+✔ Event Data → Sale details carry kare
+✔ Main() → Wiring / Setup
+✔ Flow → Announce → Fire → React
+===========================
+Code
+===========================
+using System;
+
+namespace SimpleEventDemo
+{
+    // ✅ Step 1: Event Data (Easy Name)
+    // Ye class sirf data carry karegi (Sale info)
+    public class SaleEventAnnouncement : EventArgs
+    {
+        public string SaleTitle { get; }
+        public int Discount { get; }
+
+        public SaleEventAnnouncement(string saleTitle, int discount)
+        {
+            SaleTitle = saleTitle;
+            Discount = discount;
+        }
+    }
+
+    // ✅ Step 2: Delegate (Event ka shape define karta hai)
+    public delegate void SaleEventHandler(object sender, SaleEventAnnouncement info);
+
+    // ✅ Step 3: Publisher (Shop)
+    public class Shop
+    {
+        // Event declaration
+        public event SaleEventHandler SaleStarted;
+
+        public void StartSale()
+        {
+            Console.WriteLine("\n🏪 Shop: Sale is starting...");
+
+            // Event data create
+            SaleEventAnnouncement saleInfo =
+                new SaleEventAnnouncement("Winter Sale", 50);
+
+            // ✅ Event fire
+            SaleStarted?.Invoke(this, saleInfo);
+        }
+    }
+
+    // ✅ Step 4: Subscriber - SMS
+    public class SmsService
+    {
+        public void SendSms(object sender, SaleEventAnnouncement info)
+        {
+            Console.WriteLine($"📱 SMS: {info.SaleTitle} - {info.Discount}% OFF");
+        }
+    }
+
+    // ✅ Step 5: Subscriber - Email
+    public class EmailService
+    {
+        public void SendEmail(object sender, SaleEventAnnouncement info)
+        {
+            Console.WriteLine($"📧 Email: {info.SaleTitle} - {info.Discount}% OFF");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Objects create
+            Shop shop = new Shop();
+            SmsService sms = new SmsService();
+            EmailService email = new EmailService();
+
+            // ✅ Subscribe (Attach listeners)
+            shop.SaleStarted += sms.SendSms;
+            shop.SaleStarted += email.SendEmail;
+
+            // Sale start
+            shop.StartSale();
+
+            Console.ReadLine();
+        }
+    }
+}
+========================================================================================

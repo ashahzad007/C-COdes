@@ -363,4 +363,22 @@ DB down → user ko 503 + clear message
 Logging down → system runs, alerts fire
 
 External API slow → timeout + retry + circuit breaker
+
+
 =======================
+Integration portal steps how to add endpoint in 
+========================
+step 1 , repository addition in IEpicHL7Repository ,EpicHL7Repository , one repo interface and one repo service 
+step 2  class, request and response classes, step 2 Service interface IEpicHL7Service, 
+step 3 , create endpoint in controller and inject IEpicHL7Service and wrap them in request and response classes.
+========================
+Angular Side Step by Step 
+========================
+1 , define interface , define service, define TS file , define html mapping ,start and run , jo function load pe chalan ho 
+usko  ngOnInit(): void {
+    this.loadBusinesses();
+    this.setDefaultDates();
+    this.search();
+  }
+main de do 
+==================================
