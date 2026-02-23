@@ -87,6 +87,17 @@ Coupling	tighter	loose
 Usage	commands	events
 
 ============================================
+DOCKER Installation of Rabbi Mq Messaging
+==================================
+open windows power shell
+
+docker pull rabbitmq:3-management
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+docker ps  // check either its running 
+http://localhost:15672
+username and password 
+guest/guest
+=======================================
 code c# , consumer app, producer app , reference to class library
 dotnet add Consumer package MassTransit.RabbitMQ
 dotnet add Consumer package MassTransit
@@ -166,4 +177,172 @@ Console.WriteLine("Message sent!");
 
 Console.ReadLine();
 await bus.StopAsync();
-==================================
+==========================
+Docker Container Step by Step
+============================
+# Dockerized MassTransit + RabbitMQ Setup (Windows + Docker Desktop)
+
+## Prerequisites
+
+-   Docker Desktop installed & running
+-   .NET solution with:
+    -   Producer (console app)
+    -   Consumer (console app)
+    -   Contracts (class library)
+
+------------------------------------------------------------------------
+
+## 1. Run RabbitMQ (with Management UI)
+
+``` bash
+docker pull rabbitmq:3-management
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+
+Management UI: http://localhost:15672\
+guest / guest
+
+------------------------------------------------------------------------
+
+## 2. MassTransit Configuration
+
+### Producer & Consumer must use:
+
+``` csharp
+cfg.Host("rabbitmq");
+```
+
+------------------------------------------------------------------------
+
+## 3. Consumer Program.cs (Important)
+
+``` csharp
+await bus.StartAsync();
+Console.WriteLine("Listening...");
+await Task.Delay(Timeout.Infinite);
+```
+
+------------------------------------------------------------------------
+
+## 4. Producer Program.cs
+
+``` csharp
+await bus.StartAsync();
+
+Console.WriteLine("Enter message:");
+var text = Console.ReadLine();
+
+var endpoint = await bus.GetSendEndpoint(new Uri("queue:simple-queue"));
+await endpoint.Send(new Message { Text = text });
+
+Console.WriteLine("Message sent!");
+
+await bus.StopAsync();
+```
+
+------------------------------------------------------------------------
+
+## 5. Dockerfile (Producer)
+
+``` dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/runtime:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "Producer.dll"]
+```
+
+------------------------------------------------------------------------
+
+## 6. Dockerfile (Consumer)
+
+``` dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/runtime:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "Consumer.dll"]
+```
+
+------------------------------------------------------------------------
+
+## 7. Build Docker Images (Solution Root)
+
+``` bash
+docker build -t producer-image -f Producer/Dockerfile .
+docker build -t consumer-image -f Consumer/Dockerfile .
+```
+
+------------------------------------------------------------------------
+
+## 8. Create Shared Docker Network
+
+``` bash
+docker network create micro-net
+docker network connect micro-net rabbitmq
+```
+
+------------------------------------------------------------------------
+
+## 9. Run Consumer
+
+``` bash
+docker run -d --name consumer --network micro-net consumer-image
+```
+
+Check logs:
+
+``` bash
+docker logs -f consumer
+```
+
+------------------------------------------------------------------------
+
+## 10. Run Producer (Interactive)
+
+``` bash
+docker run -it --rm --name producer --network micro-net producer-image
+```
+
+------------------------------------------------------------------------
+
+## Common Fixes
+
+### Remove container name conflict:
+
+``` bash
+docker rm -f producer consumer
+```
+
+### Check all containers:
+
+``` bash
+docker ps -a
+```
+
+------------------------------------------------------------------------
+
+## Ports
+
+  Port    Purpose
+  ------- --------------------
+  5672    RabbitMQ Messaging
+  15672   RabbitMQ UI
+
+------------------------------------------------------------------------
+
+## Result
+
+Producer → Send message\
+Consumer → Receives message 🎉
+==============================
