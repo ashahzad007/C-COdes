@@ -18,3 +18,541 @@ SELECT * FROM sourceclient; -- for branches , AlertBusinessIntegrationId
 ------------join--------------------------------------------------------
 join intg_vstalertbusiness.Id = sourceclient.AlertBusinessIntegrationId
 ======================
+Log checking query
+=====================
+
+SELECT COUNT(1) FROM receivedhl7 h WHERE h.FacilityName = '10009' 
+AND h.CreatedDate >= '2026-02-24 00:00:00' ;
+
+
+SELECT UTC_TIMESTAMP();
+
+SELECT * FROM receivedhl7 h WHERE h.FacilityName = '10009' 
+AND h.CreatedDate BETWEEN '2026-02-24 00:00:00' and '2026-02-25 00:00:00';
+
+
+SELECT h.RawHL7Payload, h.CreatedDate, h.MessageControlId, h.FacilityName FROM receivedhl7 h WHERE h.FacilityName = '10009' 
+#AND h.CreatedDate >= '2026-02-24 00:00:00' 
+AND 
+h.RawHL7Payload LIKE '%304-01%' LIMIT 50;
+====================================================
+RAW QUERIES
+================
+call vstalertintg_uspGetHl7NotificationSettingDetails()
+SELECT * FROM plugin
+
+vstalertintg_hl7notificationsettings
+sourceclient
+vstalertintg_hl7messagetype
+SELECT * from hl7profilelookup , 2 coreporfile, 
+SELECT * from sourceclient , 5 test branch , 9 devbranch 
+SELECT * FROM  vstalertintg_hl7notificationsettings xl  WHERE  xl.facilityid = 5
+
+UPDATE vstalertintg_hl7notificationsettings 
+SET hl7profileid = 2 WHERE facilityid = 5
+
+SELECT * FROM hl7profilelookup
+
+SELECT * from sourceclient;
+SELECT * FROM intg_vstalertbusiness;
+
+
+call portal_uspGetBusinessEventSummaryDetailsByFacility(
+    32,
+    '2025-02-11',
+    '2026-02-26'
+);
+
+sourceclient
+SELECT * from intg_vstalertbusiness
+=============================
+NUC QURIES
+===============================
+//NUC DB Commands 
+SELECT * FROM sourceclientdevices x WHERE ISACTIVE  = 1 AND  x.DeviceSerialNumber like 'epicmllp4' 
+Basic2a0187f7-e400-4ddc-9715-d01cf9d58f3c:79de9c99-2aee-4d83-be62-13726811e988 // test
+Basic4145458b-b75a-4230-9994-6b1685d172c0:e4267d59-c92b-4d59-a1c1-8ec600dcaa8d // dev
+
+Basic0cf6e2c8-ef31-4db4-b46d-e4990e5f5c1d:5daec4e9-b097-427e-9fc1-7db8ff70562a
+
+
+SELECT * FROM plugin  
+//FOR PATH LOCAL path IS 
+C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic\dlls
+OLD PATH : /app/Plugins-NUC
+
+CALL `uspGetClientAllowedActionDetails`('2a0187f7-e400-4ddc-9715-d01cf9d58f3c') , getPressureTimer // test 
+CALL `uspGetClientAllowedActionDetails`('4145458b-b75a-4230-9994-6b1685d172c0') , getPressureTimer // dev
+
+
+CLIENT id = 4145458b-b75a-4230-9994-6b1685d172c0 // dev epicmllp4
+
+Please CREATE NEW ACTION for NUC plugin IN test ENV  
+actionid = getPressureTimer
+cleintid = 2a0187f7-e400-4ddc-9715-d01cf9d58f3c , 
+sensor : epicmllp4
+SP = uspGetClientAllowedActionDetails
+Thanks IN Advance
+
+dev CLIENT id = 4145458b-b75a-4230-9994-6b1685d172c0
+test CLIENT id = 2a0187f7-e400-4ddc-9715-d01cf9d58f3c
+
+
+adding action method which you create in NUC plugin CALL `uspGetClientAllowedActionDetails`('237a44c5-7fdd-4877-bb74-2d6c480a686d') 
+SELECT * from sourceclientdevices xlu WHERE xlu.DeviceSerialNumber IN ('Epicmllp4',
+'Epicmllp5') AND isactive =1  // FOR getting CLIENT id , which IS facilty id - 13 named VST-NUC
+
+SELECT * from sourceapiallowedpluginsandoperation  
+operationid is NUCEventService
+SOURCE cinetid = 13 
+
+SELECT *
+FROM sourceapiallowedpluginsandoperation
+WHERE actionid = 'getPressureTimer';
+
+//
+
+===========================
+RAW QUERIES
+==========================
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0);
+
+SELECT * from vstalertintg_hl7messagetype
+
+
+SELECT * from vstalertintg_hl7messagetype
+
+SELECT * from sourceclientdevicesauth
+
+
+SELECT * from vstalertintg_hl7notificationsettings
+SELECT * FROM  sourceclient
+
+
+SELECT * FROM eventsubscriptions
+uspInsertUpdateEventSubscription
+SELECT * from hl7profilelookup
+==============================
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus WHERE facilityname LIKE 'EPICMllp2'   ORDER BY 1 DESC LIMIT 5;
+
+
+SELECT * from eventsubscriptions
+
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC LIMIT 10;
+
+
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 10
+
+
+
+SELECT * FROM outgoinghl7messages k WHERE k.MessageControlId like 'b6f8efd8-645252515161778'
+eventsubscriptions
+ ORDER BY 1 DESC LIMIT 10
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC LIMIT 10;
+
+SELECT * from vstalertintg_hl7messagetype
+
+LIMIT 20;
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 ORDER BY 1 DESC LIMIT 20;
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 20;
+
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+
+
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 10
+
+
+
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 10;
+SELECT * from vstalertintg_hl7messagetype
+
+SELECT * FROM receivedhl7  s WHERE s.MessageControlId like 'b6f8efd8-645252515161778'
+
+SELECT * FROM inboundmessagestatus s WHERE s.FacilityName ='EPICMLLP2' ORDER BY 1 DESC LIMIT 5;
+
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0);
+SELECT * from vstalertintg_hl7messagetype
+
+SELECT * FROM outgoinghl7messages  ORDER BY 1 DESC LIMIT 10;
+CALL uspGetMessageControlIdsFromDate('2025-08-07 00:00:00');uspInsertUpdateExternalMessageStatus
+EXPLAIN inboundmessagestatus
+SELECT * FROM PLUGIN
+
+CALL uspInsertUpdateExternalMessageStatus(
+    'inbound', 
+    '21fda808-dbd0-458a-a339-c1a3aa67c89a118',
+    '0',             -- pIsJunk
+    'TestBranch',    -- pFacilityName
+    '1',             -- pIsSuccessfulExternally
+    'failhogyahai'   -- pExternalFailureReason
+);
+
+
+uspInsertUpdateExternalMessageStatus
+
+====
+uspInsertUpdateInternalMessageStatus
+
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 10;
+#SIU Messages
+SELECT * FROM siureceivedmessage ORDER BY 1 DESC LIMIT 100;
+SELECT * from vstalertintg_hl7notificationsettings
+SELECT * FROM sourceclient
+#SIU Messages
+SELECT * FROM siureceivedmessage ORDER BY 1 DESC LIMIT 100;
+
+SELECT * FROM plugin
+
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 5;
+SELECT * FROM  receivedhl7 ORDER BY 1 DESC LIMIT 10;
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 40
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 10
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC 
+LIMIT 20;
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 
+ORDER BY createddate DESC 
+LIMIT 5;
+
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 10;
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 10;
+
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+
+
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 2000;
+
+SELECT * FROM sourceclient WHERE facilitycode = "47600"
+
+EXPLAIN inboundmessagestatus
+SELECT * FROM sourceclient x WHERE x.FacilityCode= 300017
+SELECT * FROM businessfacility
+SELECT * FROM plugin
+
+SELECT * from vstalertintg_hl7messagetype
+
+SELECT * from sourceapiallowedpluginsandoperation
+call uspGetAllOutgoingHl7Configs
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0);
+SELECT * FROM outgoinghl7configs WHERE facilityid = 17
+SELECT * from sourceclient
+
+SELECT * from receivedhl7 ORDER BY 1 DESC LIMIT 10
+
+SELECT * FROM plugin
+SELECT * FROM sourceclient
+SELECT * FROM outgoinghl7configs
+
+SELECT * 
+FROM receivedhl7 
+ORDER BY 1 DESC 
+LIMIT 10;
+
+
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 20
+
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 5;
+
+SELECT * FROM receivedhl7 WHERE messagecontrolid='K3'
+
+SELECT DISTINCT Id, MessageControlId, FacilityName, CreatedDate
+FROM receivedhl7
+WHERE DATE(CreatedDate) >= '2025-08-01';
+
+SELECT * FROM receivedhl7
+CALL uspGetMessageControlIdsFromDate('2025-08-01');
+
+CALL uspGetMessageControlIdsFromDate('2024-01-01');
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 10;
+
+SELECT * FROM  receivedhl7 ORDER BY 1 DESC LIMIT 20;
+
+SELECT * FROM  outgoinghl7messages ORDER BY 1 DESC LIMIT 10;
+
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 40
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 40
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC 
+LIMIT 20;
+SELECT * FROM outboundmessagestatus
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 ORDER BY 1 limit 10 
+ORDER BY createddate DESC receivedhl7
+LIMIT 5;
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 10
+SELECT * FROM plugin
+
+call uspGetClientAllowedActionDetails ('25c574d0-1025-4819-901b-8baf010855f2')
+
+/app/Plugins-Epic
+C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic
+
+
+SELECT * FROM outboundmessagestatus s WHERE s.facilityname LIKE 'EPICMllp2' ORDER BY 1 DESC LIMIT 3
+
+SELECT * FROM inboundmessagestatus s WHERE s.facilityname  ORDER BY 1 DESC LIMIT 5
+
+SELECT * FROM sourceclientdevices xl WHERE xl.deviceserialnumber LIKE 'epicmllp5'
+
+7dd243f8-a041-490d-a02a-6a9537c0f389
+
+d3d6551b-0431-4a11-8de4-40ebdcbdb76b
+
+SELECT * from siureceivedmessage ORDER BY 1 DESC 
+
+
+CALL portal_uspGetBusinessEventSummaryDetailsByFacility(
+  0,
+  '2025-02-04 00:00:00',
+  '2026-02-11 00:00:00'
+);
+====================
+DH PLUGIN QURIE
+=====================
+SELECT * FROM intg_vstalertbusiness ; -- for business , Id
+SELECT * FROM sourceclient; -- for branches , AlertBusinessIntegrationId
+
+
+store procedures
+portal_uspGetBusiness_V1   --for business 
+uspGetBusinessEventSummary -- for data
+
+CALL portal_uspGetBusinessEventSummary(32,'2025-01-01','2026-02-09');
+=======================================
+CALL portal_uspGetBusinessEventSummary (32,'2025-01-01 04:27:39','2026-02-09 04:27:39');
+CALL `vstalertintg_uspGetHl7NotificationSettingDetails`('0')
+==================================
+FOR ANGULAR SHARIQ PORTAL REPORTS
+=================================
+SELECT * FROM intg_vstalertbusiness ; -- for business , Id
+SELECT * FROM sourceclient; -- for branches , AlertBusinessIntegrationId
+
+
+store procedures
+portal_uspGetBusiness_V1   --for business 
+uspGetBusinessEventSummary -- for data
+
+CALL portal_uspGetBusinessEventSummary(32,'2025-01-01','2026-02-09');
+=============================
+IMPORTANT COMMANDS
+-----------------------------
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus WHERE facilityname LIKE 'EPICMllp2'   ORDER BY 1 DESC LIMIT 5;
+
+SELECT * FROM plugin
+SELECT * FROM sourceclientapi
+SELECT * FROM sourceclientdevices
+SELECT * FROM 
+vstalertintg_hl7notificationsettings
+SELECT * from sourceclient
+SELECT * FROM vstalertintg_hl7messagetype
+
+UPDATE vstalertintg_hl7notificationsettings 
+SET hl7profileid = 2 WHERE facilityid = 5
+SELECT * from eventsubscriptions
+
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC LIMIT 10;
+
+
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 10
+C:\inetpub\wwwroot\dev-vstoperationsplugin.vstintegration.com\Plugins-Operations
+
+
+SELECT * FROM outgoinghl7messages k WHERE k.MessageControlId like 'b6f8efd8-645252515161778'
+eventsubscriptions
+ ORDER BY 1 DESC LIMIT 10
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC LIMIT 10;
+
+SELECT * from vstalertintg_hl7messagetype
+
+LIMIT 20;
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 ORDER BY 1 DESC LIMIT 20;
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 20;
+
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+
+
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 10
+
+
+
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 10;
+SELECT * from vstalertintg_hl7messagetype
+
+SELECT * FROM receivedhl7  s WHERE s.MessageControlId like 'b6f8efd8-645252515161778'
+
+SELECT * FROM inboundmessagestatus s WHERE s.FacilityName ='EPICMLLP2' ORDER BY 1 DESC LIMIT 5;
+
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0);
+SELECT * from vstalertintg_hl7messagetype
+
+SELECT * FROM outgoinghl7messages  ORDER BY 1 DESC LIMIT 10;
+CALL uspGetMessageControlIdsFromDate('2025-08-07 00:00:00');uspInsertUpdateExternalMessageStatus
+EXPLAIN inboundmessagestatus
+SELECT * FROM PLUGIN
+
+CALL uspInsertUpdateExternalMessageStatus(
+    'inbound', 
+    '21fda808-dbd0-458a-a339-c1a3aa67c89a118',
+    '0',             -- pIsJunk
+    'TestBranch',    -- pFacilityName
+    '1',             -- pIsSuccessfulExternally
+    'failhogyahai'   -- pExternalFailureReason
+);
+
+
+uspInsertUpdateExternalMessageStatus
+
+====
+uspInsertUpdateInternalMessageStatus
+
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 10;
+#SIU Messages
+SELECT * FROM siureceivedmessage ORDER BY 1 DESC LIMIT 100;
+SELECT * from vstalertintg_hl7notificationsettings
+SELECT * FROM sourceclient
+#SIU Messages
+SELECT * FROM siureceivedmessage ORDER BY 1 DESC LIMIT 100;
+
+SELECT * FROM plugin
+
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 5;
+SELECT * FROM  receivedhl7 ORDER BY 1 DESC LIMIT 10;
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 40
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 10
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC 
+LIMIT 20;
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 
+ORDER BY createddate DESC 
+LIMIT 5;
+
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 10;
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 10;
+
+SELECT * FROM outboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+
+
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 20;
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 2000;
+
+SELECT * FROM sourceclient WHERE facilitycode = "47600"
+
+EXPLAIN inboundmessagestatus
+SELECT * FROM sourceclient x WHERE x.FacilityCode= 300017
+SELECT * FROM businessfacility
+SELECT * FROM plugin
+
+SELECT * from vstalertintg_hl7messagetype
+
+SELECT * from sourceapiallowedpluginsandoperation
+call uspGetAllOutgoingHl7Configs
+CALL vstalertintg_uspGetHl7NotificationSettingDetails(0);
+SELECT * FROM outgoinghl7configs WHERE facilityid = 17
+SELECT * from sourceclient
+
+SELECT * from receivedhl7 ORDER BY 1 DESC LIMIT 10
+
+SELECT * FROM plugin
+SELECT * FROM sourceclient
+SELECT * FROM outgoinghl7configs
+
+SELECT * 
+FROM receivedhl7 
+ORDER BY 1 DESC 
+LIMIT 10;
+
+
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 20
+
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 5;
+
+SELECT * FROM receivedhl7 WHERE messagecontrolid='K3'
+
+SELECT DISTINCT Id, MessageControlId, FacilityName, CreatedDate
+FROM receivedhl7
+WHERE DATE(CreatedDate) >= '2025-08-01';
+
+SELECT * FROM receivedhl7
+CALL uspGetMessageControlIdsFromDate('2025-08-01');
+
+CALL uspGetMessageControlIdsFromDate('2024-01-01');
+uspInsertUpdateInternalMessageStatus
+uspInsertUpdateExternalMessageStatus
+SELECT * FROM inboundmessagestatus  ORDER BY 1 DESC LIMIT 10;
+
+SELECT * FROM  receivedhl7 ORDER BY 1 DESC LIMIT 20;
+
+SELECT * FROM  outgoinghl7messages ORDER BY 1 DESC LIMIT 10;
+
+SELECT * FROM dailyinboundmessagesummary ORDER BY 1 DESC LIMIT 40
+SELECT * FROM outgoinghl7messages ORDER BY 1 DESC LIMIT 40
+SELECT * FROM inboundmessagestatus ORDER BY 1 DESC 
+LIMIT 20;
+SELECT * FROM outboundmessagestatus
+ORDER BY createddate DESC 
+LIMIT 5;
+SELECT * 
+FROM receivedhl7 ORDER BY 1 limit 10 
+ORDER BY createddate DESC receivedhl7
+LIMIT 5;
+SELECT * FROM receivedhl7 ORDER BY 1 DESC LIMIT 10
+SELECT * FROM plugin
+
+call uspGetClientAllowedActionDetails ('25c574d0-1025-4819-901b-8baf010855f2')
+
+/app/Plugins-Epic
+C:\inetpub\wwwroot\dev-epicplugin.vstintegration.com\Plugins-Epic
+
+
+SELECT * FROM outboundmessagestatus s WHERE s.facilityname LIKE 'EPICMllp2' ORDER BY 1 DESC LIMIT 3
+
+SELECT * FROM inboundmessagestatus s WHERE s.facilityname  ORDER BY 1 DESC LIMIT 5
+
+SELECT * FROM sourceclientdevices xl WHERE xl.deviceserialnumber LIKE 'epicmllp5'
+
+7dd243f8-a041-490d-a02a-6a9537c0f389
+
+d3d6551b-0431-4a11-8de4-40ebdcbdb76b
+
+SELECT * from siureceivedmessage ORDER BY 1 DESC 
+
+
+CALL portal_uspGetBusinessEventSummaryDetailsByFacility(
+  0,
+  '2025-02-04 00:00:00',
+  '2026-02-11 00:00:00'
+);
+===============================================================================================
+

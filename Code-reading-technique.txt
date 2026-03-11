@@ -1,0 +1,287 @@
+# Code Reading Technique (7-Step Method)
+
+A modern developer ki sabse important skill **code likhna nahi, code samajhna hoti hai**.  
+Large systems ko samajhne ke liye yeh 7-step method use karo.
+
+---
+
+# 1. Entry Point Find Karo (Program kahan se start hota hai)
+
+Sabse pehle yeh dekho ke application ka **starting point kya hai**.
+
+Example (.NET):
+
+Program.cs  
+Main()
+
+Ya phir:
+
+- Controller
+- Button Click
+- API Endpoint
+- Background Job
+
+Example:
+
+Button Click  
+↓  
+btn_mondayToHubspotSync_Click  
+↓  
+_syncService.SyncMondayOldRecordsToHubSpot()
+
+Yeh **execution ka starting path** hai.
+
+---
+
+# 2. Call Chain Follow Karo
+
+Dekho kaunsa function kis function ko call kar raha hai.
+
+Example:
+
+Function A  
+↓  
+Function B  
+↓  
+Function C  
+
+Example (integration flow):
+
+btn_mondayToHubspotSync_Click  
+↓  
+SyncMondayOldRecordsToHubSpot  
+↓  
+GetBoardItemsAsync  
+↓  
+CreateOrFindHubSpotCompany  
+
+Isko **Call Chain** kehte hain.
+
+---
+
+# 3. Input / Output Samjho
+
+Har function ke liye yeh samjho:
+
+Input kya hai  
+Output kya hai
+
+Example:
+
+Function:
+
+GetBoardItemsAsync()
+
+Input:
+
+None
+
+Output:
+
+Monday JSON response
+
+Phir dekho:
+
+JSON → items → column_values
+
+---
+
+# 4. Data Flow Dekho
+
+Software ka main kaam **data movement** hota hai.
+
+Example:
+
+Monday API  
+↓  
+JSON Response  
+↓  
+C# Objects  
+↓  
+Business Logic  
+↓  
+HubSpot API  
+
+Example Integration Flow:
+
+Monday  
+↓  
+Site Name  
+Legal Name  
+↓  
+Business Logic  
+↓  
+HubSpot Company  
+↓  
+Parent Child Association
+
+---
+
+# 5. Decision Points Identify Karo
+
+Code mein **IF / SWITCH / CONDITIONS** dhundo.
+
+Example:
+
+if (string.IsNullOrWhiteSpace(site))
+
+Yeh **business rule** hota hai.
+
+Example logic:
+
+Site null?  
+Legal null?  
+Both exist?
+
+Isko **Decision Tree** kehte hain.
+
+---
+
+# 6. External Systems Identify Karo
+
+Dekho code kis system se baat kar raha hai.
+
+Example:
+
+- Monday API
+- HubSpot API
+- Database
+- Cache
+
+Example system map:
+
+Monday → Data  
+HubSpot → Create company  
+Database → Sync progress  
+Cache → Resume process
+
+Isko **Integration Map** kehte hain.
+
+---
+
+# 7. High Level Flow Draw Karo
+
+Ab poora flow ek simple diagram ya steps mein likho.
+
+Example:
+
+Button Click  
+↓  
+Fetch Monday Items  
+↓  
+FOR each item  
+↓  
+Read Site / Legal Name  
+↓  
+Apply Rules  
+↓  
+Create HubSpot Company  
+↓  
+Create Parent Child Association  
+
+Yeh **mental model** banata hai.
+
+---
+
+# Real Example (Monday → HubSpot Integration)
+
+System Flow:
+
+UI Button  
+↓  
+SyncService  
+↓  
+Monday API  
+↓  
+Parse JSON  
+↓  
+Extract Data:
+- Site Name
+- Legal Name
+↓  
+Apply Business Rules  
+↓  
+Create HubSpot Companies  
+↓  
+Create Parent-Child Association
+
+---
+
+# Debugging Flow
+
+Agar bug aaye to step-by-step check karo:
+
+1 Monday API response  
+2 JSON parsing  
+3 Site extraction  
+4 Legal extraction  
+5 HubSpot company creation  
+6 Association creation
+
+---
+
+# Golden Rule (Senior Developers)
+
+Senior developers code ko **line by line nahi padhte**.
+
+Woh focus karte hain:
+
+Architecture  
+Flow  
+Data  
+Decisions  
+
+---
+
+# Bonus Technique: Logs Use Karo
+
+Logs runtime flow samajhne ka best tareeqa hain.
+
+Example logs:
+
+Starting Monday → HubSpot old records sync  
+Processing Monday item  
+Creating HubSpot company  
+Association created  
+
+Logs = **Live documentation**
+
+---
+
+# Standard Architecture Pattern
+
+Large projects usually follow this structure:
+
+Controllers  
+Services  
+Repositories  
+Models  
+
+Controllers → API / UI entry points  
+Services → Business logic  
+Repositories → Database operations  
+Models → Data structures
+
+---
+
+# Developer Workflow (Modern Approach)
+
+1. Problem samjho  
+2. Problem ko pieces mein break karo  
+3. Input / Output samjho  
+4. Flow draw karo  
+5. Algorithm likho (simple English mein)  
+6. Code generate karo (AI / manual)  
+7. Code ko system mein fit karo  
+8. Debug karo  
+9. Logs check karo  
+10. Fix karo
+
+---
+
+# Important Mindset
+
+Logic > Syntax
+
+Syntax AI ya Google se mil sakta hai.  
+Lekin **logic aur system understanding developer ki real skill hoti hai**.

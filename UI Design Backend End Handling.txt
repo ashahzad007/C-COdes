@@ -1,0 +1,518 @@
+Theek hai 👍 main poori thread ko Markdown (.md) format mein yahan code window mein likh deta hoon taake aap copy-paste karke .md file bana sakain (VS Code / Notepad mein).
+
+# Backend & Database Design Notes
+Angular + C# API + Dapper Examples
+
+---
+
+# 1. Master–Detail Example (Employee System)
+
+Example: HR System UI
+
+Tabs:
+
+- Employee
+- Address
+- Qualification
+- Experience
+
+## Database Tables
+
+### Employee
+
+| EmployeeId | Name | Email |
+|------------|------|------|
+| 1 | Ali | ali@gmail.com |
+
+Employee
+
+EmployeeId (PK)
+Name
+Email
+
+
+### Address
+
+Address
+
+AddressId (PK)
+EmployeeId (FK)
+City
+Country
+
+
+### Qualification
+
+Qualification
+
+QualificationId
+EmployeeId
+Degree
+Institute
+
+
+### Experience
+
+Experience
+
+ExperienceId
+EmployeeId
+Company
+Years
+
+
+Relationship:
+
+
+Employee
+|
+|---- Address
+|---- Qualification
+|---- Experience
+
+
+---
+
+# 2. Backend Flow (Employee Save)
+
+1. Insert Employee
+2. Get EmployeeId
+3. Insert child records
+
+Example SQL:
+
+```sql
+INSERT INTO Employee (Name, Email)
+VALUES (@Name, @Email)
+
+SELECT CAST(SCOPE_IDENTITY() as int)
+3. Dapper Important Methods
+Method	Use
+Execute	Insert / Update / Delete
+ExecuteScalar	Single value (COUNT, ID)
+Query	Multiple rows
+QuerySingle	Single row
+
+Example:
+
+var employees = await _db.QueryAsync<Employee>("SELECT * FROM Employee");
+4. Parent–Child UI (+ Add Record)
+
+Example:
+
+Contract → Multiple Invoices
+
+Tables
+Contract
+Contract
+--------
+ContractId
+ContractName
+Customer
+Invoice
+Invoice
+-------
+InvoiceId
+ContractId
+Amount
+Date
+
+Relationship
+
+Contract
+   |
+   |---- Invoice
+   |---- Invoice
+   |---- Invoice
+
+UI Example
+
+Invoices
+-----------------
+1   500
+2   800
+
++ Add Invoice
+
+Backend insert:
+
+INSERT INTO Invoice (ContractId, Amount, Date)
+VALUES (@ContractId, @Amount, @Date)
+5. Checkbox Multiple Selection (Many-to-Many)
+
+Example
+
+User → Interests
+
+User ke multiple interests ho sakte hain
+
+Hockey
+
+Cricket
+
+Football
+
+Swimming
+
+Tables
+User
+User
+-----
+UserId
+Name
+Interest
+Interest
+--------
+InterestId
+InterestName
+UserInterest (Junction Table)
+UserInterest
+-------------
+Id
+UserId
+InterestId
+
+Relationship
+
+User ---- UserInterest ---- Interest
+6. API Example (Create User)
+[HttpPost]
+public async Task<IActionResult> CreateUser(UserRequest request)
+{
+    // Step 1
+    // User table insert
+
+    var userSql = @"
+    INSERT INTO [User] (Name)
+    VALUES (@Name);
+
+    SELECT CAST(SCOPE_IDENTITY() as int);
+    ";
+
+    int userId = await _db.ExecuteScalarAsync<int>(userSql, new
+    {
+        request.Name
+    });
+
+    // Step 2
+    // Interests save in junction table
+
+    foreach (var interestId in request.Interests)
+    {
+        var sql = @"INSERT INTO UserInterest (UserId, InterestId)
+                    VALUES (@UserId, @InterestId)";
+
+        await _db.ExecuteAsync(sql, new
+        {
+            UserId = userId,
+            InterestId = interestId
+        });
+    }
+
+    return Ok(userId);
+}
+7. Updating User Interests
+
+Example
+
+Before
+
+Hockey
+Cricket
+Football
+Swimming
+
+User update karta hai
+
+Cricket
+Swimming
+Method 1 (Most Common)
+
+Delete then Insert
+
+DELETE FROM UserInterest WHERE UserId=@UserId
+
+Phir new records insert.
+
+Advantages
+
+simple
+
+easy
+
+Method 2 (Difference Method)
+
+Steps
+
+Existing interests database se lao
+
+Compare karo new list se
+
+Remove wale delete karo
+
+New wale insert karo
+
+Example concept
+
+existing.Except(newList)
+newList.Except(existing)
+Method 3 (Soft Update)
+
+Table mein column add karte hain
+
+IsActive
+
+Example
+
+UserId	InterestId	IsActive
+1	1	0
+1	2	1
+1	3	0
+1	4	1
+
+Delete nahi karte
+
+Sirf update karte hain
+
+UPDATE UserInterest
+SET IsActive = 0
+WHERE UserId = 1 AND InterestId = 1
+
+Advantages
+
+history maintained
+
+8. Common Database Design Patterns
+Pattern	Example
+Master-Detail	Employee → Address
+Parent-Child	Contract → Invoice
+Many-to-Many	User → Interests
+Junction Table	UserInterest
+9. Common Enterprise UI Patterns
+UI	Example
+Tabs	Employee profile
+
+Button | Add invoice |
+Checkbox list | User interests |
+
+Technologies Used
+
+Frontend
+
+Angular
+
+Backend
+
+C# Web API
+
+Dapper
+
+Database
+
+SQL Server
+
+END OF NOTES
+---
+same as user intrest / many to many relation
+======================
+1️⃣ Order + Order Items (Grid UI Pattern)
+
+Yeh ERP systems mein bohot common hai.
+
+Example UI:
+
+Order Form
+
+Customer: ABC Company
+
+Items
+--------------------------------
+Product      Qty      Price
+Laptop        2       1000
+Mouse         5       20
+Keyboard      3       50
+
++ Add Row
+
+[Save Order]
+Database Design
+Order Table
+Order
+------
+OrderId (PK)
+CustomerName
+OrderDate
+OrderItem Table
+OrderItem
+---------
+OrderItemId (PK)
+OrderId (FK)
+ProductName
+Quantity
+Price
+
+Relationship
+
+Order
+   |
+   |------ OrderItem
+   |------ OrderItem
+   |------ OrderItem
+Angular Request
+{
+ "customerName":"ABC Company",
+ "items":[
+   { "productName":"Laptop","quantity":2,"price":1000 },
+   { "productName":"Mouse","quantity":5,"price":20 }
+ ]
+}
+C# Model
+public class OrderRequest
+{
+    public string CustomerName { get; set; }
+    public List<OrderItemRequest> Items { get; set; }
+}
+
+public class OrderItemRequest
+{
+    public string ProductName { get; set; }
+    public int Quantity { get; set; }
+    public decimal Price { get; set; }
+}
+C# API
+[HttpPost]
+public async Task<IActionResult> CreateOrder(OrderRequest request)
+{
+    var orderSql = @"
+    INSERT INTO [Order] (CustomerName,OrderDate)
+    VALUES (@CustomerName,GETDATE());
+
+    SELECT CAST(SCOPE_IDENTITY() as int)";
+
+    int orderId = await _db.ExecuteScalarAsync<int>(orderSql,new
+    {
+        request.CustomerName
+    });
+
+    foreach(var item in request.Items)
+    {
+        var sql = @"INSERT INTO OrderItem
+                    (OrderId,ProductName,Quantity,Price)
+                    VALUES (@OrderId,@ProductName,@Quantity,@Price)";
+
+        await _db.ExecuteAsync(sql,new
+        {
+            OrderId = orderId,
+            item.ProductName,
+            item.Quantity,
+            item.Price
+        });
+    }
+
+    return Ok(orderId);
+}
+2️⃣ File Upload UI Pattern
+
+Example UI
+
+Employee Profile
+
+Upload Documents
+
++ Upload CV
++ Upload Certificate
++ Upload CNIC
+Database
+Employee
+Employee
+---------
+EmployeeId
+Name
+EmployeeDocument
+EmployeeDocument
+----------------
+DocumentId
+EmployeeId
+FileName
+FilePath
+UploadDate
+
+Relationship
+
+Employee
+   |
+   |------ Documents
+C# API Example
+[HttpPost("upload")]
+public async Task<IActionResult> UploadFile(IFormFile file,int employeeId)
+{
+    var fileName = file.FileName;
+    var path = "uploads/" + fileName;
+
+    using(var stream = new FileStream(path,FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+
+    var sql = @"INSERT INTO EmployeeDocument
+                (EmployeeId,FileName,FilePath,UploadDate)
+                VALUES (@EmployeeId,@FileName,@FilePath,GETDATE())";
+
+    await _db.ExecuteAsync(sql,new
+    {
+        EmployeeId = employeeId,
+        FileName = fileName,
+        FilePath = path
+    });
+
+    return Ok();
+}
+3️⃣ Hierarchical Data (Tree UI)
+
+Example UI
+
+Categories
+
+Electronics
+   ├── Laptop
+   ├── Mobile
+Clothing
+   ├── Shirt
+   ├── Jeans
+Database
+Category
+---------
+CategoryId
+CategoryName
+ParentId
+
+Example Data
+
+CategoryId	Name	ParentId
+1	Electronics	NULL
+2	Laptop	1
+3	Mobile	1
+4	Clothing	NULL
+5	Shirt	4
+C# Insert Example
+[HttpPost]
+public async Task<IActionResult> AddCategory(CategoryRequest request)
+{
+    var sql = @"INSERT INTO Category
+                (CategoryName,ParentId)
+                VALUES (@CategoryName,@ParentId)";
+
+    await _db.ExecuteAsync(sql,request);
+
+    return Ok();
+}
+⭐ Summary (Important UI Patterns)
+UI Pattern	Example
+Multi Tab Form	Employee profile
+Grid with rows	Order + Items
+Checkbox list	User interests
+
+Add button | Contract invoices |
+File upload | Employee documents |
+Tree structure | Categories |
+=============================================

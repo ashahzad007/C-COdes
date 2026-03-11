@@ -1,0 +1,137 @@
+Method	Use
+Execute	Insert / Update / Delete / retrun affected rows. int 1, or rows count 
+ExecuteScalar	Single value (COUNT, ID) , return int , 1 to 0000
+Query	Multiple rows , return list all records 
+QuerySingle	One row , return single record
+==========
+1️⃣ Execute
+
+Use hota hai jab data insert / update / delete karna ho aur result object nahi chahiye.
+
+Return karta hai:
+
+affected rows
+
+Example:
+
+var sql = "UPDATE Employee SET Name=@Name WHERE EmployeeId=@Id";
+
+var rows = await _db.ExecuteAsync(sql, new
+{
+    Name = "Ali",
+    Id = 1
+});
+
+Result:
+
+rows = 1
+
+Matlab 1 row update hui.
+
+2️⃣ ExecuteScalar
+
+Use hota hai jab single value chahiye.
+
+Example:
+
+var sql = "SELECT COUNT(*) FROM Employee";
+
+int count = await _db.ExecuteScalarAsync<int>(sql);
+
+Result:
+
+count = 15
+
+Aur identity nikalne ke liye bhi yahi use hota hai.
+
+Example:
+
+var sql = @"
+INSERT INTO Employee (Name,Email)
+VALUES (@Name,@Email);
+
+SELECT CAST(SCOPE_IDENTITY() as int)";
+int id = await _db.ExecuteScalarAsync<int>(sql, new
+{
+    Name="Ali",
+    Email="ali@gmail.com"
+});
+
+Result:
+
+id = 101
+3️⃣ Query
+
+Use hota hai jab multiple records chahiye.
+
+Example table:
+
+EmployeeId	Name
+1	Ali
+2	Ahmed
+3	Sara
+
+Code:
+
+var sql = "SELECT * FROM Employee";
+
+var employees = await _db.QueryAsync<Employee>(sql);
+
+Result:
+
+List<Employee>
+
+Example:
+
+[
+ {EmployeeId:1, Name:Ali},
+ {EmployeeId:2, Name:Ahmed},
+ {EmployeeId:3, Name:Sara}
+]
+4️⃣ QuerySingle / QueryFirst
+
+Use hota hai jab sirf ek record chahiye.
+
+Example:
+
+var sql = "SELECT * FROM Employee WHERE EmployeeId=@Id";
+
+var employee = await _db.QuerySingleAsync<Employee>(sql, new
+{
+    Id = 1
+});
+
+Result:
+
+Employee object
+EmployeeId = 1
+Name = Ali
+Email = ali@gmail.com
+
+
+Real API Example (Very Common)
+[HttpGet("{id}")]
+public async Task<IActionResult> GetEmployee(int id)
+{
+    var sql = "SELECT * FROM Employee WHERE EmployeeId=@Id";
+
+    var employee = await _db.QuerySingleOrDefaultAsync<Employee>(sql, new
+    {
+        Id = id
+    });
+
+    return Ok(employee);
+}
+
+API call:
+
+GET /api/employee/1
+
+Response:
+
+{
+ "employeeId":1,
+ "name":"Ali",
+ "email":"ali@gmail.com"
+}
+============================

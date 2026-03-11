@@ -1,0 +1,704 @@
+# Developer Problem Solving Guide
+
+## Monday.com → HubSpot Integration + Engineering Problem Solving Framework
+
+---
+
+# Part 1 — Monday.com → HubSpot Sync Documentation
+
+## Overview
+
+This integration synchronizes **Monday.com board records** with **HubSpot CRM companies**.
+
+Mapping rules:
+
+| Monday Field | HubSpot Entity |
+| ------------ | -------------- |
+| Legal Name   | Parent Company |
+| Site         | Child Company  |
+
+If both exist → create **Parent–Child association** in HubSpot.
+
+---
+
+# System Architecture
+
+```
+Monday.com Board
+        │
+        ▼
+Windows Forms Sync Tool
+        │
+        ▼
+HubSpot CRM
+        │
+        ▼
+Companies + Parent/Child Associations
+```
+
+Purpose:
+
+* Sync existing Monday records to HubSpot
+* Create company hierarchy
+* Prevent duplicate companies
+
+---
+
+# Step 1 — Fetch Records from Monday.com
+
+1. Connect to Monday.com API
+2. Fetch all board items
+3. Extract fields:
+
+* Site → Child company
+* Legal Name → Parent company
+
+---
+
+## Example Monday Data
+
+| Item ID | Site            | Legal Name     |
+| ------- | --------------- | -------------- |
+| 1       | LakeView Clinic | HealthCorp Ltd |
+| 2       | City Care Lab   | HealthCorp Ltd |
+| 3       | Metro Pharmacy  | NULL           |
+| 4       | NULL            | MedGroup Inc   |
+
+---
+
+# Decision Table
+
+| Site | Legal Name | HubSpot Action                           |
+| ---- | ---------- | ---------------------------------------- |
+| ✔    | ✔          | Create/Find Parent + Child + Association |
+| ✔    | NULL       | Create/Find Site company                 |
+| NULL | ✔          | Create/Find Parent company               |
+| NULL | NULL       | Skip record                              |
+
+---
+
+# Example HubSpot Result
+
+```
+HealthCorp Ltd
+│
+├── LakeView Clinic
+└── City Care Lab
+
+Metro Pharmacy
+```
+
+---
+
+# Complete Data Flow
+
+```
+Monday Board
+      │
+      ▼
+Fetch Records
+      │
+      ▼
+Evaluate Site + Legal Name
+      │
+      ▼
+HubSpot Company Search
+      │
+      ▼
+Create Companies (if missing)
+      │
+      ▼
+Create Parent–Child Associations
+```
+
+---
+
+# Error Handling
+
+| Scenario           | Action       |
+| ------------------ | ------------ |
+| Duplicate company  | Use existing |
+| Association exists | Skip         |
+| Both fields NULL   | Skip         |
+| API failure        | Retry        |
+
+---
+
+# Part 2 — Developer Problem Solving Technique
+
+Correct approach:
+
+```
+Problem → Data → Rules → Flow → Algorithm → Code
+```
+
+---
+
+# 7-Step Problem Solving Framework
+
+```
+READ → VISUALIZE → DATA → RULES → FLOW → ALGORITHM → CODE
+```
+
+---
+
+## Step 1 — Understand the Problem
+
+Example:
+
+Monday board records must be converted into HubSpot companies.
+
+Legal Name → Parent
+Site → Child
+
+---
+
+## Step 2 — Identify Entities
+
+Entities:
+
+```
+Monday Item
+HubSpot Company
+HubSpot Association
+```
+
+---
+
+## Step 3 — Create Dummy Data
+
+| ItemId | Site            | LegalName      |
+| ------ | --------------- | -------------- |
+| 1      | LakeView Clinic | HealthCorp Ltd |
+| 2      | City Care Lab   | HealthCorp Ltd |
+| 3      | Metro Pharmacy  | NULL           |
+| 4      | NULL            | MedGroup Inc   |
+
+---
+
+## Step 4 — Define Rules
+
+| Site | LegalName | Action                       |
+| ---- | --------- | ---------------------------- |
+| ✔    | ✔         | Parent + Child + Association |
+| ✔    | NULL      | Create Site company          |
+| NULL | ✔         | Create Parent company        |
+| NULL | NULL      | Skip                         |
+
+---
+
+## Step 5 — Draw Flow
+
+```
+Monday Record
+      │
+      ▼
+Read Site + Legal Name
+      │
+      ▼
+Check Conditions
+      │
+      ├── Site + Legal → Parent + Child
+      ├── Site only → Site company
+      ├── Legal only → Parent company
+      └── None → Skip
+```
+
+---
+
+## Step 6 — Write Algorithm
+
+```
+FOR each Monday item
+
+IF Site NULL AND LegalName NULL
+    skip
+
+IF Site NULL AND LegalName exists
+    create/find parent
+
+IF Site exists AND LegalName NULL
+    create/find site
+
+IF Site exists AND LegalName exists
+    create/find parent
+    create/find child
+    create association
+```
+
+---
+
+## Step 7 — Implement Code
+
+Example pseudo code:
+
+```csharp
+foreach(var item in mondayItems)
+{
+    var site = item.Site;
+    var legal = item.LegalName;
+
+    if(site == null && legal == null)
+        continue;
+
+    if(site == null)
+        CreateOrFindCompany(legal);
+
+    else if(legal == null)
+        CreateOrFindCompany(site);
+
+    else
+    {
+        var parent = CreateOrFindCompany(legal);
+        var child = CreateOrFindCompany(site);
+        CreateAssociation(parent.Id, child.Id);
+    }
+}
+```
+
+---
+
+# Golden Rule
+
+```
+If you cannot draw the flow,
+you cannot code the solution.
+```
+
+---
+
+# Part 3 — 5-Level Software Engineer Framework
+
+## Level 1 — Problem Definition
+
+Input → Monday records
+Output → HubSpot company hierarchy
+
+---
+
+## Level 2 — Data Modeling
+
+Entities:
+
+```
+Monday Item
+HubSpot Company
+HubSpot Association
+```
+
+---
+
+## Level 3 — Decision Logic
+
+| Site | Legal | Result         |
+| ---- | ----- | -------------- |
+| ✔    | ✔     | Parent + Child |
+| ✔    | NULL  | Site company   |
+| NULL | ✔     | Parent company |
+| NULL | NULL  | Skip           |
+
+---
+
+## Level 4 — System Flow
+
+```
+Monday Board
+     │
+     ▼
+Fetch Records
+     │
+     ▼
+Evaluate Conditions
+     │
+     ▼
+HubSpot Search
+     │
+     ▼
+Create Companies
+     │
+     ▼
+Create Associations
+```
+
+---
+
+## Level 5 — Implementation
+
+```
+API calls
+Database operations
+Retry logic
+Error handling
+```
+
+---
+
+# Whiteboard Thinking Method
+
+Draw logic before coding.
+
+```
+Monday Record
+     │
+     ▼
+Extract Fields
+     │
+     ▼
+Decision Engine
+     │
+     ├── Parent Creation
+     ├── Child Creation
+     └── Association Creation
+```
+
+Benefits:
+
+* Reveals missing logic
+* Prevents coding confusion
+* Simplifies debugging
+
+---
+
+# Integration System Design Template
+
+Use this for any API integration.
+
+1. Source System
+2. Target System
+3. Field Mapping
+4. Decision Logic
+5. API Operations
+6. Error Handling
+
+---
+
+# Debugging Framework
+
+When integration fails:
+
+1. Check input data
+2. Verify decision rules
+3. Check API responses
+4. Validate field mapping
+5. Inspect logs
+
+---
+
+# Final Engineer Mindset
+
+```
+Understand Problem
+        ↓
+Model Data
+        ↓
+Define Rules
+        ↓
+Design Flow
+        ↓
+Write Algorithm
+        ↓
+Write Code
+```
+
+Coding is the **last step**, not the first.
+
+---
+
+# Bonus Problem Solving Model
+
+```
+OBSERVE → SIMPLIFY → GENERALIZE → AUTOMATE
+```
+
+Mastering this approach makes complex integrations **10× easier**.
+
+============
+START
+
+1. Fetch records from Monday.com
+
+2. FOR each record
+
+   Read:
+   Site
+   Legal Name
+
+3. IF Site = NULL AND Legal Name = NULL
+      Skip record
+
+4. ELSE IF Site != NULL AND Legal Name = NULL
+      Search Site company in HubSpot
+      IF not found
+          Create Site company
+
+5. ELSE IF Site = NULL AND Legal Name != NULL
+      Search Parent company (Legal Name) in HubSpot
+      IF not found
+          Create Parent company
+
+6. ELSE (Site != NULL AND Legal Name != NULL)
+
+      Search Parent company (Legal Name) in HubSpot
+      IF not found
+          Create Parent company
+
+      Search Child company (Site) in HubSpot
+      IF not found
+          Create Child company
+
+      Check Parent–Child association
+      IF not exists
+          Create association
+
+END FOR
+
+END
+=====================
+START
+  │
+  ▼
+Fetch Records from Monday.com
+  │
+  ▼
+FOR each record
+  │
+  ▼
+Read Site & Legal Name
+  │
+  ▼
+Are both NULL?
+  │
+ ├── YES → Skip Record
+ │
+ └── NO
+       │
+       ▼
+Is Site NULL?
+       │
+       ├── YES
+       │     │
+       │     ▼
+       │ Search Parent (Legal Name)
+       │     │
+       │     ├─ Found → Continue
+       │     └─ Not Found → Create Parent Company
+       │
+       ▼
+Is Legal Name NULL?
+       │
+       ├── YES
+       │     │
+       │     ▼
+       │ Search Site Company
+       │     │
+       │     ├─ Found → Continue
+       │     └─ Not Found → Create Site Company
+       │
+       ▼
+Both Exist
+       │
+       ▼
+Search Parent Company
+       │
+       ▼
+Search Child Company
+       │
+       ▼
+Create Parent–Child Association
+       │
+       ▼
+Next Record
+       │
+       ▼
+END
+============================
+Fetch Monday records → Check Site & Legal Name → Search/Create companies in HubSpot → Create Parent–Child association.
+============================
+Software Enginner How to works 
+===========================
+Problem Solving Technique (Developer Summary)
+1️⃣ Problem ko Simple Language mein Samjho
+
+Sabse pehle problem ko plain English / Urdu mein likho
+
+Example:
+
+Monday.com records ko HubSpot companies mein convert karna hai
+
+Legal Name → Parent company
+
+Site → Child company
+
+2️⃣ Input–Output Thinking Use Karo
+
+Har system problem mein yeh 3 cheezen clear karo:
+
+Input
+
+Data kahan se aa raha hai?
+
+Example: Monday.com board records
+
+Processing
+
+Data par kya rules apply honge?
+
+Output
+
+Final result kya hona chahiye?
+
+Example: HubSpot companies + parent-child association
+
+3️⃣ Entities Identify Karo
+
+System mein kaun kaun se objects involved hain?
+
+Example:
+
+Monday Item
+
+HubSpot Company
+
+HubSpot Association
+
+Important fields:
+
+Site
+
+Legal Name
+
+4️⃣ Dummy Data Bana Lo
+
+Coding se pehle sample database table bana lo.
+
+Example:
+
+Monday records
+
+Site	LegalName
+LakeView Clinic	HealthCorp Ltd
+City Care Lab	HealthCorp Ltd
+Metro Pharmacy	NULL
+
+Is step se logic instantly clear ho jata hai.
+
+5️⃣ Decision Rules Define Karo
+
+Problem ko conditions mein break karo.
+
+Example:
+
+Site	LegalName	Action
+✔	✔	Parent + Child + Association
+✔	NULL	Create Site company
+NULL	✔	Create Parent company
+NULL	NULL	Skip
+
+Isko Decision Table Thinking kehte hain.
+
+6️⃣ API Request–Response Thinking
+
+Agar system integration hai to yeh socho:
+
+API Request kya hogi?
+
+Response kya milega?
+
+Us response ke base par next action kya hoga?
+
+Example:
+
+Search Company API
+↓
+Response: Found / Not Found
+↓
+If Not Found → Create Company
+
+Yeh pattern har integration mein hota hai.
+
+7️⃣ Flow Diagram Banao
+
+Logic ko boxes aur arrows mein draw karo.
+
+Example:
+
+Fetch Monday Records
+        │
+        ▼
+Read Site + Legal Name
+        │
+        ▼
+Check Conditions
+        │
+        ├─ Parent + Child
+        ├─ Site Only
+        ├─ Parent Only
+        └─ Skip
+
+Diagram brain ko visual clarity deta hai.
+
+8️⃣ Algorithm Likho (Code nahi)
+
+Ab step-by-step logic likho.
+
+Example:
+
+FOR each Monday record
+
+IF Site NULL AND LegalName NULL
+    Skip
+
+IF Site NULL AND LegalName exists
+    Create Parent
+
+IF Site exists AND LegalName NULL
+    Create Site company
+
+IF both exist
+    Create Parent
+    Create Child
+    Create Association
+9️⃣ Ab Code Likho
+
+Ab code likhna easy hota hai kyunki:
+
+rules clear hain
+
+flow clear hai
+
+algorithm ready hai
+
+Coding bas logic ka translation hota hai.
+
+Golden Rule
+If you cannot explain the flow,
+you cannot implement the code.
+Simple Thinking Model
+
+Software problems ko hamesha is order mein solve karo:
+
+INPUT
+↓
+PROCESSING RULES
+↓
+API REQUEST / RESPONSE
+↓
+FLOW
+↓
+ALGORITHM
+↓
+CODE
+Senior Engineer Mindset
+
+Great developers:
+
+pehle diagram banate hain
+
+phir dummy data likhte hain
+
+phir rules define karte hain
+
+phir algorithm likhte hain
+
+code last mein likhte hain
+==============================================

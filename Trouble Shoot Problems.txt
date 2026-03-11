@@ -1700,3 +1700,60 @@ ticket , rese reason ko automate ker do , mtlb agar xyz field true ho tu automat
 4) ab yeah switch on ya off appsettings.jason ke varaible se ho ga ... Hl7MessageDynamicObservation = true or false
 5) yeah khabi fast deployment ke lye use ho sakta hai , jab pora code comment ker ek le ker jana ho , ap swithc on ya off bana sakty ho 
 =======================================
+ticket
+-------
+@Basit Ahmed @Aamir Liaqat please share all ADT logs from Feb 24, 2026 till now for the following room:
+Business: Emory Healthcare
+Branch: Emory Hillandale Hospital
+Room Number: 304-01
+CU ID: 10229041
+Reported Date: Feb 25, 2026
+Reported Time: 21:00
+Note: The system was discharged at 3:17 by the nurse station console and remained off until 21:24.
+Please provide the complete logs first thing in the morning.
+===
+solution
+----
+first check logs of 24-fb to till with room umber 304-01
+if found share then go to databas and use this quey 
+SELECT COUNT(1) FROM receivedhl7 h WHERE h.FacilityName = '10009' 
+AND h.CreatedDate >= '2026-02-24 00:00:00' ;
+
+
+SELECT UTC_TIMESTAMP();
+
+SELECT * FROM receivedhl7 h WHERE h.FacilityName = '10009' 
+AND h.CreatedDate BETWEEN '2026-02-24 00:00:00' and '2026-02-25 00:00:00';
+
+
+SELECT h.RawHL7Payload, h.CreatedDate, h.MessageControlId, h.FacilityName FROM receivedhl7 h WHERE h.FacilityName = '10009' 
+#AND h.CreatedDate >= '2026-02-24 00:00:00' 
+AND 
+h.RawHL7Payload LIKE '%304-01%' LIMIT 50;
+----
+
+3rd step most important 
+go to shariq portal goto inbound receive messages set start date and end date and then search after records , search room number in message search column. (Important)
+
+ISKEY BAAD SONIA SE POCHNA ke Alert system ki db main admion ya dischare ki entry ai is room main gar ho gi tu wo admsion dischare and admsioon source batyi gi , mtlb, NU S ya Epic se discharge howa hai
+admisiion mllp ke through howa or dischare NUC ke through howa tu yeah ho sakta hai , leikn logs NUC ke dekhney parey gey
+room number ke againt 304-01 for example NUC ke case main ek sensor hota hai mtlb sensor device hi actually room number hoti hai
+--------
+nuc main dekkhney ke lye room number 304-01 ke against sensor id lo jo ke yeah hai 10229041 , phir ogs main yeah sensor id share ker do startdate and end date daal ker
+--------
+actiontype = activate sensor for admsiion 
+action type = de activate sensor , discharge
+----------
+NUC ADMSIION LOG
+---------
+01:30:23.188 [Thread:21] [Information] (VSTAlertNUCDisplay.Controllers.SensorDisplayController) Request Headers: [KeyValuePair`2 {Key="Host", Value=["nucdisplaydata.vstalert.com"]}, KeyValuePair`2 {Key="Authorization", Value=["Basic YjRlZmUzZjItMmYxYS00YWQyLWI5YTYtZGJkZmUxZjUzMjZj"]}, KeyValuePair`2 {Key="Content-Type", Value=["application/json; charset=utf-8"]}, KeyValuePair`2 {Key="traceparent", Value=["00-2bb55da39b80aa9300eeb89e9d636c5c-dfe67fda9cbde183-00"]}, KeyValuePair`2 {Key="Content-Length", Value=["282"]}, KeyValuePair`2 {Key="X-Forwarded-For", Value=["52.37.52.252"]}, KeyValuePair`2 {Key="X-Forwarded-Proto", Value=["https"]}, KeyValuePair`2 {Key="X-Forwarded-Port", Value=["443"]}, KeyValuePair`2 {Key="X-Amzn-Trace-Id", Value=["Root=1-69a2452f-33419f5b612034b86c6df432"]}, KeyValuePair`2 {Key="ActionType", Value=["activateSensorSettings"]}, KeyValuePair`2 {Key="SensorId", Value=["10229041"]}], Request Body: SensorDisplayRequest {SensorId="10229041", RoomNumber="", BedModeSensitivity="high", PatientFacingAudio=True, Language="en", Volume=80, IsFallenAlertEnabled=False, IsBedChairExit=True, IsEnabledPressureInjury=False, IsExitAlertAllDay=False, MonitoringStart="00:00", MonitoringEnd="00:00"}
+----------
+NUC Discharge Logs
+==========
+12:44:21.699 [Thread:38] [Information] (VSTAlertNUCDisplay.Controllers.SensorDisplayController) Request Headers: [KeyValuePair`2 {Key="Host", Value=["nucdisplaydata.vstalert.com"]}, KeyValuePair`2 {Key="Authorization", Value=["Basic YjRlZmUzZjItMmYxYS00YWQyLWI5YTYtZGJkZmUxZjUzMjZj"]}, KeyValuePair`2 {Key="Content-Type", Value=["application/json; charset=utf-8"]}, KeyValuePair`2 {Key="traceparent", Value=["00-894f03435df84d8c2c3c9cad1fea2030-ffbd0fb8a29b0e5e-00"]}, KeyValuePair`2 {Key="Content-Length", Value=["23"]}, KeyValuePair`2 {Key="X-Forwarded-For", Value=["52.37.52.252"]}, KeyValuePair`2 {Key="X-Forwarded-Proto", Value=["https"]}, KeyValuePair`2 {Key="X-Forwarded-Port", Value=["443"]}, KeyValuePair`2 {Key="X-Amzn-Trace-Id", Value=["Root=1-69a191a5-2d195362270b575865c9c897"]}, KeyValuePair`2 {Key="ActionType", Value=["deactivateSensor"]}, KeyValuePair`2 {Key="SensorId", Value=["10229041"]}], Request Body: SensorDisplayRequest {SensorId="10229041", RoomNumber="", BedModeSensitivity="", PatientFacingAudio=True, Language="", Volume=null, IsFallenAlertEnabled=False, IsBedChairExit=null, IsEnabledPressureInjury=False, IsExitAlertAllDay=False, MonitoringStart="00:00", MonitoringEnd="00:00"}
+
+final answer to client
+----------------------
+Last ADT message received over the MLLP service for the mentioned room was on 22-02-2026. After that, no further messages were received through the same platform.Upon further investigation, we found that the admission/discharge messages were received via the NUC API instead. Please find the last message log for the respective room attached below.Alert Room Admission/Discharge DetailsPlease note that logs older than 7 days are not available due to our current log retention policy. However, HL7 messages are retained for one month as per the retention policy.
+==================================================================
+

@@ -1994,3 +1994,89 @@ namespace SimpleEventDemo
     }
 }
 ========================================================================================
+# C# Generic Constraint -- `where T : class`
+
+## ✅ Meaning
+
+`where T : class` ka matlab:
+
+> **T must be a reference type**
+
+Ye sirf `class keyword` tak limited nahi hai.
+
+------------------------------------------------------------------------
+
+## ✅ Allowed Types (Reference Types)
+
+✔ **class**\
+✔ **interface**\
+✔ **record** (default record = class)\
+✔ **delegate**
+
+Example:
+
+``` csharp
+public class MyConsumer : IConsumer<Message> { }     // VALID
+public class MyConsumer : IConsumer<IMessage> { }    // VALID
+public class MyConsumer : IConsumer<OrderCreated> { } // VALID (record)
+```
+
+------------------------------------------------------------------------
+
+## ❌ Not Allowed (Value Types)
+
+❌ **struct**\
+❌ **enum**\
+❌ **primitive types** (int, bool, etc.)
+
+Example:
+
+``` csharp
+public struct Message { }
+
+public class MyConsumer : IConsumer<Message> { }  // COMPILE ERROR
+```
+
+Reason:
+
+`struct = value type`\
+Constraint requires → `reference type`
+
+------------------------------------------------------------------------
+
+## 🧠 Important Clarification
+
+Even though constraint likha hota hai:
+
+``` csharp
+where T : class
+```
+
+Iska matlab hota hai:
+
+> **Any reference type allowed**
+
+NOT:
+
+> ❌ "Sirf class keyword allowed"
+
+------------------------------------------------------------------------
+
+## ✅ Record vs Record Struct
+
+✔ `record` → Reference Type → Allowed\
+❌ `record struct` → Value Type → Not Allowed
+
+Example:
+
+``` csharp
+public record OrderCreated(Guid Id);        // VALID
+public record struct OrderCreated(Guid Id);  // ERROR with : class constraint
+```
+
+------------------------------------------------------------------------
+
+## 🎯 Golden Rule
+
+> **`where T : class` = Reference Type Constraint**
+========================================================================

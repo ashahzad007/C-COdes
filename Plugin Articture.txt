@@ -1,0 +1,18 @@
+Epic Auth API
+Epic Plugin
+Webhook API
+MLLP Listener
+Connector Engine 
+===========
+as per my point of view
+===========
+1.MLLP Listener
+2.Connector Engine 
+3.PluginAPi
+4.Webhook API 
+
+====================
+plugin ka ek container jaysee key local main hai , wayse nai ker saktey they coninter huge ho jata or cost zayda kerta 
+isko har ek plugin ke saat attach kya hai , depolment form main or phir pcc ka continer attach kya hai , is trah nuc ka
+agar sirf nuc ka change dena hai tu nuc ke attach plugin api ko deploy kerwa dya is tarach single change dya or problem resolve ker di 
+na ke ek hi pluginAPI ka continer jo different dlls loads kere .... 

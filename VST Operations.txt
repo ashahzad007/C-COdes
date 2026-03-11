@@ -1,0 +1,28 @@
+1) sab se Pehle plugin and source key sary tables main entires check kerien
+2) plugin,pluginbusiness,pluginbusinessfaciltyurl,pluginenvirmentlookup,
+3) sourcealloweddetails main action dekho allowed , Monday,hubspot etc
+4) sourceclient,sourcecleintapi, ClientID,cleint secrete,
+5)sourceclientdevice , ClientID,cleintscre , for nuc and other devices
+-------plugin add kerwani ke lye ap idher se hi information dety hain
+=================================================
+design point
+=======================
+agar koye excel se file load kere or import kere hubspot.com se tu ap ke pass webhooks ayin gey 100 , 1000 tu ap usko kayse handle kerein gey jabkey 
+APIs main rate limit lagi hwoi hoti hai, isko handle kaysee kia jaye 
+
+solution
+-----------
+ek background service bani jaye jis main rate limit ko hanlde ker ke queue main dall ker line by line process kero.
+iska code vstopeations main HubSpotBackgroundWorker and MondayWorker main code hai
+
+ek method hai send async ka jis main rate limit ka mechnasim likha howa hai 
+-----------------
+
+hum hubspot se subscription add kerety hain , or subascription main hum ne apna PLUGINAPI ka url dya hota hai 
+why (plugin arcturure)
+is lye ke hum connector engine ke through jwt token lety hai , phir get data method ka format letey hain , apni facilities plugin ke tables etc load kerwa ker user ko 
+vst opertions ke dlls tak le ke jaty hain through PLUGINAPI or phir us ke required method jo ke HubSpotBackgroundWorker services hain jo different methods call ker ke Monday.com pe fields map kerwati hai
+or Monday.com main item ki filed or legal business name main legal business name ko item ka child association bana ker 2 companies add kerwa deti hain , hubspot per ,
+
+or Monday.com ka payload ka sample nai hota , is ke lye grock se apna endpoint local to web expose ker ke data stream caprture ker lety hain , payload ke lye
+

@@ -1,0 +1,9 @@
+Visual Studio (NOT VS Code)
+
+Collapse all methods:
+
+Ctrl + M, Ctrl + O
+
+Expand all methods:
+
+Ctrl + M, Ctrl + L

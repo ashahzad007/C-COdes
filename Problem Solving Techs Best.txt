@@ -1,0 +1,415 @@
+(code c# ho , java ho khuch bi nai hota asal main problem statement ko sehe tarqy se samjna hota hai bus , code claude ya chatgpt, sonnet acha likh deta hai , yehe cheez samj ayi hai)
+(asl cheez documention read kerna , similar system jo Pehle se bana ho usko staudy kerna) mtlb Monday or hubspot columns mapping , column matching zarrori hai , 
+or webhooks ka concept bi (jo ke publisher subscriber model , ya producer consumer model , ya event driven articture hota hai c# delgates and events ka concept)
+(or chat gpt ke pics ke saat complete code feed kerna hota hai)
+kisis se pochney se behtar hai ke aap chat gpt se poochein or apni izzat bachyin (important point)
+problem ki console app bana lo , choti se dekhny ke lye
+code ko chatgpt se lekwany ke badd debug kero samjho kya likha hai read kero code ko or koye problem aye tu resolve ker lo chat gpt ko excat method ya code de ker
+chatgpt ko complete code sample do agar tumharey pass hai , appsetiings.json ki file send kero api url key scecrte etc ke lye 
+chatgpt ko sab ka sab code ka related , reference methods end ta do , ta ke wo exact samj saky.
+=======================
+1. Pehle problem ko samjho,
+2. phir usko pieces main tor do 
+3. input output , request and response dekho.
+4. draw the flow
+5. draw the algorightnm in simple englsih words
+6. draw sample code not code code sketch
+like this
+START
+
+1. Fetch records from Monday.com
+
+2. FOR each record
+
+   Read:
+   Site
+   Legal Name
+
+3. IF Site = NULL AND Legal Name = NULL
+      Skip record
+
+4. ELSE IF Site != NULL AND Legal Name = NULL
+      Search Site company in HubSpot
+      IF not found
+          Create Site company
+
+5. ELSE IF Site = NULL AND Legal Name != NULL
+      Search Parent company (Legal Name) in HubSpot
+      IF not found
+          Create Parent company
+
+6. ELSE (Site != NULL AND Legal Name != NULL)
+
+      Search Parent company (Legal Name) in HubSpot
+      IF not found
+          Create Parent company
+
+      Search Child company (Site) in HubSpot
+      IF not found
+          Create Child company
+
+      Check Parent–Child association
+      IF not exists
+          Create association
+
+END FOR
+
+END
+
+====================
+then write actual code with in mind solid pricples , service-controller or in main code 
+how to fit code in your envirnoemtn exisisting area 
+1. code ka sira find kero apni app main , starting point us ke baad socho kya kerna hai , 
+jase ke monday.com waley example main button banya us ke peche ek main function banya us function main yeah belwo logics fit ki
+IF Site = NULL AND Legal Name = NULL
+      Skip record
+
+4. ELSE IF Site != NULL AND Legal Name = NULL
+      Search Site company in HubSpot
+      IF not found
+          Create Site company
+
+5. ELSE IF Site = NULL AND Legal Name != NULL
+      Search Parent company (Legal Name) in HubSpot
+      IF not found
+          Create Parent company
+
+6. ELSE (Site != NULL AND Legal Name != NULL)
+
+or API se coneect ker ke record hubspot per insert kerwaay de
+=============================
+polished version
+=============================
+# Practical Problem Solving Technique for Software Engineers
+(Using Monday.com → HubSpot Integration Example)
+
+This is a simple but powerful way to solve engineering problems without getting stuck.
+
+------------------------------------------------------------
+
+1. Understand the Problem First
+
+Before writing any code:
+
+- Understand what the system should do
+- Identify systems involved
+- Identify data flow
+
+Example:
+
+System A → Monday.com
+System B → HubSpot
+
+Goal:
+
+Read records from Monday.com
+Create or update companies in HubSpot
+Create Parent–Child company relationship
+
+------------------------------------------------------------
+
+2. Break the Problem into Small Pieces
+
+Never solve the whole problem at once.
+
+Break it into logical blocks.
+
+Example:
+
+1. Fetch Monday records
+2. Extract Site and Legal Name
+3. Apply decision rules
+4. Search companies in HubSpot
+5. Create companies if missing
+6. Create Parent–Child association
+
+Small problems are easier to solve.
+
+------------------------------------------------------------
+
+3. Identify Inputs and Outputs
+
+Always ask:
+
+What is the input?
+What is the output?
+
+Example:
+
+Input (Monday)
+
+Site Name
+Legal Business Name
+
+Example record:
+
+Site = Alfalah Bank
+LegalName = Investment Branch
+
+Output (HubSpot)
+
+Parent Company → Investment Branch
+Child Company  → Alfalah Bank
+Association    → Parent ↔ Child
+
+------------------------------------------------------------
+
+4. Understand the Request / Response Flow
+
+Understand the API interaction flow.
+
+Application
+   ↓
+Monday API (GET records)
+   ↓
+Process records
+   ↓
+HubSpot API
+   ↓
+Search Company
+Create Company
+Create Association
+
+Understanding this prevents confusion.
+
+------------------------------------------------------------
+
+5. Draw the Flow (Mental Model)
+
+Always visualize the logic flow.
+
+Monday Records
+      │
+      ▼
+Read Site + Legal Name
+      │
+      ▼
+Check conditions
+      │
+      ├── Both NULL → Skip
+      │
+      ├── Site only → Create Site company
+      │
+      ├── LegalName only → Create Parent company
+      │
+      └── Both exist
+             │
+             ├─ Create Parent
+             ├─ Create Child
+             └─ Create Association
+
+This step prevents messy code.
+
+------------------------------------------------------------
+
+6. Write the Algorithm in Plain English
+
+Before coding, write the logic in simple English steps.
+
+START
+
+1. Fetch records from Monday.com
+
+2. FOR each record
+
+   Read:
+   Site
+   Legal Name
+
+3. IF Site = NULL AND Legal Name = NULL
+      Skip record
+
+4. ELSE IF Site != NULL AND Legal Name = NULL
+      Search Site company in HubSpot
+      IF not found
+          Create Site company
+
+5. ELSE IF Site = NULL AND Legal Name != NULL
+      Search Parent company (Legal Name) in HubSpot
+      IF not found
+          Create Parent company
+
+6. ELSE (Site != NULL AND Legal Name != NULL)
+
+      Search Parent company (Legal Name) in HubSpot
+      IF not found
+          Create Parent company
+
+      Search Child company (Site) in HubSpot
+      IF not found
+          Create Child company
+
+      Check Parent–Child association
+      IF not exists
+          Create association
+
+END FOR
+
+END
+
+------------------------------------------------------------
+
+7. Write Sample Code (Sketch Code)
+
+Write conceptual code first, not production code.
+
+records = getMondayRecords()
+
+for record in records:
+
+    site = record.site
+    legal = record.legalName
+
+    if site == null and legal == null:
+        skip
+
+    if site != null and legal == null:
+        createOrFindCompany(site)
+
+    if site == null and legal != null:
+        createOrFindCompany(legal)
+
+    if site != null and legal != null:
+
+        parent = createOrFindCompany(legal)
+        child = createOrFindCompany(site)
+
+        createAssociation(parent, child)
+
+------------------------------------------------------------
+
+8. Locate the Entry Point in Your Application
+
+Before writing logic, find where the code should start.
+
+Example:
+
+Windows Form Button
+        ↓
+Button Click Event
+        ↓
+Main Sync Function
+
+Example:
+
+btn_mondayToHubspotSync_Click()
+        ↓
+SyncMondayOldRecordsToHubSpot()
+        ↓
+Apply Algorithm
+
+------------------------------------------------------------
+
+9. Fit the Logic into Existing Architecture
+
+Follow good structure.
+
+UI Layer
+    ↓
+Service Layer
+    ↓
+API Helper Layer
+
+Example structure:
+
+DataSyncForm
+      ↓
+SyncService
+      ↓
+MondayHelper
+HubSpotHelper
+
+Example flow:
+
+Button Click
+     ↓
+Call SyncService
+     ↓
+Fetch Monday Records
+     ↓
+Apply Algorithm
+     ↓
+Call HubSpot API
+
+------------------------------------------------------------
+
+10. Apply SOLID Principles
+
+Single Responsibility
+
+SyncService
+→ only handles sync logic
+
+Separation of Concerns
+
+MondayHelper
+→ fetch Monday data
+
+HubSpotHelper
+→ create/search companies
+
+Dependency Injection
+
+Services injected into form
+
+------------------------------------------------------------
+
+11. Implement the Final Code
+
+Only after all steps above.
+
+Because now:
+
+Problem understood
+Flow clear
+Algorithm ready
+Architecture clear
+
+Now coding becomes simple implementation, not guessing.
+
+------------------------------------------------------------
+
+12. Debugging Strategy
+
+When things fail:
+
+Check Inputs
+Check API responses
+Check logs
+Check algorithm conditions
+
+Example log:
+
+Processing Monday item Site: Alfalah Bank Legal: Investment Branch
+Searching HubSpot company
+Creating company
+Creating association
+
+Logs make debugging easy.
+
+------------------------------------------------------------
+
+Final Philosophy
+
+Never jump directly to code.
+
+Always follow this order:
+
+Problem
+   ↓
+Break into pieces
+   ↓
+Inputs / Outputs
+   ↓
+Flow Diagram
+   ↓
+Algorithm
+   ↓
+Sketch Code
+   ↓
+Architecture placement
+   ↓
+Final Code
+
+This method prevents developers from getting stuck in complex logic.
+============================================================================

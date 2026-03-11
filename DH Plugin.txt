@@ -1,0 +1,150 @@
+Testing Case
+1. connect - start - audio file - end - webhook  
+2- connect - start - audio file - pause - webhook
+3- connect - start - audio file - pause - webhook - resume - end - webhook
+==================
+Client
+   ↓
+WebSocketSessionManager  (Orchestrator)
+   ↓
+AudioChannel (queue)
+   ↓
+ProcessAudioAsync (processor)
+   ↓             ↓
+DeliverHealth    S3Service
+===================================
+
+# DeliverHealth Audio Orchestration (Project Structure)
+
+## High Level Structure
+
+WebhookController ↓ WebhookSessionManager (Orchestrator) ↓
+DHPluginService (DHPlugin.cs) S3Service (S3.cs) Repository / DB
+
+------------------------------------------------------------------------
+DH Plugin Workflow
+==========================================
+## Orchestrator Location
+
+In this project the **Orchestrator service is:**
+
+WebhookSessionManager
+
+This service coordinates communication between:
+
+-   DHPluginService (DeliverHealth integration)
+-   S3Service (audio storage)
+-   Database repositories
+
+Instead of the controller calling multiple services directly, the
+controller calls **WebhookSessionManager**, which manages the full
+workflow.
+
+------------------------------------------------------------------------
+
+## Controller
+
+### WebhookController
+
+This controller acts as the **entry point for webhook and audio
+operations**.
+
+It calls the orchestrator service:
+
+WebhookSessionManager
+
+Important method used:
+
+sendOpNotes()
+
+The controller does not manage the workflow itself.\
+It delegates the process to the orchestrator.
+
+------------------------------------------------------------------------
+
+## Orchestrator Service
+
+### WebhookSessionManager
+
+Role: **Workflow Orchestrator**
+
+Responsibilities:
+
+-   Manage audio session lifecycle
+-   Start audio session
+-   Pause audio session
+-   Resume audio session
+-   End audio session
+-   Coordinate DeliverHealth communication
+-   Coordinate file storage
+
+This service communicates with:
+
+-   DHPluginService
+-   S3Service
+
+------------------------------------------------------------------------
+
+## DHPluginService
+
+File:
+
+DHPlugin.cs
+
+Responsibilities:
+
+-   Communicate with DeliverHealth
+-   Send audio data
+-   Handle DeliverHealth session communication
+-   Process DeliverHealth responses
+
+------------------------------------------------------------------------
+
+## S3Service
+
+File:
+
+S3.cs
+
+Responsibilities:
+
+-   Upload audio files
+-   Store audio recordings
+-   Save final audio when session ends
+-   Manage storage paths
+
+------------------------------------------------------------------------
+
+## Workflow (Simplified)
+
+1.  Request received by WebhookController
+2.  Controller calls WebhookSessionManager
+3.  WebhookSessionManager manages session lifecycle
+4.  Audio sent to DeliverHealth via DHPluginService
+5.  Audio stored via S3Service
+6.  Translation / notes saved in database
+
+------------------------------------------------------------------------
+
+## Audio Session Operations
+
+The following session operations are coordinated by the orchestrator:
+
+Start Session\
+Pause Session\
+Resume Session\
+End Session
+
+All these actions are controlled through:
+
+WebhookSessionManager
+
+------------------------------------------------------------------------
+
+## Key Design Idea
+
+The controller remains **thin**, while the orchestrator manages the
+**complete workflow between services**.
+
+Controller → Orchestrator → Services
+============================================================================
